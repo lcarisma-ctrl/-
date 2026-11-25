@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v16">
+<meta name="app-version" content="v17">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3168,6 +3168,20 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <p>제출 서류 4종을 확인한 뒤 승인 또는 보완 요청을 처리합니다. 처리 결과는 선생님 모드에 즉시 반영됩니다.</p>
         <div class="admin-stats" id="adminStats"></div>
       </div>
+
+      <!-- v17 · 예약 접수 큐 & 상태 관리 (로컬 데모) -->
+      <section class="sec" style="margin-top:20px" id="adminResvSec" aria-label="예약 접수 큐">
+        <div class="sec-head" style="margin-bottom:10px">
+          <div>
+            <h2 class="sec-title">예약 접수 큐</h2>
+            <p class="sec-sub" id="adminResvSub">접수된 예약을 상태별로 보고, 지금 상태에서 가능한 다음 단계만 처리합니다.</p>
+          </div>
+          <span class="tag-example">DEMO</span>
+        </div>
+        <div class="admin-approved" id="adminResvDemoNotice"><svg class="ic" aria-hidden="true" style="align-self:flex-start;margin-top:2px"><use href="#i-shield-check"/></svg><span><b>로컬 데모 저장 · 서버 미연결(이 기기 브라우저에만 반영)</b><br>상태 변경·알림·정산 기록은 이 브라우저 안에서만 일어납니다. 실제 서버·DB·문자 발송과 연결되어 있지 않습니다.</span></div>
+        <div class="chips" id="adminResvFilters" role="tablist" aria-label="예약 상태 필터" style="flex-wrap:wrap;overflow:visible;padding-top:4px"></div>
+        <div class="admin-queue" id="adminResvQueue"></div>
+      </section>
 
       <section class="sec" style="margin-top:20px">
         <div class="sec-head" style="margin-bottom:10px">
@@ -8852,6 +8866,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function renderAdmin() {
+    renderAdminResv();
     var stats = $('#adminStats');
     if (stats) stats.innerHTML = adminStatsHtml();
     var queue = $('#adminQueue');
@@ -8872,6 +8887,292 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           '<span class="when">' + esc(d.at) + '</span></div>';
       }).join('') : '<p class="fine" style="margin:2px">아직 처리한 지원서가 없어요.</p>';
     }
+  }
+
+  /* ===================================================================
+     v17 · 운영자(관리자) 예약 접수 큐 & 상태 관리 (ADMIN-OPERATIONS.md)
+     ─────────────────────────────────────────────────────────────────
+     저장소의 예약(account.bookings)을 그대로 읽어 상태별로 보여주고,
+     버튼은 TtModel.canTransitionReservation(현재, 다음, 'operator')가 true인
+     전이만 그린다. 실행은 언제나 TtModel.transitionReservation(..., { actor:'operator' })
+     한 곳을 지나므로 알림·타임슬롯·정산 원장이 v13 규칙대로 함께 움직인다.
+     저장은 localStorage(로컬 데모) — 서버·DB 미연결.
+     ================================================================= */
+  var ADMIN_RESV_FILTERS = [
+    { key: 'all', label: '전체', statuses: null },
+    { key: 'received', label: '접수', statuses: ['received'] },
+    { key: 'assigned', label: '배정', statuses: ['assigned'] },
+    { key: 'confirmed', label: '확정', statuses: ['confirmed'] },
+    { key: 'rescheduled', label: '변경', statuses: ['rescheduled'] },
+    { key: 'completed', label: '완료', statuses: ['completed'] },
+    { key: 'closed', label: '취소·노쇼', statuses: ['canceled', 'no_show'] }
+  ];
+  var ADMIN_RESV_BADGE = {
+    received: 'is-wait', assigned: '', confirmed: 'is-on', rescheduled: 'is-wait',
+    completed: 'is-on', canceled: '', no_show: 'is-warn'
+  };
+  /* 상태 코드 → 운영자 버튼 이름(다음 단계의 뜻) */
+  var ADMIN_RESV_ACTION = {
+    assigned: '선생님 배정', confirmed: '방문 확정', received: '배정 해제',
+    rescheduled: '일정 변경', completed: '방문 완료', canceled: '취소', no_show: '노쇼 처리'
+  };
+  var ADMIN_RESV_LIVE = { received: 0, assigned: 1, confirmed: 2, rescheduled: 3 };
+  var adminResvFilter = 'all';
+  var adminAssignPick = {};
+
+  function adminResvList() {
+    return (account.bookings || []).filter(function (b) { return !!(b && (b.no || b.id)); });
+  }
+  function adminResvStatusOf(b) { return TtModel.reservationStatus(b && b.status); }
+  function adminResvFilterDef(key) {
+    return ADMIN_RESV_FILTERS.filter(function (f) { return f.key === key; })[0] || ADMIN_RESV_FILTERS[0];
+  }
+  function adminResvMatch(b, key) {
+    var f = adminResvFilterDef(key);
+    if (!f.statuses) return true;
+    return f.statuses.indexOf(adminResvStatusOf(b)) !== -1;
+  }
+  function adminResvCounts() {
+    var out = {};
+    ADMIN_RESV_FILTERS.forEach(function (f) { out[f.key] = 0; });
+    adminResvList().forEach(function (b) {
+      ADMIN_RESV_FILTERS.forEach(function (f) { if (adminResvMatch(b, f.key)) out[f.key] += 1; });
+    });
+    return out;
+  }
+  /* 상태기계 표에서 운영자 권한으로 실제 열려 있는 다음 상태만 */
+  function adminResvNextStatuses(b) {
+    var cur = adminResvStatusOf(b);
+    var row = TtModel.transitions[cur] || {};
+    return Object.keys(row).filter(function (to) {
+      return TtModel.canTransitionReservation(cur, to, 'operator');
+    });
+  }
+  /* 진행 중 예약을 날짜순, 끝난 예약을 최근 처리순으로 */
+  function adminResvSorted() {
+    return adminResvList().slice().sort(function (a, b) {
+      var ra = ADMIN_RESV_LIVE[adminResvStatusOf(a)];
+      var rb = ADMIN_RESV_LIVE[adminResvStatusOf(b)];
+      var la = ra == null ? 9 : ra;
+      var lb = rb == null ? 9 : rb;
+      if (la !== lb) return la - lb;
+      if (la <= 3) {
+        var ka = String(a.dateIso || '') + ' ' + String(a.time || '');
+        var kb = String(b.dateIso || '') + ' ' + String(b.time || '');
+        return ka.localeCompare(kb);
+      }
+      return String(b.updatedAt || '').localeCompare(String(a.updatedAt || ''));
+    });
+  }
+  function adminResvLastHistory(b) {
+    var h = (Array.isArray(b && b.statusHistory) && b.statusHistory.length)
+      ? b.statusHistory[b.statusHistory.length - 1] : null;
+    if (!h) return '';
+    var who = { customer: '보호자', teacher: '선생님', operator: '운영자', system: '시스템', migration: '기존 데이터' }[h.actor] || h.actor || '시스템';
+    return who + ' · ' + TtModel.reservationLabel(h.status) + (h.reason ? ' · ' + h.reason : '');
+  }
+  /* 후보 선생님 — 보호자 지역(시·군·구)과 겹치는 선생님을 먼저 보여준다(배정 후보 교집합의 단순판). */
+  function adminCandidateTeachers(b) {
+    var parts = String((b && b.region) || '').split(/\s+/).filter(function (x) { return !!x; });
+    var district = parts[1] || parts[0] || '';
+    var scored = (teachers || []).map(function (t, i) {
+      var hay = String(t.regionDetail || '') + ' ' + String(t.regions || '');
+      return { t: t, same: district ? hay.indexOf(district) !== -1 : false, i: i };
+    });
+    scored.sort(function (x, y) {
+      if (x.same !== y.same) return x.same ? -1 : 1;
+      var r = (y.t.rating || 0) - (x.t.rating || 0);
+      return r !== 0 ? r : x.i - y.i;
+    });
+    return scored.map(function (s) { return s.t; });
+  }
+  /* 지역은 시·군·구까지만 보여준다(동·번지 등 개인 식별 정보는 운영자 목록에도 노출하지 않는다). */
+  function adminRegionText(b) {
+    var id = b && b.regionId;
+    if (id) {
+      var hit = (REGION_MASTER || []).filter(function (r) { return r.id === id; })[0];
+      if (hit && hit.fullName) return hit.fullName;
+    }
+    return String((b && b.region) || '').trim().split(/\s+/).slice(0, 2).join(' ');
+  }
+  function adminResvPickerValue(no) {
+    try {
+      var sel = document.querySelector('[data-admin-resv-teacher="' + no + '"]');
+      return sel && sel.value ? String(sel.value) : '';
+    } catch (e) { return ''; }
+  }
+
+  function adminResvCardHtml(b) {
+    var st = adminResvStatusOf(b);
+    var next = adminResvNextStatuses(b);
+    var t = (b.teacherId && st !== 'received') ? teacherById(b.teacherId) : null;
+    var teacherName = b.teacher || (t ? t.name + ' 선생님' : '미배정');
+    var region = adminRegionText(b);
+    var when = (b.date || '') + (b.day ? ' (' + b.day + ')' : '') + ' ' + (b.time || '');
+    var owner = '';
+    try { owner = customerName(); } catch (e) { owner = ''; }
+    var amount = Number(b.amount) || 0;
+    var badge = '<span class="status-badge ' + (ADMIN_RESV_BADGE[st] || '') + '">' + esc(TtModel.reservationLabel(st)) + '</span>';
+    var facts = '<span class="admin-fact">배정 ' + esc(teacherName) + '</span>' +
+      '<span class="admin-fact">지역 ' + esc(region || '-') + '</span>' +
+      '<span class="admin-fact">' + esc(amount > 0 ? won(amount) : '금액 미기재') + '</span>' +
+      '<span class="admin-fact">접수 ' + esc(b.dateIso ? String(b.dateIso).slice(0, 10) : (b.createdAt ? String(b.createdAt).slice(0, 10) : '-')) + '</span>';
+
+    /* 배정 전에는 후보 선생님을 고른다(받은 상태에서 배정·확정 모두 해당). */
+    var picker = '';
+    if (st === 'received' && (next.indexOf('assigned') !== -1 || next.indexOf('confirmed') !== -1)) {
+      var cands = adminCandidateTeachers(b);
+      var cur = adminAssignPick[b.no] || (b.teacher ? b.teacherId : '') || '';
+      picker = '<div class="field" style="margin:9px 0 0">' +
+        '<select data-admin-resv-teacher="' + esc(b.no) + '" aria-label="배정할 선생님 선택">' +
+          '<option value="">배정할 선생님 선택</option>' +
+          cands.map(function (x) {
+            return '<option value="' + esc(x.id) + '"' + (cur === x.id ? ' selected' : '') + '>' +
+              esc(x.name + ' 선생님 · ' + (x.occupation || x.license || '') + ' · ' + (x.regions || '')) + '</option>';
+          }).join('') +
+        '</select></div>';
+    }
+
+    var actions = '';
+    if (next.length) {
+      actions = '<div class="admin-actions" style="flex-wrap:wrap">' + next.map(function (to) {
+        var cls = (to === 'canceled' || to === 'no_show') ? 'btn btn-ghost'
+          : ((to === 'completed' || to === 'confirmed') ? 'btn btn-teal' : 'btn btn-outline');
+        return '<button class="' + cls + '" type="button" data-admin-resv="' + esc(b.no) + '" data-admin-resv-to="' + esc(to) + '">' +
+          esc(ADMIN_RESV_ACTION[to] || TtModel.reservationLabel(to)) + '</button>';
+      }).join('') + '</div>';
+    } else {
+      actions = '<div class="admin-approved" style="background:var(--surface-2);border-color:var(--line);color:var(--muted);margin-top:11px">' +
+        icon('check-circle') + '최종 상태예요 · 다음 단계가 없습니다(다시 예약은 새 예약으로 접수)</div>';
+    }
+
+    return '<div class="admin-card" data-resv="' + esc(b.no) + '" data-resv-status="' + esc(st) + '">' +
+      '<div class="admin-top" style="cursor:default">' +
+        '<div class="admin-av" aria-hidden="true">' + esc(String(owner || '보').charAt(0)) + '</div>' +
+        '<div style="min-width:0">' +
+          '<p class="admin-name">' + esc(b.no || b.id) + ' ' + badge + '</p>' +
+          '<p class="admin-meta">' + esc(owner || '보호자') + ' · ' + esc(region || '지역 미기재') + ' · ' + esc(when.trim()) + '</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="admin-facts">' + facts + '</div>' +
+      picker +
+      '<div class="admin-docs">' +
+        '<div class="admin-docs-head"><span>최근 이력 1건</span>' +
+          '<button class="admin-docs-all" type="button" data-admin-notice="' + esc(b.no) + '">안내 문구 복사</button></div>' +
+        '<p class="admin-meta" style="margin:0">' + esc(adminResvLastHistory(b) || '이력이 없어요.') + '</p>' +
+      '</div>' +
+      actions +
+    '</div>';
+  }
+
+  function adminResvFiltersHtml(counts) {
+    return ADMIN_RESV_FILTERS.map(function (f) {
+      var on = f.key === adminResvFilter;
+      return '<button class="chip' + (on ? ' is-on' : '') + '" type="button" role="tab" aria-selected="' + on + '" data-admin-resv-filter="' + f.key + '">' +
+        esc(f.label) + ' ' + (counts[f.key] || 0) + '</button>';
+    }).join('');
+  }
+
+  function renderAdminResv() {
+    var queue = $('#adminResvQueue');
+    if (!queue) return;
+    var counts = adminResvCounts();
+    var filters = $('#adminResvFilters');
+    if (filters) filters.innerHTML = adminResvFiltersHtml(counts);
+    var list = adminResvSorted().filter(function (b) { return adminResvMatch(b, adminResvFilter); });
+    queue.innerHTML = list.length ? list.map(adminResvCardHtml).join('') :
+      '<div class="empty" style="box-shadow:none"><p>이 상태의 예약이 없어요.<br>새 예약이 접수되면 여기에 표시됩니다.</p></div>';
+    var sub = $('#adminResvSub');
+    if (sub) {
+      sub.textContent = '접수 ' + counts.received + ' · 배정 ' + counts.assigned +
+        ' · 확정 ' + counts.confirmed + ' · 변경 ' + counts.rescheduled +
+        ' · 완료 ' + counts.completed + ' · 취소·노쇼 ' + counts.closed;
+    }
+  }
+
+  /* 보호자·선생님 안내 문구(복사용). 실제 발송은 하지 않는다. */
+  function adminResvNoticeKey(b) {
+    var st = adminResvStatusOf(b);
+    var h = (Array.isArray(b && b.statusHistory) && b.statusHistory.length)
+      ? b.statusHistory[b.statusHistory.length - 1] : null;
+    if (h && h.from && h.to && TtModel.transitions[h.from] && TtModel.transitions[h.from][h.to]) {
+      return TtModel.transitions[h.from][h.to].notify || st;
+    }
+    return st;
+  }
+  function adminNoticeText(b) {
+    if (!b) return '';
+    var n = TtModel.noticeFor(b, adminResvNoticeKey(b), { refund: b.refund });
+    var c = (n && n.customer) || {};
+    var t = (n && n.teacher) || {};
+    return '[보호자 안내]\n' + (c.title || '') + '\n' + (c.body || '') +
+      '\n\n[선생님 안내]\n' + (t.title || '') + '\n' + (t.body || '');
+  }
+  function adminCopyNotice(no) {
+    var b = findBooking(no);
+    if (!b) { toast('예약을 찾을 수 없어요.'); return false; }
+    var text = adminNoticeText(b);
+    var okCopy = copyToClipboard(text);
+    /* 검증용 훅(화면에는 영향 없음) */
+    try { window.__ttokttokAdmin = { noticeNo: b.no, noticeText: text, copied: okCopy, at: Date.now() }; } catch (e) {}
+    toast(okCopy
+      ? '보호자·선생님 안내 문구를 복사했어요. 발송은 하지 않았습니다.'
+      : '복사가 막혀 있어요. 안내 문구는 직접 전달해 주세요.');
+    return okCopy;
+  }
+
+  /* 운영자 상태 변경 — 상태기계 한 곳만 지난다. */
+  function adminTransitionBooking(no, to) {
+    var b = findBooking(no);
+    if (!b) { toast('예약을 찾을 수 없어요.'); return { ok: false, error: 'not_found' }; }
+    var cur = adminResvStatusOf(b);
+    var target = TtModel.reservationStatus(to);
+    if (!TtModel.canTransitionReservation(cur, target, 'operator')) {
+      toast('지금 상태(' + TtModel.reservationLabel(cur) + ')에서는 ' + TtModel.reservationLabel(target) + '(으)로 바꿀 수 없어요.');
+      return { ok: false, error: 'transition_not_allowed', from: cur, to: target };
+    }
+    var meta = { actor: 'operator' };
+    var q = null;
+    if (cur === 'received' && (target === 'assigned' || target === 'confirmed')) {
+      var pick = adminAssignPick[b.no] || adminResvPickerValue(b.no) || (b.teacher ? b.teacherId : '') || '';
+      if (!pick) { toast('배정할 선생님을 먼저 선택해 주세요.'); return { ok: false, error: 'teacher_required' }; }
+      var t = teacherById(pick);
+      if (!t) { toast('선생님 정보를 찾을 수 없어요.'); return { ok: false, error: 'teacher_not_found' }; }
+      var clash = TtModel.slotConflict(account.bookings || [], t.id, b.dateIso, b.time, b.no || b.id);
+      if (clash) {
+        toast('그 시간에는 ' + t.name + ' 선생님 방문이 이미 잡혀 있어요. 다른 선생님이나 시간을 골라 주세요.');
+        return { ok: false, error: 'slot_conflict', conflictNo: clash.no || clash.id };
+      }
+      b.teacherId = t.id;
+      b.teacher = t.name + ' 선생님';
+      meta.reason = '운영자 배정 · ' + t.name + ' 선생님';
+    } else if (target === 'received') {
+      meta.reason = '운영자 배정 해제 — 재배정 대기';
+    } else if (target === 'canceled') {
+      q = cancelQuoteFor(b);
+      meta.refund = q.refund;
+      meta.refundText = q.note;
+      meta.reason = '운영자 취소 · ' + q.label;
+    } else if (target === 'completed') {
+      meta.reason = '운영자 방문 완료 처리';
+    } else if (target === 'no_show') {
+      meta.reason = '운영자 노쇼 처리';
+    } else if (target === 'rescheduled') {
+      meta.reason = '운영자 일정 변경 처리';
+    }
+
+    var tr = TtModel.transitionReservation(b, target, meta);
+    if (!tr.ok) { toast(tr.message); return tr; }
+    if (target === 'canceled') applyCancelEffects(b, q);
+    if (target === 'received') { b.teacherId = ''; b.teacher = ''; }
+    if (target === 'assigned') b.assignedAt = tr.at;
+    saveAccount();
+    renderAdminResv();
+    try { renderAccount(); } catch (e) {}
+    try { renderPartner(); } catch (e) {}
+    try { renderSlots(); } catch (e) {}
+    toast((b.no || b.id) + ' 예약을 ' + TtModel.reservationLabel(target) + '(으)로 바꿨어요.');
+    return tr;
   }
 
   function approveByAdmin(id) {
@@ -9038,6 +9339,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (e.target.closest('[data-admin-back]')) { closeAdmin(); return; }
     if (e.target.closest('[data-app-close]') || e.target.id === 'appSheet') { closeAppSheet(); return; }
 
+    /* v17 · 예약 접수 큐: 상태 필터 · 안내 문구 복사 · 상태 전이 */
+    var resvFilterBtn = e.target.closest('[data-admin-resv-filter]');
+    if (resvFilterBtn) {
+      adminResvFilter = adminResvFilterDef(resvFilterBtn.getAttribute('data-admin-resv-filter')).key;
+      renderAdminResv();
+      return;
+    }
+    var resvNoticeBtn = e.target.closest('[data-admin-notice]');
+    if (resvNoticeBtn) { adminCopyNotice(resvNoticeBtn.getAttribute('data-admin-notice')); return; }
+    var resvToBtn = e.target.closest('[data-admin-resv-to]');
+    if (resvToBtn) {
+      adminTransitionBooking(resvToBtn.getAttribute('data-admin-resv'), resvToBtn.getAttribute('data-admin-resv-to'));
+      return;
+    }
+
     var appOpen = e.target.closest('[data-app-open]');
     if (appOpen) { openAppSheet(appOpen.getAttribute('data-app-open')); return; }
 
@@ -9084,6 +9400,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && $('#rejectSheet') && $('#rejectSheet').classList.contains('is-open')) closeRejectSheet();
+  });
+
+  /* v17 · 배정 후보 선생님 선택값 기억(카드가 다시 그려져도 유지) */
+  document.addEventListener('change', function (e) {
+    var pick = e.target.closest('[data-admin-resv-teacher]');
+    if (pick) {
+      adminAssignPick[pick.getAttribute('data-admin-resv-teacher')] = pick.value;
+    }
   });
 
   /* ================= 신규 기능 이벤트 (채팅 · 후기 · 예약 변경/취소 · 주간 필터) ================= */
@@ -10423,26 +10747,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     closeManage();
   }
 
-  function cancelBookingNow() {
-    var b = findBooking(manageCtx.no);
-    if (!b) return;
-    if (!TtModel.canTransitionReservation(b.status, 'canceled', 'customer')) {
-      toast('이미 ' + TtModel.reservationLabel(b.status) + ' 상태라 취소할 수 없어요.');
-      return;
-    }
-    var q = cancelQuoteFor(b);
-    var refund = q.refund;
-    var tr = TtModel.transitionReservation(b, 'canceled', {
-      actor: 'customer', reason: q.label, refund: refund, refundText: q.note
-    });
-    if (!tr.ok) { toast(tr.message); return; }
+  /* 취소 부수 효과(환불 표시·회차 복구·환불 영수증) — 보호자·운영자 취소가 같은 규칙을 쓴다(§3·§4.1). */
+  function applyCancelEffects(b, q) {
+    var refund = q ? q.refund : 0;
     b.refund = refund;
-    b.refundLabel = q.label;
+    b.refundLabel = q ? q.label : '';
     b.paymentStatus = refund > 0 ? 'refund_pending' : 'paid';
     if (b.walletId) {
       var p = (account.passes || []).filter(function (x) { return x.id === b.walletId; })[0];
       /* v16 · 24시간 전 취소만 회차를 복구한다. 24시간 이내·이후는 차감 유지(환불 없음). */
-      if (p && q.restoreSessions > 0 && p.remaining < p.total) {
+      if (p && q && q.restoreSessions > 0 && p.remaining < p.total) {
         p.remaining = Math.min(p.total, p.remaining + q.restoreSessions);
         p.status = 'active';
         p.updatedAt = TtModel.nowIso();
@@ -10459,6 +10773,23 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         status: 'refund_pending'
       }));
     }
+    return refund;
+  }
+
+  function cancelBookingNow() {
+    var b = findBooking(manageCtx.no);
+    if (!b) return;
+    if (!TtModel.canTransitionReservation(b.status, 'canceled', 'customer')) {
+      toast('이미 ' + TtModel.reservationLabel(b.status) + ' 상태라 취소할 수 없어요.');
+      return;
+    }
+    var q = cancelQuoteFor(b);
+    var refund = q.refund;
+    var tr = TtModel.transitionReservation(b, 'canceled', {
+      actor: 'customer', reason: q.label, refund: refund, refundText: q.note
+    });
+    if (!tr.ok) { toast(tr.message); return; }
+    applyCancelEffects(b, q);
     saveAccount();
     renderAccount();
     renderManage();
@@ -10605,6 +10936,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       }
       saveJson(NOTIF_KEY, notifStore);
       renderNotifs();
+      /* v17 · 운영자 예약 큐도 같은 전이를 즉시 반영한다(관리자 화면이 열려 있으면 바뀐 상태가 바로 보인다). */
+      try { renderAdminResv(); } catch (e) {}
       if (eff.slot && eff.slot !== 'keep') { try { renderSlots(); } catch (e) {} }
       if (eff.ledger === 'pending') {
         if (enqueueSettlement(eff)) savePartner();
@@ -11142,6 +11475,41 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       cancelQuoteOf: function (target) {
         var b = (typeof target === 'string') ? findBooking(target) : target;
         return b ? cancelQuoteFor(b) : null;
+      },
+      /* v17 · 운영자(관리자) 예약 큐(검증·운영 도구용) */
+      adminVersion: 'v17',
+      adminFilters: ADMIN_RESV_FILTERS.map(function (f) { return f.key; }),
+      adminReservations: function () { return adminResvList(); },
+      adminCounts: function () { return adminResvCounts(); },
+      adminFilter: function (key) {
+        if (key) adminResvFilter = adminResvFilterDef(key).key;
+        return adminResvFilter;
+      },
+      adminActiveFilter: function () { return adminResvFilter; },
+      adminNextStatuses: function (target) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return b ? adminResvNextStatuses(b) : [];
+      },
+      adminStatusOf: function (target) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return b ? adminResvStatusOf(b) : '';
+      },
+      adminLastHistory: function (target) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return b ? adminResvLastHistory(b) : '';
+      },
+      adminNoticeText: function (target) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return b ? adminNoticeText(b) : '';
+      },
+      adminCandidates: function (target) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return b ? adminCandidateTeachers(b).map(function (t) { return t.id; }) : [];
+      },
+      adminTransition: function (no, to, opts) {
+        var o = opts || {};
+        if (o.teacherId) adminAssignPick[no] = o.teacherId;
+        return adminTransitionBooking(no, to);
       }
     };
   } catch (e) {}
