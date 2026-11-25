@@ -1429,6 +1429,218 @@ body.on-home .ah-home{display:flex}
 #guideSheet .promise-card{margin-top:0}
 .review-session .chat-av{display:flex !important;color:#fff}
 
+/* =====================================================================
+   v7 · 전 화면 톤 통일 (선생님 · 회복 일지 · 예약 · 파트너 · 관리자)
+   + 찜하기(하트) · 방문 D-day · 상담 폼
+   원칙: v6 홈·내 정보와 같은 여백 · 라운드 · 블루/네이비 톤.
+   ===================================================================== */
+:root{
+  --v7-line:rgba(15,23,42,.055);
+  --v7-soft:#F4F7FB;
+  --v7-ink:#101A2B;
+  --v7-ink2:#5C6879;
+  --v7-card:0 1px 2px rgba(15,23,42,.03),0 20px 40px -34px rgba(15,23,42,.38);
+  --fav:#E8506F;
+}
+
+/* ---------- 공통 화면 머리 ---------- */
+#screen-teachers .page-head,#screen-journal .page-head,#screen-booking .page-head{padding:24px 2px 0}
+#screen-teachers .page-head h1,#screen-journal .page-head h1,#screen-booking .page-head h1{font-size:23px;letter-spacing:-.05em}
+#screen-teachers .page-head p,#screen-journal .page-head p,#screen-booking .page-head p{font-size:12.5px;line-height:1.6;color:#7B8798;max-width:none;word-break:keep-all}
+#screen-teachers .sec,#screen-tp-home .sec{margin-top:26px}
+
+/* ---------- 선생님 찾기: 밀도 낮추기 ---------- */
+#screen-teachers .home-search{margin:16px 0 2px}
+#screen-teachers .trust-strip{display:flex;gap:0;background:transparent;border:0;border-radius:0;margin-top:16px;overflow:visible}
+#screen-teachers .trust-strip > div{flex:1;background:transparent;text-align:left;padding:0 10px;border-left:1px solid #E9EDF4}
+#screen-teachers .trust-strip > div:first-child{padding-left:0;border-left:0}
+#screen-teachers .trust-strip b{font-size:15.5px;color:var(--v7-ink)}
+#screen-teachers .trust-strip span{font-size:10px;color:#96A1B2}
+#screen-teachers .segmented{margin-top:18px;background:transparent;padding:0;gap:6px;border-radius:0}
+#screen-teachers .segmented button{min-height:36px;padding:0 13px;background:#fff;border:1px solid var(--v7-line);color:#5A6B80;box-shadow:none}
+#screen-teachers .segmented button.is-on{background:var(--navy);border-color:var(--navy);color:#fff}
+#screen-teachers .chips{padding:8px 0 2px;gap:4px}
+#screen-teachers .chip{background:transparent;border-color:transparent;color:#727E90;padding:8px 12px;font-size:12px}
+#screen-teachers .chip.is-on{background:var(--blue-50);color:#1D4ED8;border-color:transparent;box-shadow:none;font-weight:800}
+#screen-teachers .query-bar{margin-top:12px}
+#screen-teachers .fine{margin-top:18px}
+
+/* 찜 필터 줄 */
+.fav-bar{display:flex;align-items:center;gap:8px;margin:16px 0 2px}
+.fav-filter{display:inline-flex;align-items:center;gap:6px;min-height:42px;padding:0 15px;border-radius:999px;
+  background:#fff;border:1px solid var(--v7-line);font-size:12.5px;font-weight:800;color:#44546A;letter-spacing:-.03em;
+  box-shadow:0 1px 2px rgba(15,23,42,.03);transition:background .18s,color .18s,border-color .18s}
+.fav-filter .ic{width:16px;height:16px;color:#C6CEd9;transition:color .18s,fill .18s}
+.fav-filter b{font-size:11px;font-weight:800;color:#8D99A9}
+.fav-filter.is-on{background:#FFF1F4;border-color:rgba(232,80,111,.26);color:#B82749}
+.fav-filter.is-on .ic{color:var(--fav);fill:var(--fav)}
+.fav-filter.is-on b{color:#D0607A}
+.fav-filter:active{transform:scale(.97)}
+.fav-hint{margin-left:auto;font-size:11px;color:#A2ADBD;letter-spacing:-.02em}
+
+/* 선생님 카드: 테두리·그림자 한 단계 더 담백하게 */
+.teacher{border-radius:22px;border:1px solid var(--v7-line);box-shadow:var(--v7-card);padding:20px 18px 14px;margin-top:12px;overflow:visible}
+.teacher.is-fav{border-color:rgba(232,80,111,.18)}
+.teacher .t-top{gap:13px;align-items:flex-start;padding-right:42px}
+.teacher .t-avatar{width:52px;height:52px;flex:0 0 52px;border-radius:50%;font-size:18px;box-shadow:none}
+.teacher .t-name{font-size:15.5px;letter-spacing:-.04em;gap:6px;line-height:1.3}
+.teacher .t-meta{font-size:11.5px;line-height:1.5;color:#7B8798;margin-top:3px}
+.teacher .t-region{font-size:11px;margin-top:3px;color:#8E9AAB}
+.teacher .t-region .ic{width:11px;height:11px;color:#AEB8C6}
+.teacher .rating{margin-top:2px;line-height:1.2}
+.teacher .rating b{font-size:13px;color:var(--v7-ink)}
+.teacher .rating span{font-size:9.5px;color:#A2ADBD}
+.teacher .t-tags{gap:5px;margin-top:12px}
+.teacher .tag{background:#F3F6FA;color:#5F7085;font-weight:600;font-size:10.5px;padding:4px 8px;border-radius:8px}
+.teacher .t-foot{margin-top:12px;padding-top:0;border-top:0;gap:6px}
+.teacher .t-more{font-size:11.5px;font-weight:700;color:#2F6BE0}
+.teacher .t-avail{font-size:10.5px;color:#A2ADBD}
+/* 면허 배지: 채움 대신 얇은 아이콘 + 담백한 텍스트 */
+.lic{background:transparent;color:#5F7085;font-weight:700;font-size:9.5px;padding:0;gap:3px}
+.lic .ic{width:11px;height:11px;color:#0D9488;stroke-width:1.9}
+
+/* 하트(찜하기) */
+.t-fav{position:absolute;top:12px;right:12px;z-index:2;width:40px;height:40px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;color:#C6CEd9;background:transparent;
+  transition:color .18s,background .18s,transform .16s var(--ease)}
+.t-fav .ic{width:22px;height:22px;stroke-width:1.6;transition:fill .18s,stroke .18s}
+.t-fav.is-on{color:var(--fav)}
+.t-fav.is-on .ic{fill:var(--fav);stroke:var(--fav);animation:heartPop .44s var(--spring)}
+.t-fav:active{transform:scale(.88)}
+.t-fav.is-on:active{transform:scale(.88)}
+@keyframes heartPop{0%{transform:scale(.62)}32%{transform:scale(1.28)}62%{transform:scale(.92)}82%{transform:scale(1.08)}100%{transform:scale(1)}}
+.sheet-head .t-fav{position:static;margin-left:2px;flex:0 0 40px;align-self:flex-start}
+
+/* 찜 목록 빈 상태 · 일러스트 */
+.empty-v7{padding:30px 20px 26px;border-radius:22px}
+.empty-v7 .empty-art{width:112px;height:96px;margin:0 auto 12px;display:block}
+.empty-v7 b{display:block;font-size:14.5px;font-weight:800;color:var(--v7-ink);letter-spacing:-.035em;margin-bottom:5px}
+.empty-v7 p{font-size:12px;color:#8A96A8;line-height:1.6;margin-bottom:14px}
+.empty-v7 .btn{max-width:220px;margin:0 auto}
+
+/* ---------- 예약: 심플 진행 바 + 1/4 ---------- */
+#screen-booking .notice{margin-top:16px;border-radius:20px}
+.bk-progress{margin-top:20px;padding:0 2px}
+.bk-prog-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px}
+.bk-prog-label{font-size:14px;font-weight:800;color:var(--v7-ink);letter-spacing:-.04em}
+.bk-prog-label small{display:block;font-size:10.5px;font-weight:600;color:#96A1B2;margin-top:2px;letter-spacing:-.02em}
+.bk-prog-count{font-size:11.5px;font-weight:800;color:#2C68DC;background:#EAF3FF;border-radius:999px;padding:5px 10px;letter-spacing:-.02em}
+.bk-prog-bar{height:6px;border-radius:99px;background:#E9EEF6;overflow:hidden}
+.bk-prog-bar span{display:block;height:100%;width:25%;border-radius:99px;background:linear-gradient(90deg,#3D93F8,#1B7DE8);transition:width .35s var(--ease)}
+#screen-booking .wstep-title{font-size:20px;margin:20px 0 5px;letter-spacing:-.045em}
+#screen-booking .wstep-sub{margin-bottom:16px;font-size:12.5px;line-height:1.6}
+#screen-booking .form{padding:22px 18px 20px;border-radius:22px;border-color:var(--v7-line);box-shadow:var(--v7-card)}
+#screen-booking .field{margin-bottom:19px}
+#screen-booking .field > label{font-size:12.5px;margin-bottom:9px;color:#44546A}
+#screen-booking .input,#screen-booking select{min-height:52px;border-radius:14px;background:#F6F8FB;font-size:15px}
+#screen-booking .sym-chips{gap:8px}
+#screen-booking .sym-chips .pick{min-height:44px;padding:0 15px;border-radius:999px;font-size:12.5px}
+#screen-booking .chips{padding:14px 0 4px;gap:6px}
+#screen-booking .wiz-nav{margin-top:24px;padding-bottom:8px}
+#screen-booking .card{padding:16px;border-radius:20px}
+#screen-booking .pass{padding:17px 16px;border-radius:20px}
+#screen-booking .total b{font-size:25px}
+#screen-booking .done{padding:32px 20px 24px;border-radius:24px}
+.done-consult{text-decoration:none;margin-top:2px}
+.done-consult .ic{width:14px;height:14px;color:#2F6BE0}
+.done-beta{font-size:10.5px;color:#96A1B2;line-height:1.55;margin-top:10px;word-break:keep-all}
+.sheet-beta-link{display:inline-flex;align-items:center;justify-content:center;gap:4px;width:100%;margin-top:12px;
+  font-size:12px;font-weight:700;color:#2C68DC;text-decoration:none}
+.sheet-beta-link .ic{width:13px;height:13px;stroke-width:2}
+
+/* ---------- 회복 일지: D-day 카드 · 타임라인 ---------- */
+.booking-row .chat-av,.review-session .chat-av{box-shadow:none}
+.dday-wrap{margin-top:16px}
+.dday-wrap:empty{display:none}
+.dday-card{display:flex;align-items:center;gap:14px;padding:17px 16px;border-radius:22px;background:#fff;
+  border:1px solid var(--v7-line);box-shadow:var(--v7-card)}
+.dday-badge{flex:0 0 auto;width:64px;height:64px;border-radius:20px;background:#EAF3FF;color:#1B7DE8;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.dday-badge b{font-size:19px;font-weight:800;letter-spacing:-.06em}
+.dday-badge span{font-size:9.5px;font-weight:700;color:#5C86C6;margin-top:4px;letter-spacing:-.01em}
+.dday-card.is-today .dday-badge{background:var(--teal-50);color:#0B7A6B}
+.dday-card.is-today .dday-badge span{color:#3E9C90}
+.dday-main{flex:1;min-width:0}
+.dday-kicker{display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;color:#2C68DC;letter-spacing:.01em}
+.dday-kicker .ic{width:12px;height:12px;stroke-width:2}
+.dday-card.is-today .dday-kicker{color:#0B7A6B}
+.dday-title{font-size:15.5px;font-weight:800;color:var(--v7-ink);letter-spacing:-.04em;margin-top:5px;line-height:1.35}
+.dday-meta{font-size:11.5px;color:#7B8798;margin-top:4px;line-height:1.5}
+.dday-tip{display:flex;align-items:flex-start;gap:5px;margin-top:9px;padding:7px 9px;background:#F5F8FC;border-radius:10px;
+  font-size:10.5px;line-height:1.45;color:#5F6C7E}
+.dday-tip .ic{width:13px;height:13px;flex:0 0 13px;color:#E9A23B;margin-top:1px}
+.dday-empty{display:flex;align-items:center;gap:13px;padding:16px;border-radius:22px;background:#fff;
+  border:1px solid var(--v7-line);box-shadow:var(--v7-card)}
+.dday-empty svg{width:52px;height:52px;flex:0 0 52px}
+.dday-empty b{display:block;font-size:13.5px;font-weight:800;color:var(--v7-ink);letter-spacing:-.035em}
+.dday-empty p{font-size:11.5px;color:#8A96A8;margin-top:3px;line-height:1.5}
+.dday-empty .btn{width:auto;min-height:40px;padding:0 14px;font-size:12px;margin-left:auto;flex:0 0 auto}
+
+.jl-timeline{margin-top:26px}
+.jl-tl-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}
+.jl-tl-head h2{font-size:16px;font-weight:800;color:var(--v7-ink);letter-spacing:-.04em}
+.jl-tl-head span{font-size:11px;color:#96A1B2}
+.tl{position:relative;background:#fff;border:1px solid var(--v7-line);border-radius:22px;padding:6px 16px;box-shadow:var(--v7-card)}
+.tl-item{position:relative;display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #F2F5F9}
+.tl-item:last-child{border-bottom:0}
+.tl-dot{position:relative;flex:0 0 12px;width:12px;margin-top:5px}
+.tl-dot i{display:block;width:10px;height:10px;border-radius:50%;background:#DCE3EC;border:2px solid #fff;box-shadow:0 0 0 1px #E2E8F0}
+.tl-item.is-next .tl-dot i{background:var(--blue);box-shadow:0 0 0 3px #EAF3FF}
+.tl-item.is-done .tl-dot i{background:#9FD8CE}
+.tl-item:not(:last-child) .tl-dot::after{content:"";position:absolute;left:4px;top:16px;bottom:-18px;width:1.5px;background:#EDF1F6}
+.tl-main{flex:1;min-width:0}
+.tl-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tl-top b{font-size:13px;font-weight:800;color:var(--v7-ink);letter-spacing:-.03em}
+.tl-when{margin-left:auto;font-size:10.5px;color:#A2ADBD;white-space:nowrap}
+.tl-note{font-size:11.5px;color:#7B8798;margin-top:3px;line-height:1.5}
+.tl-badge{font-size:9.5px;font-weight:800;border-radius:999px;padding:3px 7px;background:#F2F5F9;color:#7B8798}
+.tl-badge.is-next{background:#EAF3FF;color:#2C68DC}
+.tl-badge.is-done{background:var(--teal-50);color:#0B7A6B}
+.jl-consent{margin-top:14px}
+
+/* 일지 카드 톤: v6 카드 라운드·여백 */
+#screen-journal .card{border-radius:20px;border-color:var(--v7-line);box-shadow:var(--v7-card)}
+#screen-journal .patient{border-radius:24px;padding:20px 18px}
+#screen-journal .role-switch{margin:16px 0 12px;background:#EEF2F8}
+#screen-journal .journal > .card{margin-top:12px}
+#screen-journal .card-head h2{letter-spacing:-.03em}
+
+/* ---------- 파트너(선생님) 모드 ---------- */
+#screen-tp-home .page-head,#screen-tp-schedule .page-head,#screen-tp-journal .page-head,#screen-tp-mypage .page-head{padding:24px 2px 0}
+#screen-tp-home .page-head h1,#screen-tp-schedule .page-head h1,#screen-tp-journal .page-head h1,#screen-tp-mypage .page-head h1{font-size:23px;letter-spacing:-.05em}
+#screen-tp-home .page-head p,#screen-tp-schedule .page-head p,#screen-tp-journal .page-head p,#screen-tp-mypage .page-head p{font-size:12.5px;color:#7B8798;line-height:1.6;max-width:none;word-break:keep-all}
+.tp-hero{border-radius:24px;padding:20px 18px;box-shadow:0 22px 44px -34px rgba(10,25,49,.6)}
+.req{border-radius:20px;border-color:var(--v7-line);padding:16px;box-shadow:var(--v7-card);margin-bottom:10px}
+.req-top b{font-size:14px}
+.req-btns{margin-top:13px}
+.req-btns .btn{border-radius:999px;min-height:44px}
+.tp-sched{padding:15px 14px}
+.jr-item{border-radius:18px;border-left:0;border-color:var(--v7-line);box-shadow:var(--v7-card);padding:15px}
+#screen-tp-journal .card{border-radius:22px;padding:20px 17px;border-color:var(--v7-line);box-shadow:var(--v7-card)}
+#screen-tp-mypage .card{border-radius:20px;border-color:var(--v7-line);box-shadow:var(--v7-card)}
+#screen-tp-mypage .list{border-radius:20px}
+.list-item{min-height:64px}
+.list-item .li-ico{border-radius:12px}
+.week-chip{border-radius:16px;border-color:var(--v7-line)}
+
+/* ---------- 관리자 모드 ---------- */
+#screen-admin .page-head{padding:24px 2px 0}
+.admin-hero{border-radius:24px;padding:22px 18px;box-shadow:0 22px 44px -34px rgba(10,25,49,.65)}
+.admin-stats{gap:6px;margin-top:16px}
+.admin-stat{border-radius:14px;padding:12px 9px}
+.admin-card{border-radius:20px;border-color:var(--v7-line);padding:16px;box-shadow:var(--v7-card)}
+.admin-docs{border-radius:14px}
+.admin-actions .btn{border-radius:999px}
+.admin-log{border-radius:14px;border-color:var(--v7-line)}
+.admin-recent .sec-title,#screen-admin .sec-title{letter-spacing:-.04em}
+#screen-admin .sec{margin-top:26px}
+
+/* ---------- 내 정보: 오픈 전 상담 폼 링크 ---------- */
+.mp-consult{display:inline-flex;align-items:center;gap:5px;margin:10px 20px 0;padding:9px 13px;border-radius:999px;
+  background:#fff;border:1px solid var(--v7-line);font-size:12px;font-weight:700;color:#2C68DC;text-decoration:none}
+.mp-consult .ic{width:13px;height:13px;stroke-width:2}
+.mp-consult:active{transform:scale(.98)}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
@@ -1635,6 +1847,12 @@ body.on-home .ah-home{display:flex}
         <div><b>96%</b><span>재방문</span></div>
         <div><b>17</b><span>시·도</span></div>
       </div>
+      <div class="fav-bar">
+        <button class="fav-filter" type="button" id="favFilter" aria-pressed="false">
+          <svg class="ic" aria-hidden="true"><use href="#i-heart"/></svg>찜한 선생님 <b id="favCount">0</b>
+        </button>
+        <span class="fav-hint" id="favHint">하트로 모아두기</span>
+      </div>
       <div class="segmented" id="teacherFilters" role="tablist" aria-label="전문 분야 필터">
         <button class="is-on" type="button" data-cat="all" role="tab" aria-selected="true">전체</button>
         <button type="button" data-cat="stroke" role="tab" aria-selected="false">뇌졸중</button>
@@ -1671,13 +1889,15 @@ body.on-home .ah-home{display:flex}
       </div>
 
       <div id="bookingWizard">
-        <div class="stepper" id="bookingStepper" aria-label="예약 단계">
-          <button class="step-dot is-on" type="button" data-step="1" aria-label="1단계 방문 정보"><b>1</b><span>방문 정보</span></button>
-          <button class="step-dot" type="button" data-step="2" aria-label="2단계 일정 선택"><b>2</b><span>일정</span></button>
-          <button class="step-dot" type="button" data-step="3" aria-label="3단계 이용권"><b>3</b><span>이용권</span></button>
-          <button class="step-dot" type="button" data-step="4" aria-label="4단계 결제"><b>4</b><span>결제</span></button>
+        <div class="bk-progress" id="bookingStepper" aria-label="예약 진행">
+          <div class="bk-prog-top">
+            <p class="bk-prog-label"><span id="bookStepLabel">예약 진행</span><small id="bookStepHint">방문 정보를 입력해 주세요</small></p>
+            <span class="bk-prog-count" id="bookStepCount">1/4</span>
+          </div>
+          <div class="bk-prog-bar" id="bkProgBar" role="progressbar" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1" aria-label="예약 단계 진행률">
+            <span id="bookingProgress"></span>
+          </div>
         </div>
-        <div class="wiz-progress" aria-hidden="true"><span id="bookingProgress"></span></div>
 
         <!-- step 1 -->
         <div class="wstep is-active" id="wstep-1">
@@ -1843,7 +2063,11 @@ body.on-home .ah-home{display:flex}
           <div class="done-btns">
             <button class="btn btn-navy" type="button" id="doneMypage">내 예약 보기</button>
             <button class="btn btn-outline" type="button" id="doneHome">홈으로</button>
+            <a class="btn btn-outline done-consult" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">
+              오픈 전 상담 폼 남기기<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg>
+            </a>
           </div>
+          <p class="done-beta">정식 오픈 전 궁금한 점은 네이버 상담 폼으로도 남길 수 있어요.</p>
         </div>
       </div>
     </section>
@@ -1854,6 +2078,8 @@ body.on-home .ah-home{display:flex}
         <h1>방문 일지</h1>
         <p>선생님과 보호자가 같은 기록을 봅니다.</p>
       </div>
+
+      <div class="dday-wrap" id="journalDday"></div>
 
       <div class="role-switch" role="tablist" aria-label="보기 전환">
         <button class="is-on" type="button" data-role="teacher" role="tab" aria-selected="true">선생님 시점</button>
@@ -1884,6 +2110,14 @@ body.on-home .ah-home{display:flex}
           <p class="sched-row">박서준 선생님 <span class="dot">·</span> 서울 강남구 대치동 <span class="dot">·</span> 5회기</p>
           <button class="btn btn-outline" id="checkinBtn" type="button">도착 체크인</button>
         </div>
+
+        <section class="jl-timeline" aria-labelledby="jlTlTitle">
+          <div class="jl-tl-head">
+            <h2 id="jlTlTitle">회복 타임라인</h2>
+            <span id="jlTlSub">이번 달</span>
+          </div>
+          <div class="tl" id="journalTimeline"></div>
+        </section>
 
         <div class="card chart-card" style="margin-top:10px">
           <div class="card-head" style="margin-bottom:6px">
@@ -1994,6 +2228,9 @@ body.on-home .ah-home{display:flex}
           <span class="mp-b-ico" aria-hidden="true"><svg class="ic"><use href="#i-message"/></svg></span>
           <span>궁금한 점이 있으신가요? <b>1:1 문의하기</b></span>
         </button>
+        <a class="mp-consult" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">
+          오픈 전 베타 상담 폼 남기기<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg>
+        </a>
       </div>
 
       <div class="mp-list">
@@ -2694,6 +2931,7 @@ body.on-home .ah-home{display:flex}
       </div>
       <button class="btn btn-blue" type="button" id="guideBook" style="margin-top:16px">방문 재활 신청</button>
       <p class="sheet-note">* 이동비는 따로 없습니다. 방문 24시간 전까지 무료로 변경·취소할 수 있어요.</p>
+      <a class="sheet-beta-link" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">오픈 전 베타 상담 폼 남기기<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg></a>
     </div>
   </div>
 </div>
@@ -2706,6 +2944,8 @@ body.on-home .ah-home{display:flex}
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="accountTitle">내 예약 · 이용권</h2>
       <p class="sheet-desc">보유 회차와 다가오는 방문을 한 곳에서 관리해요.</p>
+
+      <div class="dday-wrap" id="accountDday" style="margin-top:16px"></div>
 
       <section class="sec" style="margin-top:16px">
         <div class="sec-head" style="margin-bottom:9px">
@@ -2911,7 +3151,7 @@ body.on-home .ah-home{display:flex}
     if (rpText) rpText.textContent = name === 'admin' ? '관리자 모드' : (role === 'therapist' ? '선생님 모드' : '고객 모드');
     if (name === 'mypage') renderAccount();
     if (name === 'home' || name === 'mypage') renderCustomerHeader();
-    if (name === 'journal') renderChart(currentMetric);
+    if (name === 'journal') { renderChart(currentMetric); renderJournalTimeline(); renderDday(); }
     if (name === 'teachers') renderTeachers();
     if (name === 'admin') renderAdmin();
     if (name === 'tp-home' || name === 'tp-schedule' || name === 'tp-journal' || name === 'tp-mypage') renderPartner();
@@ -3118,6 +3358,88 @@ body.on-home .ah-home{display:flex}
     return teachers.filter(function (t) { return t.id === id; })[0] || null;
   }
 
+  /* ================= 찜한 선생님 (하트) ================= */
+  var FAV_KEY = 'ttokttok_favs_v1';
+  var favs = (function () {
+    try {
+      var raw = SafeStorage.getItem(FAV_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(function (id) { return !!teacherById(id); });
+    } catch (e) { return []; }
+  })();
+  var favOnly = false;
+
+  function isFav(id) { return favs.indexOf(id) !== -1; }
+
+  function saveFavs() {
+    try { SafeStorage.setItem(FAV_KEY, JSON.stringify(favs)); } catch (e) {}
+  }
+
+  function heartHtml(id, extraCls) {
+    var on = isFav(id);
+    var t = teacherById(id);
+    var label = (t ? t.name + ' 선생님 ' : '') + (on ? '찜 해제' : '찜하기');
+    return '<button class="t-fav' + (extraCls ? ' ' + extraCls : '') + (on ? ' is-on' : '') + '" type="button" data-fav="' + esc(id) + '" aria-pressed="' + (on ? 'true' : 'false') + '" aria-label="' + esc(label) + '">' + icon('heart') + '</button>';
+  }
+
+  function paintFavButtons() {
+    $$('[data-fav]').forEach(function (b) {
+      var id = b.getAttribute('data-fav');
+      var on = isFav(id);
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var t = teacherById(id);
+      b.setAttribute('aria-label', (t ? t.name + ' 선생님 ' : '') + (on ? '찜 해제' : '찜하기'));
+      var card = b.closest('.teacher');
+      if (card) card.classList.toggle('is-fav', on);
+    });
+  }
+
+  function syncFavUi() {
+    var cnt = $('#favCount');
+    if (cnt) cnt.textContent = String(favs.length);
+    var f = $('#favFilter');
+    if (f) {
+      f.classList.toggle('is-on', favOnly);
+      f.setAttribute('aria-pressed', favOnly ? 'true' : 'false');
+    }
+    var hint = $('#favHint');
+    if (hint) hint.textContent = favOnly ? '다시 누르면 전체 보기' : (favs.length ? favs.length + '명 모아둠' : '하트로 모아두기');
+    paintFavButtons();
+  }
+
+  function toggleFav(id) {
+    var t = teacherById(id);
+    if (!t) return;
+    var i = favs.indexOf(id);
+    if (i === -1) favs.push(id); else favs.splice(i, 1);
+    saveFavs();
+    syncFavUi();
+    if (favOnly) renderTeachers();
+    toast(i === -1 ? t.name + ' 선생님을 찜했어요. 위에서 모아볼 수 있어요.' : t.name + ' 선생님을 찜에서 뺐어요.');
+  }
+
+  function emptyFavHtml() {
+    return '<div class="empty empty-v7">' +
+      '<svg class="empty-art" viewBox="0 0 132 110" role="img" aria-label="찜한 선생님이 없어요">' +
+        '<ellipse cx="66" cy="97" rx="44" ry="6.5" fill="#EFF5FC"/>' +
+        '<circle cx="101" cy="24" r="12" fill="#F2F8FF"/>' +
+        '<circle cx="24" cy="38" r="6" fill="#F4F9FE"/>' +
+        '<rect x="30" y="28" width="58" height="54" rx="15" fill="#FFFFFF" stroke="#E3EDF9" stroke-width="2"/>' +
+        '<circle cx="49" cy="49" r="9" fill="#DCEBFA"/>' +
+        '<rect x="63" y="43" width="17" height="4" rx="2" fill="#DCEBFA"/>' +
+        '<rect x="63" y="52" width="12" height="4" rx="2" fill="#EAF2FB"/>' +
+        '<rect x="42" y="66" width="24" height="4" rx="2" fill="#EAF2FB"/>' +
+        '<path d="M90 45c4.4-6.4 14.4-4.8 14.4 2.4 0 4.7-6.6 8.6-11.4 12-4.8-3.4-11.4-7.3-11.4-12 0-7.2 10-8.8 14.4-2.4z" fill="#FFDCE4" stroke="#F3A9BB" stroke-width="1.6" stroke-linejoin="round"/>' +
+        '<path d="M38 92h44" stroke="#E3EDF9" stroke-width="2.4" stroke-linecap="round"/>' +
+      '</svg>' +
+      '<b>아직 찜한 선생님이 없어요</b>' +
+      '<p>마음에 드는 선생님의 하트를 눌러<br>한곳에 모아두세요.</p>' +
+      '<button class="btn btn-navy btn-sm" type="button" data-fav-clear>전체 선생님 보기</button>' +
+    '</div>';
+  }
+
   function teacherHaystack(t) {
     var d = teacherDetails[t.id] || {};
     return [t.name, t.license, t.meta, t.regions, t.tags.join(' '), t.years + '년', d.hospital || '', d.career || ''].join(' ').toLowerCase();
@@ -3126,6 +3448,7 @@ body.on-home .ah-home{display:flex}
   function filteredTeachers() {
     var q = teacherQuery.trim().toLowerCase();
     return teachers.filter(function (t) {
+      if (favOnly && !isFav(t.id)) return false;
       if (teacherCat !== 'all' && t.cats.indexOf(teacherCat) === -1) return false;
       if (teacherZone !== 'all' && t.zone !== teacherZone) return false;
       if (q && teacherHaystack(t).indexOf(q) === -1) return false;
@@ -3144,10 +3467,12 @@ body.on-home .ah-home{display:flex}
   function renderTeachers() {
     var list = $('#teacherList');
     if (!list) return;
-    var html = filteredTeachers().map(function (t) {
+    var rows = filteredTeachers();
+    var html = rows.map(function (t) {
       var d = teacherDetails[t.id] || {};
       return '' +
-        '<article class="teacher" data-teacher="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
+        '<article class="teacher' + (isFav(t.id) ? ' is-fav' : '') + '" data-teacher="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
+          heartHtml(t.id) +
           '<div class="t-top">' +
             '<div class="t-avatar" style="background:' + (d.grad || 'linear-gradient(140deg,#1B4079,#0A1931)') + '" aria-hidden="true">' + esc(t.name.charAt(0)) + '</div>' +
             '<div style="min-width:0">' +
@@ -3164,8 +3489,14 @@ body.on-home .ah-home{display:flex}
           '</div>' +
         '</article>';
     }).join('');
-    list.innerHTML = html || '<p class="fine" style="text-align:center;padding:26px 0">해당 조건의 선생님을 준비 중이에요.<br>검색어를 바꾸거나 필터를 초기화해 보세요.</p>';
+    if (!html) {
+      html = favOnly
+        ? emptyFavHtml()
+        : '<p class="fine" style="text-align:center;padding:26px 0">해당 조건의 선생님을 준비 중이에요.<br>검색어를 바꾸거나 필터를 초기화해 보세요.</p>';
+    }
+    list.innerHTML = html;
     renderTeacherQueryBar();
+    syncFavUi();
   }
 
   function renderHomeTeachers() {
@@ -3246,6 +3577,7 @@ body.on-home .ah-home{display:flex}
           '<p class="sheet-sub">' + esc(t.license) + ' · 경력 ' + t.years + '년 · ' + esc(t.regions) + '</p>' +
           '<div class="sheet-rating"><b>' + icon('star', 'ic-fill') + t.rating.toFixed(1) + '</b><span>후기 ' + t.reviews + '개</span><span class="sep"></span><span>재방문 ' + (d.revisit || '—') + '</span></div>' +
         '</div>' +
+        heartHtml(t.id, 'sheet-fav') +
       '</div>' +
       '<div class="sheet-quiet">' + icon('info') + '<span>회차권과 금액은 <b>예약 마지막 단계</b>에서 안내드려요.</span></div>' +
       '<div class="sheet-block">' +
@@ -3322,6 +3654,7 @@ body.on-home .ah-home{display:flex}
     teacherQuery = q.trim();
     teacherCat = 'all';
     teacherZone = 'all';
+    favOnly = false;
     syncTeacherFilterChips();
     renderTeachers();
     if (searchResultsEl) { searchResultsEl.classList.remove('is-open'); searchResultsEl.innerHTML = ''; }
@@ -3333,6 +3666,7 @@ body.on-home .ah-home{display:flex}
     teacherCat = cat;
     teacherZone = 'all';
     teacherQuery = '';
+    favOnly = false;
     syncTeacherFilterChips();
     renderTeachers();
     showTab('teachers');
@@ -3349,6 +3683,25 @@ body.on-home .ah-home{display:flex}
   }
 
   document.addEventListener('click', function (e) {
+    var favBtn = e.target.closest('[data-fav]');
+    if (favBtn) {
+      e.preventDefault();
+      toggleFav(favBtn.getAttribute('data-fav'));
+      return;
+    }
+    if (e.target.closest('#favFilter')) {
+      favOnly = !favOnly;
+      renderTeachers();
+      toast(favOnly
+        ? (favs.length ? '찜한 선생님 ' + favs.length + '명만 모아서 보여드려요.' : '아직 찜한 선생님이 없어요. 하트를 눌러 모아보세요.')
+        : '전체 선생님을 보여드려요.');
+      return;
+    }
+    if (e.target.closest('[data-fav-clear]')) {
+      favOnly = false;
+      renderTeachers();
+      return;
+    }
     if (e.target.closest('#homeSearchBtn')) {
       applyTeacherSearch(homeSearchEl.value);
       return;
@@ -3674,6 +4027,22 @@ body.on-home .ah-home{display:flex}
   }
 
   /* ----- 단계 이동 ----- */
+  var BOOK_STEPS = [
+    '방문 정보를 입력해 주세요',
+    '방문 일정을 골라주세요',
+    '이용권을 골라주세요',
+    '결제 전 마지막 확인'
+  ];
+
+  function syncStepMeta(n) {
+    var hint = $('#bookStepHint');
+    if (hint) hint.textContent = BOOK_STEPS[n - 1] || BOOK_STEPS[0];
+    var cnt = $('#bookStepCount');
+    if (cnt) cnt.textContent = n + '/4';
+    var pb = $('#bkProgBar');
+    if (pb) pb.setAttribute('aria-valuenow', String(n));
+  }
+
   function goStep(n) {
     bk.step = n;
     $$('.wstep').forEach(function (s) {
@@ -3681,11 +4050,7 @@ body.on-home .ah-home{display:flex}
     });
     var cur = document.getElementById('wstep-' + n);
     if (cur) cur.classList.add('is-active');
-    $$('#bookingStepper .step-dot').forEach(function (d) {
-      var s = parseInt(d.getAttribute('data-step'), 10);
-      d.classList.toggle('is-on', s === n);
-      d.classList.toggle('is-done', s < n);
-    });
+    syncStepMeta(n);
     if (n === 3) renderPasses();
     if (n === 4) renderSummary();
     if (n === 2) { renderDates(); renderSlots(); }
@@ -3753,16 +4118,6 @@ body.on-home .ah-home{display:flex}
     btn.addEventListener('click', function () {
       var from = parseInt(btn.getAttribute('data-back'), 10);
       goStep(Math.max(1, from - 1));
-    });
-  });
-  $$('#bookingStepper .step-dot').forEach(function (dot) {
-    dot.addEventListener('click', function () {
-      var target = parseInt(dot.getAttribute('data-step'), 10);
-      if (target < bk.step) { goStep(target); return; }
-      for (var s = bk.step; s < target; s++) {
-        if (!validStep(s)) { goStep(s); return; }
-      }
-      goStep(target);
     });
   });
 
@@ -4080,6 +4435,7 @@ body.on-home .ah-home{display:flex}
       }).join('');
     }
     renderCustomerHeader();
+    renderDday();
   }
 
   /* 홈·내 정보 상단(이름 · 예약 건수 · 잔여 회차 · 지역)을 계정 상태와 맞춘다 */
@@ -4102,6 +4458,114 @@ body.on-home .ah-home{display:flex}
     if (pl) pl.textContent = String(left);
 
     syncHomeRegion();
+  }
+
+  /* ===================================================================
+     v7 · 다가오는 방문 D-day · 준비물 팁 · 회복 타임라인
+     =================================================================== */
+  var DDAY_TIPS = [
+    '최근 복용약 목록과 편한 옷을 준비해 주세요.',
+    '방문 30분 전에 집 안 동선을 정리해 두면 좋아요.',
+    '보호자님이 함께 계시면 평가 기록이 더 정확해져요.'
+  ];
+
+  function daysUntil(iso) {
+    if (!iso) return null;
+    var m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    var target = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    var now = new Date();
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return Math.round((target.getTime() - today.getTime()) / 86400000);
+  }
+
+  function ddayLabel(n) {
+    if (n === null || typeof n === 'undefined') return '예정';
+    if (n <= 0) return 'D-DAY';
+    return 'D-' + n;
+  }
+
+  function nextVisit() {
+    var live = (account.bookings || []).filter(function (b) { return b.status !== '취소됨'; });
+    var rows = live.map(function (b) { return { b: b, d: daysUntil(b.dateIso) }; })
+      .filter(function (x) { return x.d !== null && x.d >= 0; })
+      .sort(function (a, b) { return a.d - b.d; });
+    return rows.length ? rows[0] : null;
+  }
+
+  function ddayEmptySvg() {
+    return '<svg viewBox="0 0 72 72" aria-hidden="true">' +
+      '<circle cx="36" cy="36" r="26" fill="#F2F8FF"/>' +
+      '<rect x="22" y="25" width="28" height="26" rx="7" fill="#fff" stroke="#DCE9F8" stroke-width="2"/>' +
+      '<path d="M22 33h28" stroke="#DCE9F8" stroke-width="2"/>' +
+      '<path d="M29 21v6M43 21v6" stroke="#B9D6F4" stroke-width="2.6" stroke-linecap="round"/>' +
+      '<circle cx="36" cy="41" r="3.4" fill="#BBD8F6"/>' +
+      '<path d="M53 52c2.8-4 9-3 9 1.5 0 3-4.2 5.4-7.2 7.5-3-2.1-7.2-4.5-7.2-7.5 0-4.5 6.2-5.5 9-1.5z" fill="#FFE1E8"/>' +
+    '</svg>';
+  }
+
+  function ddayHtml() {
+    var nv = nextVisit();
+    if (!nv) {
+      return '<div class="dday-empty">' +
+        ddayEmptySvg() +
+        '<div><b>예정된 방문이 없어요</b><p>첫 방문 평가는 무료로 받아볼 수 있어요.</p></div>' +
+        '<button class="btn btn-outline" type="button" data-go="booking">예약</button>' +
+      '</div>';
+    }
+    var b = nv.b;
+    var t = teacherById(b.teacherId);
+    var tip = DDAY_TIPS[nv.d % DDAY_TIPS.length];
+    var pass = b.passId ? passById(b.passId) : null;
+    var meta = [b.region || '', pass ? pass.name : ''].filter(Boolean).join(' · ');
+    return '<div class="dday-card' + (nv.d === 0 ? ' is-today' : '') + '">' +
+      '<div class="dday-badge"><b>' + ddayLabel(nv.d) + '</b><span>' + esc(b.date || '') + '</span></div>' +
+      '<div class="dday-main">' +
+        '<p class="dday-kicker">' + icon('calendar') + (nv.d === 0 ? '오늘 방문 예정' : '예정된 방문') + '</p>' +
+        '<p class="dday-title">' + esc((b.day ? b.day + '요일 ' : '') + (b.time || '')) + ' · ' + esc(b.teacher || (t ? t.name + ' 선생님' : '추천 배정')) + '</p>' +
+        '<p class="dday-meta">' + esc(meta || '방문 60분') + '</p>' +
+        '<p class="dday-tip">' + icon('bulb') + '<span>준비물 · ' + esc(tip) + '</span></p>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderDday() {
+    var j = $('#journalDday');
+    if (j) j.innerHTML = ddayHtml();
+    var a = $('#accountDday');
+    if (a) a.innerHTML = ddayHtml();
+  }
+
+  function renderJournalTimeline() {
+    var el = $('#journalTimeline');
+    if (!el) return;
+    var rows = [];
+    var nv = nextVisit();
+    if (nv) {
+      var b = nv.b;
+      rows.push('<div class="tl-item is-next">' +
+        '<span class="tl-dot"><i></i></span>' +
+        '<div class="tl-main"><div class="tl-top">' +
+          '<b>' + esc(b.teacher || '추천 배정') + '</b>' +
+          '<span class="tl-badge is-next">' + ddayLabel(nv.d) + '</span>' +
+          '<span class="tl-when">' + esc((b.date || '') + ' ' + (b.time || '')) + '</span>' +
+        '</div><p class="tl-note">' + esc((b.region || '') + ' · 방문 60분 예정') + '</p></div>' +
+      '</div>');
+    }
+    sessionsDone().forEach(function (s) {
+      var t = teacherById(s.teacherId);
+      rows.push('<div class="tl-item is-done">' +
+        '<span class="tl-dot"><i></i></span>' +
+        '<div class="tl-main"><div class="tl-top">' +
+          '<b>' + esc(s.round || '방문') + ' · ' + esc(t ? t.name + ' 선생님' : '선생님') + '</b>' +
+          '<span class="tl-badge is-done">완료</span>' +
+          '<span class="tl-when">' + esc(s.date || '') + '</span>' +
+        '</div><p class="tl-note">' + esc((s.pass || '방문권') + ' · ' + (s.reviewed ? '후기 등록' : '후기 남기기 가능')) + '</p></div>' +
+      '</div>');
+    });
+    el.innerHTML = rows.join('') || '<div class="tl-item"><span class="tl-dot"><i></i></span><div class="tl-main"><p class="tl-note">아직 방문 기록이 없어요.</p></div></div>';
+    var sub = $('#jlTlSub');
+    if (sub) sub.textContent = '최근 ' + rows.length + '건';
   }
 
   function openReceipt(no) {
@@ -5559,6 +6023,7 @@ body.on-home .ah-home{display:flex}
     teacherCat = 'all';
     teacherZone = 'all';
     teacherQuery = p;
+    favOnly = false;
     setRole('customer');
     renderTeachers();
     showTab('teachers');
@@ -6456,6 +6921,8 @@ body.on-home .ah-home{display:flex}
   updateTotal();
   renderAccount();
   renderReviews();
+  renderDday();
+  renderJournalTimeline();
   updateTrustStrip();
   renderChart('gait');
   updateChecklist();
