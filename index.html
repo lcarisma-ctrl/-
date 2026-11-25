@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v11">
+<meta name="app-version" content="v12">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3707,6 +3707,789 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return d.getFullYear() + '.' + pad2(d.getMonth() + 1) + '.' + pad2(d.getDate());
   }
 
+  /* ===================================================================
+     v12 · 데이터 모델 (DATA-MODEL.md)
+     ─────────────────────────────────────────────────────────────────
+     localStorage 데모 데이터를 정규화 스키마에 맞춰 다루는 계층.
+     · id / 상태 enum / createdAt·updatedAt(ISO UTC) / 외래키 규칙을 한 곳에 모은다.
+     · 화면 코드는 여기의 라벨 변환(reservationLabel 등)만 거치고, 저장은 enum으로 한다.
+     · 옛 저장 데이터(한국어 상태·id 없음)는 normalize*()가 멱등하게 변환한다.
+     · 어떤 함수도 DOM을 건드리지 않는다. 실패하면 기본값으로 돌아가 앱을 멈추지 않는다.
+     =================================================================== */
+  var TtModel = (function () {
+    var SCHEMA_VERSION = 12;
+    var PREFIX = {
+      region: 'reg', user: 'usr', teacher: 'tch', teacherRegion: 'trg', timeSlot: 'slot',
+      reservation: 'res', review: 'rev', coupon: 'cpn', userCoupon: 'ucp', notification: 'ntf',
+      settlement: 'stl', pass: 'pas', userPass: 'wlt', payment: 'pay', application: 'app',
+      journal: 'jnl', chatMessage: 'msg', paymentMethod: 'pmt', regionNotice: 'ntc'
+    };
+
+    var STATUS = {
+      region: ['active', 'inactive'],
+      user: ['active', 'dormant', 'withdrawn'],
+      teacher: ['pending', 'approved', 'paused', 'rejected'],
+      teacherRegion: ['active', 'paused'],
+      timeSlot: ['open', 'held', 'booked', 'blocked', 'completed'],
+      reservation: ['received', 'assigned', 'confirmed', 'rescheduled', 'completed', 'canceled', 'no_show'],
+      review: ['published', 'hidden', 'reported'],
+      coupon: ['active', 'paused', 'expired'],
+      userCoupon: ['available', 'used', 'expired', 'revoked'],
+      notification: ['unread', 'read', 'archived'],
+      settlement: ['pending', 'scheduled', 'paid', 'held', 'adjusted'],
+      payment: ['unpaid', 'paid', 'refund_pending', 'refunded'],
+      userPass: ['active', 'exhausted', 'expired', 'refunded'],
+      teacherApplication: ['pending', 'needs_update', 'approved', 'rejected'],
+      journal: ['draft', 'shared', 'archived'],
+      paymentMethod: ['active', 'removed']
+    };
+
+    var RESERVATION_LABEL = {
+      received: '접수 완료', assigned: '선생님 배정', confirmed: '예약 확정',
+      rescheduled: '일정 변경됨', completed: '방문 완료', canceled: '취소됨', no_show: '노쇼'
+    };
+    var RESERVATION_FROM = {
+      '접수 완료': 'received', '접수': 'received',
+      '선생님 배정': 'assigned', '배정': 'assigned',
+      '예약 확정': 'confirmed', '방문 확정': 'confirmed', '확정': 'confirmed',
+      '일정 변경됨': 'rescheduled', '일정 변경': 'rescheduled', '변경': 'rescheduled',
+      '방문 완료': 'completed', '완료': 'completed',
+      '취소됨': 'canceled', '취소': 'canceled',
+      '노쇼': 'no_show'
+    };
+
+    var PAYMENT_LABEL = { unpaid: '결제 전', paid: '결제 완료', refund_pending: '환불 처리 중', refunded: '환불 완료' };
+    var PAYMENT_FROM = {
+      '결제 전': 'unpaid', '결제 완료': 'paid', '결제 처리 중': 'paid',
+      '환불 예정': 'refund_pending', '환불 처리 중': 'refund_pending', '환불 완료': 'refunded'
+    };
+
+    var masterRef = [];
+
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+    function nowIso() { return new Date().toISOString(); }
+    function isIso(v) { return typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/.test(v); }
+    function isoOr(v, fallback) { return isIso(v) ? v : (isIso(fallback) ? fallback : nowIso()); }
+    function num(v, dflt) { var n = Number(v); return isFinite(n) ? n : (dflt || 0); }
+    function slug(s) { return String(s == null ? '' : s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+
+    var seq = 0;
+    function newId(prefix) {
+      seq = (seq + 1) % 1296;
+      return (PREFIX[prefix] || prefix || 'id') + '_' + Date.now().toString(36) +
+        Math.floor(Math.random() * 1679616).toString(36) + (seq ? seq.toString(36) : '');
+    }
+
+    /* '2026.11.27' / '11.27' / '2026-11-27' → '2026-11-27' */
+    function dateLabelToIso(label) {
+      var s = String(label == null ? '' : label).trim();
+      var m = s.match(/^(\d{4})[.\-\/](\d{1,2})[.\-\/](\d{1,2})$/);
+      if (m) return m[1] + '-' + pad(Number(m[2])) + '-' + pad(Number(m[3]));
+      m = s.match(/^(\d{1,2})[.\-\/](\d{1,2})$/);
+      if (m) return new Date().getFullYear() + '-' + pad(Number(m[1])) + '-' + pad(Number(m[2]));
+      return '';
+    }
+    function kstEndOfDayIso(label) {
+      var iso = dateLabelToIso(label);
+      if (!iso) return '';
+      var p = iso.split('-');
+      return new Date(Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 14, 59, 59)).toISOString();
+    }
+
+    /* ------------------ 지역 마스터 ------------------ */
+    function buildRegionMaster(regions) {
+      var ts = nowIso();
+      var out = [];
+      Object.keys(regions || {}).forEach(function (province, pi) {
+        var pid = 'reg-' + province;
+        out.push({
+          id: pid, level: 'province', parentId: null, name: province, fullName: province,
+          code: null, sortOrder: pi + 1, status: 'active', createdAt: ts, updatedAt: ts
+        });
+        (regions[province] || []).forEach(function (district, di) {
+          out.push({
+            id: pid + '-' + district, level: 'district', parentId: pid, name: district,
+            fullName: province + ' ' + district, code: null, sortOrder: di + 1,
+            status: 'active', createdAt: ts, updatedAt: ts
+          });
+        });
+      });
+      return out;
+    }
+    function useRegionMaster(master) { masterRef = Array.isArray(master) ? master : []; return masterRef; }
+    function regionIdOf(province, district) {
+      if (!province) return '';
+      return district ? 'reg-' + province + '-' + district : 'reg-' + province;
+    }
+    function findRegion(id, master) {
+      var list = master || masterRef;
+      for (var i = 0; i < list.length; i++) { if (list[i].id === id) return list[i]; }
+      return null;
+    }
+    /* '서울 강남구 대치동' → 'reg-서울-강남구'. 동 이하는 마스터에 없으므로 상위 id로 보관. */
+    function regionIdFromText(text, master) {
+      var list = master || masterRef;
+      var s = String(text == null ? '' : text);
+      if (!s) return '';
+      var province = '';
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].level === 'province' && s.indexOf(list[i].name) === 0) { province = list[i].name; break; }
+      }
+      if (!province) return '';
+      var pid = 'reg-' + province;
+      for (var j = 0; j < list.length; j++) {
+        if (list[j].level === 'district' && list[j].parentId === pid && s.indexOf(list[j].name) !== -1) return list[j].id;
+      }
+      return pid;
+    }
+
+    /* 선생님 활동 지역 문자열('서울 강남 · 서초') → TeacherRegion 행 */
+    function teacherRegionRows(teachersList, master) {
+      var list = master || masterRef;
+      var rows = [];
+      var seen = {};
+      (teachersList || []).forEach(function (t) {
+        var segs = String(t.regions == null ? '' : t.regions).split('·');
+        var province = '';
+        var tokens = [];
+        segs.forEach(function (seg, idx) {
+          var words = String(seg).trim().split(/\s+/).filter(Boolean);
+          if (!words.length) return;
+          if (idx === 0 && isProvince(words[0], list)) {
+            province = words.shift();
+          } else if (!province && isProvince(words[0], list)) {
+            province = words.shift();
+          }
+          if (words.length) tokens.push(words.join(' '));
+        });
+        var priority = 1;
+        tokens.forEach(function (token) {
+          var rid = matchDistrict(province, token, list);
+          var key = t.id + '|' + (rid || ('raw:' + token));
+          if (seen[key]) return;
+          seen[key] = true;
+          rows.push({
+            id: 'trg-' + t.id + '-' + priority,
+            teacherId: t.id,
+            regionId: rid || null,
+            rawName: token,
+            priority: priority,
+            status: 'active',
+            createdAt: nowIso(),
+            updatedAt: nowIso()
+          });
+          priority++;
+        });
+      });
+      return rows;
+    }
+    function isProvince(name, list) {
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].level === 'province' && list[i].name === name) return true;
+      }
+      return false;
+    }
+    function matchDistrict(province, token, list) {
+      if (!province || !token) return '';
+      var pid = 'reg-' + province;
+      var exact = null, prefix = null, contains = null;
+      for (var i = 0; i < list.length; i++) {
+        var r = list[i];
+        if (r.level !== 'district' || r.parentId !== pid) continue;
+        if (r.name === token) { exact = r.id; break; }
+        if (!prefix && r.name.indexOf(token) === 0) prefix = r.id;
+        if (!contains && r.name.indexOf(token) !== -1) contains = r.id;
+      }
+      return exact || prefix || contains || '';
+    }
+
+    /* ------------------ 시간 슬롯 ------------------ */
+    function endTimeOf(tm, minutes) {
+      var p = String(tm || '09:00').split(':');
+      var total = Number(p[0]) * 60 + Number(p[1]) + (minutes || 60);
+      return pad(Math.floor(total / 60) % 24) + ':' + pad(total % 60);
+    }
+    function slotRows(teacherId, dateIso, times, bookings, minutes) {
+      var dur = minutes || 60;
+      var rows = [];
+      (times || []).forEach(function (tm) {
+        var hit = slotConflict(bookings, teacherId, dateIso, tm, null);
+        rows.push({
+          id: 'slot-' + teacherId + '-' + dateIso + '-' + String(tm).replace(':', ''),
+          teacherId: teacherId,
+          dateIso: dateIso,
+          startTime: tm,
+          endTime: endTimeOf(tm, dur),
+          durationMin: dur,
+          status: hit ? 'booked' : 'open',
+          reservationId: hit ? (hit.id || hit.no || null) : null,
+          createdAt: dateIso + 'T00:00:00.000Z',
+          updatedAt: dateIso + 'T00:00:00.000Z'
+        });
+      });
+      return rows;
+    }
+    function slotConflict(bookings, teacherId, dateIso, time, exceptKey) {
+      if (!teacherId || !dateIso || !time) return null;
+      var list = bookings || [];
+      for (var i = 0; i < list.length; i++) {
+        var b = list[i];
+        if (!b) continue;
+        if (reservationStatus(b.status) === 'canceled') continue;
+        if (exceptKey && (b.id === exceptKey || b.no === exceptKey)) continue;
+        if ((b.teacherId || '') !== teacherId) continue;
+        if (b.dateIso !== dateIso || b.time !== time) continue;
+        return b;
+      }
+      return null;
+    }
+
+    /* ------------------ 상태 변환 ------------------ */
+    function reservationStatus(v) {
+      var s = String(v == null ? '' : v);
+      if (RESERVATION_FROM[s]) return RESERVATION_FROM[s];
+      return STATUS.reservation.indexOf(s) !== -1 ? s : 'confirmed';
+    }
+    function reservationLabel(v) { return RESERVATION_LABEL[reservationStatus(v)] || '예약 확정'; }
+    function paymentStatus(v) {
+      var s = String(v == null ? '' : v);
+      if (PAYMENT_FROM[s]) return PAYMENT_FROM[s];
+      return STATUS.payment.indexOf(s) !== -1 ? s : 'paid';
+    }
+    function paymentLabel(v) { return PAYMENT_LABEL[paymentStatus(v)] || '결제 완료'; }
+    function userCouponStatusOf(c) {
+      var s = String((c && c.status) || '');
+      if (STATUS.userCoupon.indexOf(s) !== -1) return s;
+      if (c && c.used) return 'used';
+      return 'available';
+    }
+    function notificationStatusOf(n) {
+      var s = String((n && n.status) || '');
+      if (STATUS.notification.indexOf(s) !== -1) return s;
+      return (n && n.read) ? 'read' : 'unread';
+    }
+    function pushHistory(b, status, by, at) {
+      b.statusHistory = Array.isArray(b.statusHistory) ? b.statusHistory : [];
+      b.statusHistory.push({ status: status, at: at || nowIso(), by: by || 'system' });
+    }
+
+    /* ------------------ 정규화 (멱등) ------------------ */
+    function normalizeReservation(src, ctx) {
+      var b = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(b.createdAt, ctx && ctx.now);
+      if (!b.id) b.id = b.no ? 'res-' + slug(b.no) : newId('reservation');
+      b.no = b.no ? String(b.no) : '';
+      b.userId = b.userId || (ctx && ctx.userId) || 'usr-demo';
+      b.teacherId = b.teacherId ? String(b.teacherId) : '';
+      if (!b.regionId) b.regionId = regionIdFromText(b.region, ctx && ctx.master) || '';
+      b.dateIso = b.dateIso || dateLabelToIso(b.date);
+      b.status = reservationStatus(b.status);
+      if (!Array.isArray(b.statusHistory) || !b.statusHistory.length) {
+        b.statusHistory = [{ status: b.status, at: created, by: 'migration' }];
+      } else {
+        b.statusHistory = b.statusHistory.filter(function (h) { return h && h.status; }).map(function (h) {
+          return { status: reservationStatus(h.status), at: isoOr(h.at, created), by: h.by || 'system' };
+        });
+        if (!b.statusHistory.length) b.statusHistory = [{ status: b.status, at: created, by: 'migration' }];
+      }
+      b.amount = num(b.amount, 0);
+      b.amountList = num(b.amountList, b.amount);
+      b.amountDiscount = num(b.amountDiscount, 0);
+      b.paymentStatus = b.paymentStatus
+        ? paymentStatus(b.paymentStatus)
+        : (b.status === 'canceled' ? (num(b.refund, 0) > 0 ? 'refund_pending' : 'paid') : 'paid');
+      b.createdAt = created;
+      b.updatedAt = isoOr(b.updatedAt, created);
+      return b;
+    }
+
+    function normalizeUserPass(src, ctx) {
+      var p = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(p.createdAt, ctx && ctx.now);
+      if (!p.id) p.id = p.purchased ? newId('userPass') : newId('userPass');
+      p.userId = p.userId || (ctx && ctx.userId) || 'usr-demo';
+      p.passId = p.passId || '';
+      p.total = num(p.total, 0);
+      p.remaining = num(p.remaining, 0);
+      p.status = (p.status === 'refunded' || p.status === 'expired')
+        ? p.status
+        : (p.remaining > 0 ? 'active' : 'exhausted');
+      p.createdAt = created;
+      p.updatedAt = isoOr(p.updatedAt, created);
+      return p;
+    }
+
+    function normalizePayment(src, ctx) {
+      var r = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(r.createdAt, ctx && ctx.now);
+      if (!r.id) r.id = r.no ? 'pay-' + slug(r.no) : newId('payment');
+      r.no = r.no ? String(r.no) : '';
+      r.reservationId = r.reservationId || (/^TT-/i.test(r.no) ? 'res-' + slug(r.no) : null);
+      r.amount = num(r.amount, 0);
+      r.listAmount = num(r.listAmount, r.amount);
+      r.discount = num(r.discount, 0);
+      r.status = paymentStatus(r.status);
+      r.createdAt = created;
+      r.updatedAt = isoOr(r.updatedAt, created);
+      return r;
+    }
+
+    function normalizeSession(src, ctx) {
+      var s = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(s.createdAt, ctx && ctx.now);
+      if (!s.id) s.id = newId('reservation');
+      s.teacherId = s.teacherId || '';
+      s.status = s.status || 'completed';
+      s.reviewed = !!s.reviewed;
+      s.createdAt = created;
+      s.updatedAt = isoOr(s.updatedAt, created);
+      return s;
+    }
+
+    function normalizeReview(src, ctx) {
+      var r = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(r.createdAt, ctx && ctx.now);
+      if (!r.id) r.id = newId('review');
+      r.userId = r.userId || (ctx && ctx.userId) || 'usr-demo';
+      r.teacherId = r.teacherId || '';
+      r.reservationId = r.reservationId || null;
+      r.rating = Math.max(1, Math.min(5, num(r.rating, 5)));
+      if (!r.body) r.body = String(r.text || '');
+      if (!r.text) r.text = r.body;
+      if (!Array.isArray(r.tags)) r.tags = [];
+      r.status = STATUS.review.indexOf(r.status) !== -1 ? r.status : 'published';
+      r.createdAt = created;
+      r.updatedAt = isoOr(r.updatedAt, created);
+      return r;
+    }
+
+    function normalizeUserCoupon(src, ctx) {
+      var c = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(c.createdAt, ctx && ctx.now);
+      if (!c.id) c.id = c.code ? 'ucp-' + slug(c.code) : newId('userCoupon');
+      c.userId = c.userId || (ctx && ctx.userId) || 'usr-demo';
+      c.couponId = c.couponId || (c.code ? 'cpn-' + slug(c.code) : 'cpn-' + slug(c.id));
+      c.status = userCouponStatusOf(c);
+      c.used = c.status === 'used';
+      c.issuedAt = isoOr(c.issuedAt, created);
+      c.expireAt = isoOr(c.expireAt, kstEndOfDayIso(c.expire));
+      c.createdAt = created;
+      c.updatedAt = isoOr(c.updatedAt, created);
+      return c;
+    }
+
+    function normalizeNotification(src, ctx) {
+      var n = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(n.createdAt, ctx && ctx.now);
+      if (!n.id) n.id = newId('notification');
+      n.userId = n.userId || (ctx && ctx.userId) || 'usr-demo';
+      n.kind = n.kind || 'system';
+      n.status = notificationStatusOf(n);
+      n.read = n.status === 'read' || n.status === 'archived' || !!n.read;
+      n.sentAt = isoOr(n.sentAt, created);
+      if (n.read && !n.readAt) n.readAt = isoOr(n.updatedAt, created);
+      n.createdAt = created;
+      n.updatedAt = isoOr(n.updatedAt, created);
+      return n;
+    }
+
+    function normalizePaymentMethod(src, ctx) {
+      var c = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(c.createdAt, ctx && ctx.now);
+      if (!c.id) c.id = newId('paymentMethod');
+      c.userId = c.userId || (ctx && ctx.userId) || 'usr-demo';
+      c.status = STATUS.paymentMethod.indexOf(c.status) !== -1 ? c.status : 'active';
+      c.createdAt = created;
+      c.updatedAt = isoOr(c.updatedAt, created);
+      return c;
+    }
+
+    function normalizeLedgerRow(src, ctx) {
+      var r = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(r.createdAt, ctx && ctx.now);
+      if (!r.id) r.id = newId('settlement');
+      r.teacherId = r.teacherId || '';
+      r.grossAmount = num(r.grossAmount, 0);
+      r.feeRate = num(r.feeRate, 0.1);
+      r.feeAmount = num(r.feeAmount, Math.round(r.grossAmount * r.feeRate));
+      r.netAmount = num(r.netAmount, r.grossAmount - r.feeAmount);
+      r.status = STATUS.settlement.indexOf(r.status) !== -1 ? r.status : 'pending';
+      r.createdAt = created;
+      r.updatedAt = isoOr(r.updatedAt, created);
+      return r;
+    }
+
+    /* 완료 일지 → 회차별 정산 원장 */
+    function settlementRows(partner) {
+      var p = partner || {};
+      var rate = num(p.rate, 0);
+      var feeRate = 0.1;
+      var due = (p.settlement && p.settlement.due) || '';
+      return ((p.journals || [])).map(function (j, i) {
+        var created = isoOr(j.createdAt, nowIso());
+        var fee = Math.round(rate * feeRate);
+        return normalizeLedgerRow({
+          id: 'stl-' + (j.id || ('j' + (i + 1))),
+          journalId: j.id || null,
+          reservationId: null,
+          teacherId: p.teacherId || '',
+          visitDate: j.visitDate || dateLabelToIso(j.date),
+          grossAmount: rate,
+          feeRate: feeRate,
+          feeAmount: fee,
+          netAmount: rate - fee,
+          status: 'scheduled',
+          payoutDueDate: dateLabelToIso(due),
+          createdAt: created,
+          updatedAt: created
+        });
+      });
+    }
+
+    function normalizePartner(src, ctx) {
+      var p = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(p.createdAt, ctx && ctx.now);
+      p.id = p.id || 'app-me';
+      p.teacherId = p.teacherId ? String(p.teacherId) : '';
+      p.status = STATUS.teacherApplication.indexOf(p.status) !== -1 ? p.status : 'pending';
+      p.requests = (p.requests || []).map(function (r, i) {
+        var rc = isoOr(r.createdAt, created);
+        if (!r.id) r.id = newId('application');
+        r.status = (r.status === 'accepted' || r.status === 'rejected' || r.status === 'pending') ? r.status : 'pending';
+        r.createdAt = rc;
+        r.updatedAt = isoOr(r.updatedAt, rc);
+        return r;
+      });
+      p.schedule = (p.schedule || []).map(function (s) {
+        var sc = isoOr(s.createdAt, created);
+        if (!s.id) s.id = newId('reservation');
+        s.status = s.status || (s.checked ? 'checked_in' : 'scheduled');
+        s.createdAt = sc;
+        s.updatedAt = isoOr(s.updatedAt, sc);
+        return s;
+      });
+      p.journals = (p.journals || []).map(function (j, i) {
+        var jc = isoOr(j.createdAt, created);
+        if (!j.id) j.id = 'jnl-' + slug(j.date || '') + '-' + (i + 1);
+        j.teacherId = j.teacherId || p.teacherId || '';
+        j.visitDate = j.visitDate || dateLabelToIso(j.date);
+        j.status = STATUS.journal.indexOf(j.status) !== -1 ? j.status : 'shared';
+        j.createdAt = jc;
+        j.updatedAt = isoOr(j.updatedAt, jc);
+        return j;
+      });
+      p.ledger = Array.isArray(p.ledger) && p.ledger.length
+        ? p.ledger.map(function (r) { return normalizeLedgerRow(r, ctx); })
+        : settlementRows(p);
+      if (p.settlement && typeof p.settlement === 'object') {
+        p.settlement.health = 'demo';
+      }
+      p.createdAt = created;
+      p.updatedAt = isoOr(p.updatedAt, created);
+      return p;
+    }
+
+    function normalizeAdmin(src, ctx) {
+      var a = (src && typeof src === 'object') ? src : {};
+      var created = isoOr(a.createdAt, ctx && ctx.now);
+      a.applications = (a.applications || []).map(function (x) {
+        var ac = isoOr(x.createdAt, created);
+        if (!x.id) x.id = newId('application');
+        x.status = STATUS.teacherApplication.indexOf(x.status) !== -1 ? x.status : 'pending';
+        x.createdAt = ac;
+        x.updatedAt = isoOr(x.updatedAt, ac);
+        return x;
+      });
+      a.decisions = (a.decisions || []).map(function (d, i) {
+        var dc = isoOr(d.createdAt, created);
+        if (!d.id) d.id = 'dec-' + (i + 1) + '-' + slug(d.name || 'app');
+        d.decidedAt = isoOr(d.decidedAt, dc);
+        d.createdAt = dc;
+        d.updatedAt = isoOr(d.updatedAt, dc);
+        return d;
+      });
+      a.createdAt = created;
+      a.updatedAt = isoOr(a.updatedAt, created);
+      return a;
+    }
+
+    function normalizeAccount(src, ctx) {
+      var o = (src && typeof src === 'object') ? src : {};
+      var c = ctx || {};
+      var created = nowIso();
+      if (!o.profile || typeof o.profile !== 'object') o.profile = { name: '현수' };
+      o.profile.id = o.profile.id || (c.userId || 'usr-demo');
+      o.profile.role = o.profile.role === 'admin' ? 'admin' : 'customer';
+      o.profile.status = STATUS.user.indexOf(o.profile.status) !== -1 ? o.profile.status : 'active';
+      o.profile.createdAt = isoOr(o.profile.createdAt, created);
+      o.profile.updatedAt = isoOr(o.profile.updatedAt, o.profile.createdAt);
+      o.passes = (o.passes || []).map(function (p) { return normalizeUserPass(p, c); });
+      o.bookings = (o.bookings || []).map(function (b) { return normalizeReservation(b, c); });
+      o.receipts = (o.receipts || []).map(function (r) { return normalizePayment(r, c); });
+      o.sessions = (o.sessions || []).map(function (s) { return normalizeSession(s, c); });
+      o.myReviews = (o.myReviews || []).map(function (r) { return normalizeReview(r, c); });
+      o.schemaVersion = SCHEMA_VERSION;
+      return o;
+    }
+
+    /* ------------------ 이전(export) ------------------ */
+    function exportBundle(ctx) {
+      ctx = ctx || {};
+      var master = ctx.master || masterRef || [];
+      var account = ctx.account || {};
+      var partner = ctx.partner || {};
+      var admin = ctx.admin || {};
+      var teachers = ctx.teachers || [];
+      var details = ctx.teacherDetails || {};
+      var coupons = ctx.coupons || [];
+      var notifs = ctx.notifs || [];
+      var cards = ctx.cards || [];
+      var chats = ctx.chats || {};
+      var now = nowIso();
+      var tables = {};
+
+      tables.regions = master.slice();
+      tables.users = account.profile ? [{
+        id: account.profile.id,
+        role: account.profile.role || 'customer',
+        name: account.profile.name || '',
+        phone: ctx.phone || '',
+        phoneVerifiedAt: null,
+        regionId: (ctx.region && ctx.region.regionId) || null,
+        status: account.profile.status || 'active',
+        termsAgreedAt: null,
+        createdAt: account.profile.createdAt,
+        updatedAt: account.profile.updatedAt
+      }] : [];
+
+      tables.teachers = teachers.map(function (t) {
+        var d = details[t.id] || {};
+        var licenseNo = '';
+        (d.certs || []).forEach(function (cert) {
+          var m = String(cert).match(/제?([0-9]{2}-[0-9]{4}-[0-9]{6})호?/);
+          if (!licenseNo && m) licenseNo = m[1];
+        });
+        return {
+          id: t.id, userId: null, name: t.name, license: t.license, licenseNo: licenseNo,
+          licenseVerifiedAt: null, years: num(t.years, 0), tags: (t.tags || []).slice(),
+          quote: t.quote || '', zone: t.zone || '', rating: num(t.rating, 0),
+          reviews: num(t.reviews, 0), status: 'approved', approvedAt: null,
+          createdAt: now, updatedAt: now
+        };
+      });
+      tables.teacher_regions = teacherRegionRows(teachers, master);
+      tables.passes = (ctx.passes || []).map(function (p) {
+        return {
+          id: p.id, name: p.name, sessions: num(p.sessions, 1), price: num(p.price, 0),
+          listPrice: num(p.listPrice, 0), per: p.per || '', tag: p.tag || '', status: 'active',
+          createdAt: now, updatedAt: now
+        };
+      });
+      tables.user_passes = (account.passes || []).map(function (p) { return p; });
+      tables.reservations = (account.bookings || []).map(function (b) { return b; });
+      tables.payments = (account.receipts || []).map(function (r) { return r; });
+
+      var slots = [];
+      var slotSeen = {};
+      function addSlots(tid, iso) {
+        if (!tid || !iso) return;
+        slotRows(tid, iso, ctx.times || [], account.bookings || []).forEach(function (row) {
+          if (slotSeen[row.id]) return;
+          slotSeen[row.id] = true;
+          slots.push(row);
+        });
+      }
+      (ctx.dates || []).forEach(function (d) {
+        teachers.forEach(function (t) { addSlots(t.id, d.iso); });
+      });
+      (account.bookings || []).forEach(function (b) { addSlots(b.teacherId, b.dateIso); });
+      tables.time_slots = slots;
+
+      var reviews = [];
+      (account.myReviews || []).forEach(function (r) { reviews.push(normalizeReview(r)); });
+      Object.keys(details).forEach(function (tid) {
+        ((details[tid] || {}).reviews || []).forEach(function (r, i) {
+          reviews.push(normalizeReview({
+            id: 'rev-' + tid + '-' + (i + 1),
+            reservationId: null,
+            userId: null,
+            teacherId: tid,
+            rating: r.stars,
+            body: r.text,
+            tags: [],
+            who: r.who,
+            status: 'published',
+            createdAt: kstEndOfDayIso(r.when) || now
+          }));
+        });
+      });
+      tables.reviews = reviews;
+
+      var products = [];
+      var productSeen = {};
+      var userCoupons = (coupons || []).map(function (c) { return normalizeUserCoupon(c); });
+      userCoupons.forEach(function (c) {
+        if (productSeen[c.couponId]) return;
+        productSeen[c.couponId] = true;
+        products.push({
+          id: c.couponId, code: c.code || null, title: c.title, sub: c.sub || '',
+          type: c.type || 'amount', amount: num(c.amount, 0), target: c.target || 'paid',
+          validFrom: c.issuedAt, validUntil: c.expireAt, status: 'active',
+          createdAt: c.createdAt, updatedAt: c.updatedAt
+        });
+      });
+      tables.coupons = products;
+      tables.user_coupons = userCoupons;
+
+      tables.notifications = (notifs || []).map(function (n) { return normalizeNotification(n); });
+      tables.settlement_ledgers = (partner.ledger || []).map(function (r) { return normalizeLedgerRow(r); });
+      tables.teacher_applications = [];
+      (admin.applications || []).forEach(function (a) {
+        tables.teacher_applications.push({
+          id: a.id, name: a.name, license: a.license, licenseNo: a.licenseNo || '',
+          years: a.years || '', province: a.province || '', districts: a.districts || [],
+          rate: num(a.rate, 0), status: a.status, submittedAt: a.submittedAt || '',
+          createdAt: a.createdAt, updatedAt: a.updatedAt
+        });
+      });
+      if (partner && partner.name) {
+        tables.teacher_applications.push({
+          id: partner.id || 'app-me', name: partner.name, license: partner.license || '',
+          licenseNo: partner.licenseNo || '', years: partner.years || '',
+          province: partner.province || '', districts: partner.districts || [],
+          rate: num(partner.rate, 0), status: partner.status, submittedAt: partner.submittedAt || '',
+          createdAt: partner.createdAt, updatedAt: partner.updatedAt
+        });
+      }
+      tables.journal_entries = (partner.journals || []).map(function (j) { return j; });
+      tables.payment_methods = (cards || []).map(function (c) { return normalizePaymentMethod(c); });
+      tables.region_notices = (ctx.regionNotices || []).map(function (n, i) {
+        return { id: n.id || 'ntc-' + (i + 1), regionId: n.regionId || '', userId: n.userId || 'usr-demo', createdAt: isoOr(n.createdAt, now) };
+      });
+
+      var messages = [];
+      Object.keys(chats || {}).forEach(function (thread) {
+        (chats[thread] || []).forEach(function (m, i) {
+          messages.push({
+            id: m.id || 'msg-' + slug(thread) + '-' + (i + 1),
+            threadId: thread,
+            from: m.from === 'teacher' ? 'teacher' : 'customer',
+            body: String(m.text || ''),
+            createdAt: isoOr(m.createdAt, now),
+            updatedAt: isoOr(m.createdAt, now)
+          });
+        });
+      });
+      tables.chat_messages = messages;
+
+      return { modelVersion: SCHEMA_VERSION, generatedAt: now, tables: tables };
+    }
+
+    /* ------------------ 무결성 검사 ------------------ */
+    function integrity(bundle) {
+      var issues = [];
+      var tables = (bundle && bundle.tables) || {};
+      var ids = {};
+      Object.keys(tables).forEach(function (name) {
+        (tables[name] || []).forEach(function (row) {
+          if (!row || !row.id) { issues.push(name + ': id 없음'); return; }
+          if (ids[row.id]) issues.push(name + ': id 중복 ' + row.id);
+          ids[row.id] = name;
+        });
+      });
+      var teacherIds = {};
+      (tables.teachers || []).forEach(function (t) { teacherIds[t.id] = true; });
+      var regionIds = {};
+      (tables.regions || []).forEach(function (r) { regionIds[r.id] = true; });
+      var passIds = {};
+      (tables.passes || []).forEach(function (p) { passIds[p.id] = true; });
+      var userPassIds = {};
+      (tables.user_passes || []).forEach(function (p) { userPassIds[p.id] = true; });
+      var couponIds = {};
+      (tables.coupons || []).forEach(function (c) { couponIds[c.id] = true; });
+
+      (tables.reservations || []).forEach(function (b) {
+        if (STATUS.reservation.indexOf(b.status) === -1) issues.push('reservations: 상태 enum 아님 ' + b.status);
+        if (!isIso(b.createdAt) || !isIso(b.updatedAt)) issues.push('reservations: 타임스탬프 형식 ' + b.no);
+        if (b.teacherId && !teacherIds[b.teacherId]) issues.push('reservations: 없는 teacherId ' + b.teacherId);
+        if (b.regionId && !regionIds[b.regionId]) issues.push('reservations: 없는 regionId ' + b.regionId);
+        if (b.passId && !passIds[b.passId]) issues.push('reservations: 없는 passId ' + b.passId);
+        if (b.walletId && !userPassIds[b.walletId]) issues.push('reservations: 없는 walletId ' + b.walletId);
+      });
+      (tables.teacher_regions || []).forEach(function (r) {
+        if (!teacherIds[r.teacherId]) issues.push('teacher_regions: 없는 teacherId ' + r.teacherId);
+        if (r.regionId && !regionIds[r.regionId]) issues.push('teacher_regions: 없는 regionId ' + r.regionId);
+      });
+      (tables.time_slots || []).forEach(function (s) {
+        if (STATUS.timeSlot.indexOf(s.status) === -1) issues.push('time_slots: 상태 enum 아님 ' + s.status);
+        if (!teacherIds[s.teacherId]) issues.push('time_slots: 없는 teacherId ' + s.teacherId);
+      });
+      (tables.reviews || []).forEach(function (r) {
+        if (STATUS.review.indexOf(r.status) === -1) issues.push('reviews: 상태 enum 아님 ' + r.status);
+        if (r.teacherId && !teacherIds[r.teacherId]) issues.push('reviews: 없는 teacherId ' + r.teacherId);
+      });
+      (tables.user_coupons || []).forEach(function (c) {
+        if (STATUS.userCoupon.indexOf(c.status) === -1) issues.push('user_coupons: 상태 enum 아님 ' + c.status);
+        if (!couponIds[c.couponId]) issues.push('user_coupons: 없는 couponId ' + c.couponId);
+      });
+      (tables.notifications || []).forEach(function (n) {
+        if (STATUS.notification.indexOf(n.status) === -1) issues.push('notifications: 상태 enum 아님 ' + n.status);
+      });
+      (tables.settlement_ledgers || []).forEach(function (r) {
+        if (STATUS.settlement.indexOf(r.status) === -1) issues.push('settlement_ledgers: 상태 enum 아님 ' + r.status);
+      });
+      (tables.payments || []).forEach(function (r) {
+        if (STATUS.payment.indexOf(r.status) === -1) issues.push('payments: 상태 enum 아님 ' + r.status);
+      });
+
+      return {
+        ok: issues.length === 0,
+        issues: issues,
+        counts: Object.keys(tables).reduce(function (acc, k) { acc[k] = (tables[k] || []).length; return acc; }, {})
+      };
+    }
+
+    return {
+      SCHEMA_VERSION: SCHEMA_VERSION,
+      STATUS: STATUS,
+      newId: newId,
+      nowIso: nowIso,
+      isIso: isIso,
+      isoOr: isoOr,
+      dateLabelToIso: dateLabelToIso,
+      kstEndOfDayIso: kstEndOfDayIso,
+      buildRegionMaster: buildRegionMaster,
+      useRegionMaster: useRegionMaster,
+      regionIdOf: regionIdOf,
+      findRegion: findRegion,
+      regionIdFromText: regionIdFromText,
+      teacherRegionRows: teacherRegionRows,
+      slotRows: slotRows,
+      endTimeOf: endTimeOf,
+      slotConflict: slotConflict,
+      settlementRows: settlementRows,
+      normalizeReservation: normalizeReservation,
+      normalizeUserPass: normalizeUserPass,
+      normalizePayment: normalizePayment,
+      normalizeSession: normalizeSession,
+      normalizeReview: normalizeReview,
+      normalizeUserCoupon: normalizeUserCoupon,
+      normalizeNotification: normalizeNotification,
+      normalizePaymentMethod: normalizePaymentMethod,
+      normalizeLedgerRow: normalizeLedgerRow,
+      normalizePartner: normalizePartner,
+      normalizeAdmin: normalizeAdmin,
+      normalizeAccount: normalizeAccount,
+      reservationStatus: reservationStatus,
+      reservationLabel: reservationLabel,
+      paymentStatus: paymentStatus,
+      paymentLabel: paymentLabel,
+      pushHistory: pushHistory,
+      exportBundle: exportBundle,
+      integrity: integrity
+    };
+  })();
+
   /* ================= 전국 지역 ================= */
   function TTMain() {
   var REGIONS = {
@@ -3729,6 +4512,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     '제주': ['제주시', '서귀포시']
   };
   var PROVINCES = Object.keys(REGIONS);
+
+  /* v12 · 지역 마스터(시·도/시·군·구) — 지역은 코드가 아니라 데이터. 동 단위는 다음 단계에서 채운다. */
+  var REGION_MASTER = TtModel.buildRegionMaster(REGIONS);
+  TtModel.useRegionMaster(REGION_MASTER);
 
   /* ================= 화면 / 역할 ================= */
   var screens = {
@@ -4605,7 +5392,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!d) return;
     wrap.innerHTML = times.map(function (t, i) {
       var closed = ((d.idx + i) % 6 === 0);
-      return '<button class="slot' + (bk.time === t ? ' is-on' : '') + '" type="button" role="tab" aria-selected="' + (bk.time === t) + '" data-time="' + t + '"' + (closed ? ' disabled' : '') + '>' + t + '</button>';
+      /* v12 · 이미 잡힌 슬롯(같은 선생님·같은 날·같은 시간)은 선택 불가 */
+      var taken = !!TtModel.slotConflict(account.bookings || [], bk.teacherId, bk.dateIso, t, null);
+      return '<button class="slot' + (bk.time === t ? ' is-on' : '') + '" type="button" role="tab" aria-selected="' + (bk.time === t) + '" data-time="' + t + '"' + (closed || taken ? ' disabled' : '') + '>' + t + '</button>';
     }).join('');
   }
 
@@ -4917,36 +5706,60 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var total = Math.max(0, listTotal - discount);
     var remaining = p.id === 'eval' ? null : Math.max(0, p.sessions - 1);
     var regionText = bk.province + ' ' + bk.district;
+    var nowTs = TtModel.nowIso();
 
-    account.bookings.unshift({
+    /* v12 · 같은 선생님·같은 날·같은 시간 중복 예약 차단 */
+    var clash = TtModel.slotConflict(account.bookings || [], bk.teacherId, bk.dateIso, bk.time, null);
+    if (clash) {
+      toast('그 시간은 이미 다른 방문이 잡혀 있어요. 다른 시간을 골라주세요.');
+      var backBtn = $('[data-prev="2"]');
+      if (backBtn) { try { backBtn.click(); } catch (e) {} }
+      return;
+    }
+
+    account.bookings.unshift(TtModel.normalizeReservation({
+      id: TtModel.newId('reservation'),
       no: no,
+      userId: (account.profile && account.profile.id) || 'usr-demo',
       date: bk.dateLabel.replace('/', '.'),
       day: bk.dateDay,
       time: bk.time,
       teacher: bk.teacherId ? teacherName(bk.teacherId) : '추천 배정',
       teacherId: bk.teacherId || '',
       dateIso: bk.dateIso || '',
+      regionId: TtModel.regionIdOf(bk.province, bk.district),
       passId: p.id,
       walletId: '',
       region: regionText + ' ' + (bk.address.length > 12 ? bk.address.slice(0, 12) + '…' : bk.address),
-      status: '예약 확정'
-    });
+      status: bk.teacherId ? 'confirmed' : 'received',
+      statusHistory: [{ status: bk.teacherId ? 'confirmed' : 'received', at: nowTs, by: 'customer' }],
+      amount: total,
+      amountList: listTotal,
+      amountDiscount: discount,
+      paymentStatus: 'paid',
+      createdAt: nowTs,
+      updatedAt: nowTs
+    }));
 
     if (p.id !== 'eval') {
-      var walletId = 'W' + Date.now();
-      account.passes.unshift({
+      var walletId = TtModel.newId('userPass');
+      account.passes.unshift(TtModel.normalizeUserPass({
         id: walletId,
+        userId: (account.profile && account.profile.id) || 'usr-demo',
+        passId: p.id,
         name: p.name,
         total: p.sessions,
         remaining: remaining,
         purchased: todayLabel(),
         expire: expireDate(90)
-      });
+      }));
       account.bookings[0].walletId = walletId;
     }
 
-    account.receipts.unshift({
+    account.receipts.unshift(TtModel.normalizePayment({
+      id: TtModel.newId('payment'),
       no: no,
+      reservationId: account.bookings[0].id,
       date: todayLabel(),
       item: p.name + (usedCoupon ? ' · 쿠폰 ' + won(discount) + ' 할인' : ''),
       amount: total,
@@ -4954,12 +5767,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       discount: discount,
       coupon: usedCoupon ? usedCoupon.title : '',
       method: total === 0 ? '무료' : bk.pay,
-      status: '결제 완료'
-    });
+      status: 'paid'
+    }));
     if (usedCoupon) {
       usedCoupon.used = true;
+      usedCoupon.status = 'used';
       usedCoupon.usedAt = todayLabel();
       usedCoupon.usedOn = no;
+      usedCoupon.updatedAt = TtModel.nowIso();
+      account.bookings[0].couponId = usedCoupon.id;
       saveJson(COUPON_KEY, couponStore);
       renderCoupons();
       renderCouponBadge();
@@ -5207,7 +6023,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   /* 내 예약 카드에서 바로 추가 (예약번호 기준) */
   function downloadIcsForBooking(no) {
     var fb = (account.bookings || []).filter(function (x) { return x.no === no; })[0];
-    if (!fb || fb.status === '취소됨') { toast('취소된 예약은 캘린더에 추가할 수 없어요.'); return; }
+    if (!fb || TtModel.reservationStatus(fb.status) === 'canceled') { toast('취소된 예약은 캘린더에 추가할 수 없어요.'); return; }
     downloadIcsFor(bookingIcsPayload(fb));
   }
   var doneIcsBtn = $('#doneIcs');
@@ -5220,14 +6036,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return {
       profile: { name: '현수' },
       passes: [
-        { id: 'seed-pass', name: '8회 방문권', total: 8, remaining: 5, purchased: '2026.10.28', expire: '2027.01.27' }
+        { id: 'seed-pass', userId: 'usr-demo', passId: 'p8', name: '8회 방문권', total: 8, remaining: 5, purchased: '2026.10.28', expire: '2027.01.27', status: 'active' }
       ],
       bookings: [
-        { no: 'TT-261021-7302', date: '11.27', day: '금', time: '10:30', teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', status: '예약 확정', passId: 'p8', walletId: 'seed-pass', dateIso: nextIso(2) }
+        { id: 'res-tt-261021-7302', no: 'TT-261021-7302', userId: 'usr-demo', date: '11.27', day: '금', time: '10:30', teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구', status: 'confirmed', passId: 'p8', walletId: 'seed-pass', dateIso: nextIso(2), amount: 74000, paymentStatus: 'paid' }
       ],
       receipts: [
-        { no: 'TT-261028-4192', date: '2026.10.28', item: '8회 방문권', amount: 592000, method: '신용/체크카드', status: '결제 완료' },
-        { no: 'TT-261021-7302', date: '2026.10.21', item: '첫 1:1 방문 평가권', amount: 0, method: '무료', status: '결제 완료' }
+        { id: 'pay-tt-261028-4192', no: 'TT-261028-4192', date: '2026.10.28', item: '8회 방문권', amount: 592000, method: '신용/체크카드', status: 'paid' },
+        { id: 'pay-tt-261021-7302', no: 'TT-261021-7302', date: '2026.10.21', item: '첫 1:1 방문 평가권', amount: 0, method: '무료', status: 'paid' }
       ],
       sessions: defaultSessions(),
       myReviews: []
@@ -5240,21 +6056,18 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function normalizeAccount(obj) {
-    obj.bookings = (obj.bookings || []).map(function (b) {
+    var o = (obj && typeof obj === 'object') ? obj : {};
+    o.bookings = (o.bookings || []).map(function (b) {
       if (!b.teacherId) b.teacherId = teacherIdOfName(b.teacher || '');
-      if (!b.dateIso) {
-        var m = String(b.date || '').match(/(\d{1,2})\.(\d{1,2})/);
-        b.dateIso = m ? (new Date().getFullYear() + '-' + pad2(parseInt(m[1], 10)) + '-' + pad2(parseInt(m[2], 10))) : '';
-      }
       if (typeof b.walletId === 'undefined') b.walletId = '';
       if (typeof b.passId === 'undefined') b.passId = '';
-      b.status = b.status || '예약 확정';
       return b;
     });
-    if (!Array.isArray(obj.sessions)) obj.sessions = defaultSessions();
-    if (!Array.isArray(obj.myReviews)) obj.myReviews = [];
-    if (!obj.profile || !obj.profile.name) obj.profile = { name: '현수' };
-    return obj;
+    if (!Array.isArray(o.sessions)) o.sessions = defaultSessions();
+    if (!Array.isArray(o.myReviews)) o.myReviews = [];
+    if (!o.profile || !o.profile.name) o.profile = { name: '현수' };
+    /* v12 · id·상태 enum·타임스탬프·지역 FK를 한 곳에서 맞춘다 (멱등) */
+    return TtModel.normalizeAccount(o);
   }
 
   function loadAccount() {
@@ -5270,7 +6083,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     try { SafeStorage.setItem(STORE_KEY, JSON.stringify(account)); } catch (e) {}
   }
 
-  var account = loadAccount() || seedAccount();
+  var account = normalizeAccount(loadAccount() || seedAccount());
   saveAccount();
 
   function renderAccount() {
@@ -5300,13 +6113,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       bl.innerHTML = '<div class="empty" style="box-shadow:none"><p>다가오는 방문이 없어요.</p><button class="btn btn-navy btn-sm" type="button" data-go="booking">예약하기</button></div>';
     } else {
       bl.innerHTML = account.bookings.map(function (b) {
-        var canceled = b.status === '취소됨';
+        var canceled = TtModel.reservationStatus(b.status) === 'canceled';
         var t = teacherById(b.teacherId);
         var d = teacherDetails[b.teacherId] || {};
         return '<div class="booking-row list-item' + (canceled ? ' is-canceled' : '') + '" data-booking="' + esc(b.no) + '">' +
           '<button class="br-top" type="button" data-visit="' + esc(b.no) + '" style="background:none;text-align:left;width:100%">' +
             '<span class="chat-av" style="' + (t ? avaStyle(t.id) : 'background:#12325C') + ';width:40px;height:40px;flex:0 0 40px;font-size:14px" aria-hidden="true">' + (t ? avaSvg(t.id) : esc('쌤')) + '</span>' +
-            '<span class="br-main"><b>' + esc(b.date) + ' (' + esc(b.day) + ') ' + esc(b.time) + '</b><span>' + esc(b.teacher) + ' · ' + esc(b.status) + '</span><span>' + esc(b.region) + '</span></span>' +
+            '<span class="br-main"><b>' + esc(b.date) + ' (' + esc(b.day) + ') ' + esc(b.time) + '</b><span>' + esc(b.teacher) + ' · ' + esc(TtModel.reservationLabel(b.status)) + '</span><span>' + esc(b.region) + '</span></span>' +
             '<span class="chev" aria-hidden="true">' + icon('chev-r') + '</span>' +
           '</button>' +
           (canceled ? '' : matchBlockHtml(b)) +
@@ -5330,7 +6143,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         return '<button class="list-item" type="button" data-receipt="' + esc(r.no) + '">' +
           '<span class="li-ico is-gray" aria-hidden="true">' + icon('receipt') + '</span>' +
           '<span class="li-main"><b>' + esc(r.item) + '</b><span>' + esc(r.date) + ' · ' + esc(r.method) + '</span></span>' +
-          '<span class="li-right"><b>' + won(r.amount) + '</b><span>' + esc(r.status) + '</span></span>' +
+          '<span class="li-right"><b>' + won(r.amount) + '</b><span>' + esc(TtModel.paymentLabel(r.status)) + '</span></span>' +
         '</button>';
       }).join('');
     }
@@ -5350,7 +6163,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var mpName = $('#mpName');
     if (mpName) mpName.textContent = name;
 
-    var booked = (account.bookings || []).filter(function (b) { return b.status !== '취소됨'; }).length;
+    var booked = (account.bookings || []).filter(function (b) { return TtModel.reservationStatus(b.status) !== 'canceled'; }).length;
     var bc = $('#mpBookCount');
     if (bc) bc.textContent = String(booked);
     var left = (account.passes || []).reduce(function (sum, p) { return sum + (p.remaining > 0 ? p.remaining : 0); }, 0);
@@ -5386,7 +6199,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function nextVisit() {
-    var live = (account.bookings || []).filter(function (b) { return b.status !== '취소됨'; });
+    var live = (account.bookings || []).filter(function (b) { return TtModel.reservationStatus(b.status) !== 'canceled'; });
     var rows = live.map(function (b) { return { b: b, d: daysUntil(b.dateIso) }; })
       .filter(function (x) { return x.d !== null && x.d >= 0; })
       .sort(function (a, b) { return a.d - b.d; });
@@ -5471,7 +6284,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function openReceipt(no) {
     var r = account.receipts.filter(function (x) { return x.no === no; })[0];
     if (!r) return;
-    $('#receiptStatus').textContent = r.status;
+    $('#receiptStatus').textContent = TtModel.paymentLabel(r.status);
     $('#receiptBody').innerHTML =
       '<div class="sum-row"><span>결제번호</span><b>' + esc(r.no) + '</b></div>' +
       '<div class="sum-row"><span>결제일</span><b>' + esc(r.date) + '</b></div>' +
@@ -5659,8 +6472,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   function matchStageOf(b) {
     if (!b) return 0;
-    if (b.status === '취소됨') return -1;
-    if (b.status === '방문 완료' || b.done) return 3;
+    var st = TtModel.reservationStatus(b.status);
+    if (st === 'canceled') return -1;
+    if (st === 'completed' || b.done) return 3;
     if (b.teacherId) return 2;
     if (b.teacher && b.teacher.indexOf('추천') === -1) return 2;
     return 1;
@@ -5905,6 +6719,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   function seedPartner() {
     return {
+      id: 'app-me',
+      teacherId: 'park',
       status: 'approved',
       appNo: 'TP-261015-4821',
       name: '박서준',
@@ -5951,7 +6767,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     try { SafeStorage.setItem(P_KEY, JSON.stringify(partner)); } catch (e) {}
   }
 
-  var partner = loadPartner() || seedPartner();
+  var partner = TtModel.normalizePartner(loadPartner() || seedPartner());
   savePartner();
 
   function partnerStatus() { return partner && partner.status ? partner.status : 'none'; }
@@ -6545,7 +7361,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   function approvePartner() {
     applyApproval();
-    adminStore.decisions.unshift({ id: 'me', name: partner.name, action: 'approved', at: todayLabel() });
+    adminStore.decisions.unshift({ id: TtModel.newId('application'), name: partner.name, action: 'approved', at: todayLabel(), decidedAt: TtModel.nowIso() });
     saveAdmin();
     renderPartner();
     renderAdmin();
@@ -6591,7 +7407,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     try { SafeStorage.setItem(ADMIN_KEY, JSON.stringify(adminStore)); } catch (e) {}
   }
 
-  var adminStore = loadAdmin() || seedAdmin();
+  var adminStore = TtModel.normalizeAdmin(loadAdmin() || seedAdmin());
   saveAdmin();
 
   function currentAdminApp() {
@@ -6709,7 +7525,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var a = adminStore.applications.filter(function (x) { return x.id === id; })[0];
       if (a) { a.status = 'approved'; a.approvedAt = todayLabel(); }
     }
-    adminStore.decisions.unshift({ id: id, name: app.name, action: 'approved', at: todayLabel() });
+    adminStore.decisions.unshift({ id: TtModel.newId('application'), name: app.name, action: 'approved', at: todayLabel(), decidedAt: TtModel.nowIso() });
     saveAdmin();
     renderAdmin();
     renderPartner();
@@ -6753,7 +7569,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var a = adminStore.applications.filter(function (x) { return x.id === rejectTarget; })[0];
       if (a) { a.status = 'needs_update'; a.memo = reason; a.reviewedAt = todayLabel(); }
     }
-    adminStore.decisions.unshift({ id: rejectTarget, name: app.name, action: 'needs_update', reason: reason, at: todayLabel() });
+    adminStore.decisions.unshift({ id: TtModel.newId('application'), name: app.name, action: 'needs_update', reason: reason, at: todayLabel(), decidedAt: TtModel.nowIso() });
     saveAdmin();
     closeRejectSheet();
     renderAdmin();
@@ -6995,7 +7811,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     } catch (e) { return null; }
   }
   function saveRegion(province, district) {
-    try { SafeStorage.setItem(REGION_KEY, JSON.stringify({ province: province, district: district || '' })); } catch (e) {}
+    try {
+      SafeStorage.setItem(REGION_KEY, JSON.stringify({
+        province: province, district: district || '',
+        regionId: TtModel.regionIdOf(province, district || ''),
+        updatedAt: TtModel.nowIso()
+      }));
+    } catch (e) {}
   }
   function regionNotices() {
     var raw = null;
@@ -7416,16 +8238,20 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var req = (partner.requests || []).filter(function (r) { return r.id === rid; })[0];
       if (req) {
         req.status = 'accepted';
+        req.updatedAt = TtModel.nowIso();
         partner.schedule = partner.schedule || [];
         partner.schedule.push({
-          id: 'S' + Date.now(),
+          id: TtModel.newId('reservation'),
           patient: req.patient,
           region: req.region,
           date: req.date.split(' ')[0],
           day: (req.date.split(' ')[1] || '').replace(/[()]/g, ''),
           time: req.time,
           pass: req.pass,
-          checked: false
+          checked: false,
+          status: 'scheduled',
+          createdAt: TtModel.nowIso(),
+          updatedAt: TtModel.nowIso()
         });
         savePartner();
         renderPartner();
@@ -7437,7 +8263,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var reject = e.target.closest('[data-tp-reject]');
     if (reject) {
       var rjid = reject.getAttribute('data-tp-reject');
-      (partner.requests || []).forEach(function (r) { if (r.id === rjid) r.status = 'rejected'; });
+      (partner.requests || []).forEach(function (r) { if (r.id === rjid) { r.status = 'rejected'; r.updatedAt = TtModel.nowIso(); } });
       savePartner();
       renderPartner();
       toast('방문 요청을 거절했어요.');
@@ -7450,6 +8276,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var sch = (partner.schedule || []).filter(function (x) { return x.id === sid; })[0];
       if (sch) {
         sch.checked = !sch.checked;
+        sch.status = sch.checked ? 'checked_in' : 'scheduled';
+        sch.updatedAt = TtModel.nowIso();
         savePartner();
         renderPartner();
         toast(sch.checked ? '도착 체크인 완료 · 보호자에게 알림을 보냈어요.' : '체크인을 취소했어요.');
@@ -7564,13 +8392,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       if (!(rom >= 0 && rom <= 160)) { toast('무릎 ROM을 0~160° 사이로 입력해 주세요.'); return; }
       partner.journals = partner.journals || [];
       partner.journals.unshift({
+        id: TtModel.newId('journal'),
+        teacherId: partner.teacherId || '',
         date: todayLabel(),
+        visitDate: TtModel.dateLabelToIso(todayLabel()),
         patient: $('#tpPatient').value,
         gait: gait.toFixed(2),
         rom: String(rom),
         pain: parseInt($('#tpPain').value, 10),
-        memo: $('#tpMemo').value.trim()
+        memo: $('#tpMemo').value.trim(),
+        status: 'shared',
+        createdAt: TtModel.nowIso(),
+        updatedAt: TtModel.nowIso()
       });
+      partner.ledger = TtModel.settlementRows(partner);
+      partner.updatedAt = TtModel.nowIso();
       savePartner();
       renderTpJournals();
       $('#tpMemo').value = '';
@@ -7590,7 +8426,19 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var raw = SafeStorage.getItem(CHAT_KEY);
       if (!raw) return {};
       var o = JSON.parse(raw);
-      return (o && typeof o === 'object') ? o : {};
+      if (!o || typeof o !== 'object') return {};
+      Object.keys(o).forEach(function (k) {
+        o[k] = (Array.isArray(o[k]) ? o[k] : []).map(function (m, i) {
+          return {
+            id: m.id || ('msg-' + String(k).replace(/[^a-z0-9]+/gi, '-') + '-' + (i + 1)),
+            from: m.from === 'teacher' ? 'teacher' : 'customer',
+            text: String(m.text || ''),
+            at: m.at || '',
+            createdAt: TtModel.isoOr(m.createdAt, TtModel.nowIso())
+          };
+        });
+      });
+      return o;
     } catch (e) { return {}; }
   }
   function saveChats() {
@@ -7645,7 +8493,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         : (chatCtx.as === 'teacher'
           ? '보호자님 안녕하세요. 방문 일정이나 궁금한 점 편하게 남겨주세요.'
           : '안녕하세요, ' + teacherName(chatCtx.teacherId).replace(' 선생님', '') + ' 선생님입니다. 편하게 물어보세요.');
-      chatStore[key] = [{ from: 'teacher', text: hello, at: nowHM() }];
+      chatStore[key] = [{ id: TtModel.newId('chatMessage'), from: 'teacher', text: hello, at: nowHM(), createdAt: TtModel.nowIso() }];
       saveChats();
     }
     renderChat();
@@ -7707,7 +8555,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var key = chatThreadKey();
     var thread = chatStore[key] || (chatStore[key] = []);
     var mySide = chatCtx.as === 'teacher' ? 'teacher' : 'customer';
-    thread.push({ from: mySide, text: msg, at: nowHM() });
+    thread.push({ id: TtModel.newId('chatMessage'), from: mySide, text: msg, at: nowHM(), createdAt: TtModel.nowIso() });
     saveChats();
     if (input) input.value = '';
     renderChat();
@@ -7719,7 +8567,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var reply = mySide === 'teacher' ? '네, 확인했습니다. 감사합니다.' : pickDemoReply(msg);
     setTimeout(function () {
       var thread = chatStore[key] || (chatStore[key] = []);
-      thread.push({ from: from, text: reply, at: nowHM() });
+      thread.push({ id: TtModel.newId('chatMessage'), from: from, text: reply, at: nowHM(), createdAt: TtModel.nowIso() });
       saveChats();
       if (chatSheetOpen() && chatThreadKey() === key) {
         renderChat();
@@ -7854,9 +8702,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!text) text = reviewCtx.tags.length ? reviewCtx.tags.join(' · ') : '만족스러운 방문이었어요.';
     var t = teacherById(s.teacherId);
     var d = teacherDetails[s.teacherId];
+    var nowTs = TtModel.nowIso();
+    var reviewId = TtModel.newId('review');
     if (d) {
       d.reviews = d.reviews || [];
-      d.reviews.unshift({ who: '나 (보호자)', when: todayLabel(), stars: reviewCtx.stars, text: text });
+      d.reviews.unshift({ id: reviewId, who: '나 (보호자)', when: todayLabel(), stars: reviewCtx.stars, text: text, status: 'published', createdAt: nowTs });
     }
     if (t) {
       var sum = t.rating * t.reviews;
@@ -7864,8 +8714,23 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       t.rating = Math.round(((sum + reviewCtx.stars) / t.reviews) * 10) / 10;
     }
     s.reviewed = true;
+    s.status = 'reviewed';
+    s.updatedAt = nowTs;
     account.myReviews = account.myReviews || [];
-    account.myReviews.push({ teacherId: s.teacherId, stars: reviewCtx.stars, text: text, at: todayLabel() });
+    account.myReviews.push(TtModel.normalizeReview({
+      id: reviewId,
+      userId: (account.profile && account.profile.id) || 'usr-demo',
+      teacherId: s.teacherId,
+      reservationId: s.reservationId || null,
+      rating: reviewCtx.stars,
+      body: text,
+      text: text,
+      tags: reviewCtx.tags.slice(),
+      who: '나 (보호자)',
+      at: todayLabel(),
+      status: 'published',
+      createdAt: nowTs
+    }));
     saveAccount();
     closeReview();
     renderReviews();
@@ -7889,7 +8754,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       }
       if (d) {
         d.reviews = d.reviews || [];
-        d.reviews.unshift({ who: '나 (보호자)', when: r.at, stars: r.stars, text: r.text });
+        d.reviews.unshift({ id: r.id, who: '나 (보호자)', when: r.at, stars: r.stars, text: r.text, status: r.status || 'published', createdAt: r.createdAt });
       }
     });
   }
@@ -7946,11 +8811,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!b) { body.innerHTML = '<p class="sheet-desc">예약을 찾을 수 없어요.</p>'; return; }
     var t = teacherById(b.teacherId);
     var d = teacherDetails[b.teacherId] || {};
-    var canceled = b.status === '취소됨';
+    var canceled = TtModel.reservationStatus(b.status) === 'canceled';
     var head =
       '<div class="chat-head">' +
         '<div class="chat-av" style="' + (t ? avaStyle(t.id) : 'background:#12325C') + '" aria-hidden="true">' + (t ? avaSvg(t.id) : esc('쌤')) + '</div>' +
-        '<div style="min-width:0"><p class="chat-name">' + esc(b.teacher) + '</p><p class="chat-sub">' + esc(b.no) + ' · ' + esc(b.status) + '</p></div>' +
+        '<div style="min-width:0"><p class="chat-name">' + esc(b.teacher) + '</p><p class="chat-sub">' + esc(b.no) + ' · ' + esc(TtModel.reservationLabel(b.status)) + '</p></div>' +
       '</div>' +
       '<div class="tp-detail" style="margin-top:10px">' +
         '<div class="row"><span>방문 일정</span><b>' + esc(b.date) + ' (' + esc(b.day) + ') ' + esc(b.time) + '</b></div>' +
@@ -8011,17 +8876,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!manageCtx.dateIso || !manageCtx.time) { toast('날짜와 시간을 선택해 주세요.'); return; }
     var dt = dateOptions.filter(function (x) { return x.iso === manageCtx.dateIso; })[0];
     if (!dt) return;
+    var clash = TtModel.slotConflict(account.bookings || [], b.teacherId, manageCtx.dateIso, manageCtx.time, b.no || b.id);
+    if (clash) { toast('그 시간은 이미 다른 방문이 잡혀 있어요. 다른 시간을 골라주세요.'); return; }
     b.dateIso = manageCtx.dateIso;
     b.date = dt.label;
     b.day = dt.day;
     b.time = manageCtx.time;
-    b.status = '일정 변경됨';
+    b.status = 'rescheduled';
+    TtModel.pushHistory(b, 'rescheduled', 'customer');
+    b.updatedAt = TtModel.nowIso();
     saveAccount();
     renderAccount();
     renderManage();
     var key = chatKeyOf(b.teacherId || 'park');
     var thread = chatStore[key] || (chatStore[key] = []);
-    thread.push({ from: 'teacher', text: '[일정 변경] ' + dt.label + ' (' + dt.day + ') ' + manageCtx.time + '로 변경되었습니다.', at: nowHM() });
+    thread.push({ id: TtModel.newId('chatMessage'), from: 'teacher', text: '[일정 변경] ' + dt.label + ' (' + dt.day + ') ' + manageCtx.time + '로 변경되었습니다.', at: nowHM(), createdAt: TtModel.nowIso() });
     saveChats();
     toast('방문 일정을 ' + dt.label + ' ' + manageCtx.time + '로 변경했어요.');
     closeManage();
@@ -8033,23 +8902,27 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var pol = refundPolicy(b);
     var amt = bookingAmount(b);
     var refund = Math.round(amt * pol.pct / 100);
-    b.status = '취소됨';
-    b.canceledAt = todayLabel();
+    b.status = 'canceled';
+    TtModel.pushHistory(b, 'canceled', 'customer');
+    b.canceledAt = TtModel.nowIso();
+    b.updatedAt = TtModel.nowIso();
     b.refund = refund;
     b.refundLabel = pol.label;
+    b.paymentStatus = refund > 0 ? 'refund_pending' : 'paid';
     if (b.walletId) {
       var p = (account.passes || []).filter(function (x) { return x.id === b.walletId; })[0];
-      if (p && p.remaining < p.total) p.remaining = p.remaining + 1;
+      if (p && p.remaining < p.total) { p.remaining = p.remaining + 1; p.status = 'active'; p.updatedAt = TtModel.nowIso(); }
     }
     if (refund > 0) {
-      account.receipts.unshift({
+      account.receipts.unshift(TtModel.normalizePayment({
+        id: TtModel.newId('payment'),
         no: 'RF-' + b.no.slice(3),
         date: todayLabel(),
         item: '예약 취소 환불',
         amount: refund,
         method: '환불 예정',
-        status: '환불 처리 중'
-      });
+        status: 'refund_pending'
+      }));
     }
     saveAccount();
     renderAccount();
@@ -8117,13 +8990,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var saved = readJson(NOTIF_KEY);
     if (!Array.isArray(saved) || !saved.length) saved = seedNotifs();
     var list = saved.filter(function (n) { return n && n.id && n.title; }).map(function (n) {
-      return {
-        id: String(n.id), kind: n.kind || 'visit', title: String(n.title),
-        body: String(n.body || ''), when: String(n.when || ''), go: n.go || '',
-        read: !!n.read
-      };
+      return TtModel.normalizeNotification(n);
     });
-    return list.length ? list : seedNotifs();
+    return list.length ? list : seedNotifs().map(function (n) { return TtModel.normalizeNotification(n); });
   })();
 
   function unreadNotifs() {
@@ -8159,13 +9028,26 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function readNotif(id) {
     var n = notifStore.filter(function (x) { return x.id === id; })[0];
     if (!n) return null;
-    if (!n.read) { n.read = true; saveJson(NOTIF_KEY, notifStore); renderNotifs(); }
+    if (!n.read) {
+      n.read = true;
+      n.status = 'read';
+      n.readAt = TtModel.nowIso();
+      n.updatedAt = n.readAt;
+      saveJson(NOTIF_KEY, notifStore);
+      renderNotifs();
+    }
     return n;
   }
 
   function readAllNotifs() {
     if (!unreadNotifs()) { toast('이미 모든 알림을 읽었어요.'); return; }
-    notifStore.forEach(function (n) { n.read = true; });
+    var ts = TtModel.nowIso();
+    notifStore.forEach(function (n) {
+      n.read = true;
+      n.status = 'read';
+      n.readAt = n.readAt || ts;
+      n.updatedAt = ts;
+    });
     saveJson(NOTIF_KEY, notifStore);
     renderNotifs();
     toast('알림을 모두 읽음으로 표시했어요.');
@@ -8183,14 +9065,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var saved = readJson(COUPON_KEY);
     if (!Array.isArray(saved)) saved = seedCoupons();
     var list = saved.filter(function (c) { return c && c.id && c.title; }).map(function (c) {
-      return {
-        id: String(c.id), title: String(c.title), sub: String(c.sub || ''),
-        type: c.type === 'free' ? 'free' : 'amount',
-        amount: Math.max(0, Number(c.amount) || 0),
-        target: c.target || 'paid', used: !!c.used,
-        expire: String(c.expire || expireDate(30)), code: String(c.code || ''),
-        usedAt: String(c.usedAt || ''), usedOn: String(c.usedOn || '')
-      };
+      return TtModel.normalizeUserCoupon(c);
     });
     return list;
   })();
@@ -8239,13 +9114,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var amount = COUPON_CODES[code];
     if (!amount) { toast('사용할 수 없는 쿠폰 코드예요.'); return; }
     if (couponStore.some(function (c) { return c.code === code; })) { toast('이미 등록한 쿠폰 코드예요.'); return; }
-    couponStore.unshift({
+    couponStore.unshift(TtModel.normalizeUserCoupon({
       id: 'cp-' + code.toLowerCase() + '-' + Date.now(),
       title: amount.toLocaleString('ko-KR') + '원 추가 할인',
       sub: '쿠폰 코드 ' + code + ' · 정규 회차권 결제 시 사용',
       type: 'amount', amount: amount, target: 'paid', used: false,
+      status: 'available',
       expire: expireDate(30), code: code, usedAt: '', usedOn: ''
-    });
+    }));
     saveJson(COUPON_KEY, couponStore);
     input.value = '';
     renderCoupons();
@@ -8265,12 +9141,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var saved = readJson(CARD_KEY);
     if (!Array.isArray(saved) || !saved.length) saved = seedCards();
     var list = saved.filter(function (c) { return c && c.id && c.label; }).map(function (c) {
-      return {
-        id: String(c.id), label: String(c.label), kind: c.kind === 'pay' ? 'pay' : 'card',
-        last4: String(c.last4 || ''), expiry: String(c.expiry || ''), isDefault: !!c.isDefault
-      };
+      return TtModel.normalizePaymentMethod(c);
     });
-    if (!list.length) list = seedCards();
+    if (!list.length) list = seedCards().map(function (c) { return TtModel.normalizePaymentMethod(c); });
     if (!list.some(function (c) { return c.isDefault; })) list[0].isDefault = true;
     return list;
   })();
@@ -8333,11 +9206,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       toast('유효기간을 MM/YY로 입력해 주세요.');
       return;
     }
-    cardStore.forEach(function (c) { c.isDefault = false; });
-    cardStore.unshift({
-      id: 'cd-' + Date.now(), label: label || '새 카드', kind: 'card',
-      last4: last4, expiry: exp.slice(0, 2) + '/' + exp.slice(2), isDefault: true
-    });
+    cardStore.forEach(function (c) { c.isDefault = false; c.updatedAt = TtModel.nowIso(); });
+    cardStore.unshift(TtModel.normalizePaymentMethod({
+      id: TtModel.newId('paymentMethod'), label: label || '새 카드', kind: 'card',
+      last4: last4, expiry: exp.slice(0, 2) + '/' + exp.slice(2), isDefault: true, status: 'active'
+    }));
     saveJson(CARD_KEY, cardStore);
     renderCards();
     toggleCardForm(false);
@@ -8532,6 +9405,33 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   renderPartner();
   renderAdmin();
   renderChatEntryState();
+
+  /* v12 · 데이터 모델 노출(검증·이전 도구용). 화면에는 영향을 주지 않는다. */
+  try {
+    window.__ttokttokModel = {
+      modelVersion: TtModel.SCHEMA_VERSION,
+      statuses: TtModel.STATUS,
+      regionMaster: REGION_MASTER,
+      teacherRegions: function () { return TtModel.teacherRegionRows(teachers, REGION_MASTER); },
+      reservations: function () { return account.bookings || []; },
+      slots: function (teacherId, dateIso) { return TtModel.slotRows(teacherId, dateIso, times, account.bookings || []); },
+      export: function () {
+        return TtModel.exportBundle({
+          master: REGION_MASTER, account: account, partner: partner, admin: adminStore,
+          teachers: teachers, teacherDetails: teacherDetails, passes: passes,
+          coupons: couponStore, notifs: notifStore, cards: cardStore, chats: chatStore,
+          dates: dateOptions, times: times,
+          phone: (function () { try { return SafeStorage.getItem(PHONE_KEY) || ''; } catch (e) { return ''; } })(),
+          region: readRegion(),
+          regionNotices: regionNotices().map(function (k, i) {
+            var parts = String(k).split('|');
+            return { id: 'ntc-' + (i + 1), regionId: TtModel.regionIdOf(parts[0], parts[1] || ''), userId: 'usr-demo' };
+          })
+        });
+      },
+      integrity: function () { return TtModel.integrity(window.__ttokttokModel.export()); }
+    };
+  } catch (e) {}
   var initProg = $('#bookingProgress');
   if (initProg) initProg.style.width = '25%';
   var initPProg = $('#partnerProgress');
