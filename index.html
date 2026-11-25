@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v10">
+<meta name="app-version" content="v11">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -118,7 +118,7 @@ a{color:inherit}
 
 /* ---------- screens ---------- */
 .screen{display:none;padding:14px 16px 8px}
-.screen.is-active{display:block;animation:screenIn .26s var(--ease) both}
+.screen.is-active{display:block;animation:screenIn .26s var(--ease)}
 @keyframes screenIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .page-head{padding:8px 2px 0}
 .page-head .eyebrow{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;letter-spacing:.02em;color:var(--blue);background:var(--blue-50);border-radius:999px;padding:4px 9px;margin-bottom:9px}
@@ -1661,7 +1661,7 @@ body.on-home .ah-home{display:flex}
 .btn:active,.t-card:active,.h-mini-card:active,.m-row:active,.teacher:active,.home-program-card:active,.mp-row:active,.list-item:active,.report-cta:active{transform:scale(.98)}
 /* 탭 전환: 부드러운 페이드인 180ms */
 @keyframes tabFade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-.screen.is-active{animation:tabFade .18s cubic-bezier(.22,1,.36,1) both}
+.screen.is-active{animation:tabFade .18s cubic-bezier(.22,1,.36,1)}
 
 /* ---------- 일지: 보호자 공유 리포트 진입 카드 ---------- */
 .report-cta{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:15px 16px;text-align:left;
@@ -1933,6 +1933,179 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   background:#F7FAFF;border:1px solid rgba(47,107,224,.24);color:#1D4ED8;font-size:12px;font-weight:800}
 .br-ics .ic{width:15px;height:15px;stroke-width:1.9}
 .br-ics:active{background:#EEF4FF;transform:scale(.98)}
+
+/* =====================================================================
+   v11 · 여백 · 타이포 정리 패스 (커버링 톤 기준)
+   · 좌우 패딩 20px 하나로 통일 (기존 16/18/20 혼재)
+   · 세로 리듬: 4 · 8 · 12 · 20 · 28 · 32 스케일만 사용
+   · 타입 6단계(11.5 / 12.5 / 13.5 / 17 / 20 / 23) · 카드 그림자 1종
+   · 붙어 보이던 구간(라벨-값, 카드-카드, 버튼-안내문) 간격 확보
+   ===================================================================== */
+:root{
+  /* spacing */
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:28px; --sp-7:32px;
+  --pad-x:20px;        /* 화면·시트 공통 좌우 */
+  --pad-card:20px;     /* 카드 안쪽 */
+  --gap-card:12px;     /* 카드 사이 */
+  --gap-block:20px;    /* 블록 사이 */
+  --gap-section:28px;  /* 섹션 사이 */
+  /* type */
+  --fs-cap:11.5px;     /* 캡션·각주 */
+  --fs-label:12.5px;   /* 라벨·보조 본문 */
+  --fs-body:13.5px;    /* 본문 */
+  --fs-body-lg:15px;   /* 큰 본문 */
+  --fs-title-s:17px;   /* 카드 제목 */
+  --fs-title:20px;     /* 시트·스텝 제목 */
+  --fs-page:23px;      /* 화면 제목 */
+  --lh-cap:1.5; --lh-body:1.6; --lh-title:1.36;
+  --ls-title:-.035em; --ls-body:-.02em;
+  /* surface */
+  --v11-line:rgba(15,23,42,.055);
+  --v11-card:0 1px 2px rgba(15,23,42,.03),0 14px 30px -26px rgba(15,23,42,.3);
+  --v11-card-raise:0 1px 2px rgba(15,23,42,.03),0 18px 38px -28px rgba(15,23,42,.34);
+}
+
+/* ---------- 1. 좌우 패딩: 모든 화면이 같은 20px 선에 선다 ---------- */
+.app-header{padding:10px var(--pad-x)}
+.screen{padding:18px var(--pad-x) 14px}
+.screen.home-v6{padding:0 0 var(--sp-6)}
+.home-notice{padding:var(--sp-3) var(--pad-x);min-height:54px}
+.home-body{padding:var(--sp-5) var(--pad-x) 0}
+.hp-rail{margin:0 calc(var(--pad-x) * -1);padding:2px var(--pad-x) 10px}
+.sheet-scroll{padding:2px var(--pad-x) 26px}
+.mp-top{padding:var(--sp-7) var(--pad-x) var(--sp-6)}
+.mp-fine{margin:var(--sp-5) var(--pad-x) 0}
+
+/* ---------- 2. 세로 리듬 ---------- */
+.home-programs{margin-top:var(--sp-7)}
+.hp-head{margin-bottom:var(--sp-3)}
+.home-link-card{margin-top:var(--gap-card)}
+.sec{margin-top:var(--gap-section)}
+.sec-head{margin-bottom:var(--sp-3)}
+.page-head{padding:var(--sp-5) 0 0}
+.page-head h1{font-size:var(--fs-page);line-height:1.3;letter-spacing:-.04em;margin-bottom:var(--sp-2)}
+.page-head p{font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body);max-width:34ch}
+
+/* ---------- 3. 타입 스케일 ---------- */
+.hh-greet{font-size:var(--fs-body-lg);line-height:1.5;letter-spacing:-.025em}
+.hh-title{margin-top:var(--sp-2);font-size:var(--fs-page);line-height:1.32;letter-spacing:-.04em}
+.hp-title{font-size:var(--fs-title-s);line-height:1.35;letter-spacing:var(--ls-title)}
+.hp-sub,.hpc-top{font-size:var(--fs-cap);line-height:var(--lh-cap);letter-spacing:-.01em;color:#8A96A8}
+.hpc-name{font-size:14.5px;line-height:1.35;letter-spacing:-.03em}
+.sec-title{font-size:var(--fs-title-s);line-height:1.35;letter-spacing:var(--ls-title)}
+.sheet-title{font-size:var(--fs-title);line-height:var(--lh-title);letter-spacing:var(--ls-title)}
+.sheet-desc{font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body);margin-top:var(--sp-2)}
+.sheet-label{font-size:var(--fs-label);letter-spacing:-.02em;margin-bottom:10px}
+.sheet-note{font-size:var(--fs-cap);line-height:var(--lh-cap);margin-top:10px}
+.wstep-title{font-size:var(--fs-title);line-height:var(--lh-title);letter-spacing:var(--ls-title)}
+.wstep-sub{font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body)}
+.pass-name{font-size:14px;line-height:1.4;letter-spacing:-.025em}
+.pass-sub{font-size:var(--fs-cap);line-height:var(--lh-cap);letter-spacing:-.01em}
+.t-name{font-size:16px;line-height:1.35;letter-spacing:-.03em}
+.t-meta{font-size:12px;line-height:1.5}
+.tag{font-size:11px;padding:4px 9px}
+.mp-eyebrow,.mp-title{font-size:var(--fs-title);line-height:1.4;letter-spacing:-.04em}
+.mp-meta{margin-top:var(--sp-4);font-size:var(--fs-body);letter-spacing:-.025em}
+.mp-meta button{font-size:var(--fs-body)}
+.mp-row{font-size:16px;letter-spacing:-.03em}
+.mp-fine{font-size:var(--fs-cap);line-height:1.65}
+.fine{font-size:var(--fs-cap);line-height:1.65;letter-spacing:-.01em;color:#98A3B3;margin:18px 2px 0}
+
+/* 필터 두 줄을 같은 리듬으로 · 오른쪽은 스크롤을 알리는 페이드 */
+#teacherFilters{margin-top:16px}
+#regionFilters{padding:10px 0 2px;gap:6px}
+#screen-teachers .chip{background:#EEF2F8;border-color:transparent;color:#6B7789;padding:8px 13px;font-size:var(--fs-cap);font-weight:700}
+#screen-teachers .chip.is-on{background:#E4EEFF;color:#1D4ED8;border-color:transparent;font-weight:800}
+#screen-teachers .trust-strip span{font-size:11px;letter-spacing:-.01em}
+#screen-teachers .trust-strip b{font-size:16px}
+#screen-teachers .home-search .search-field{min-height:50px}
+#teacherFilters,#regionFilters{-webkit-mask-image:linear-gradient(90deg,#000 92%,rgba(0,0,0,.15) 100%);mask-image:linear-gradient(90deg,#000 92%,rgba(0,0,0,.15) 100%)}
+.notif-main b,.coupon-main b,.pm-row .pm-main b{font-size:14px;line-height:1.4;letter-spacing:-.025em}
+.notif-main p,.coupon-main p{font-size:12px;line-height:var(--lh-body);letter-spacing:-.01em}
+.notif-when,.coupon-exp{font-size:var(--fs-cap);line-height:var(--lh-cap)}
+.pm-row .pm-main span{font-size:var(--fs-cap);line-height:var(--lh-cap)}
+.faq-q{font-size:var(--fs-body);line-height:1.5;letter-spacing:-.025em}
+.faq-a{font-size:12px;line-height:1.8}
+.terms-body{font-size:12px;line-height:1.85}
+.terms-body h3{font-size:var(--fs-label);letter-spacing:-.025em}
+.sum-card{font-size:var(--fs-label);line-height:1.55}
+.pass-note{font-size:var(--fs-cap);line-height:var(--lh-body)}
+.pay-note{font-size:var(--fs-cap);line-height:var(--lh-body)}
+
+/* ---------- 4. 카드 안쪽 여백·모서리----------- */
+.home-hero{padding:24px var(--pad-card) var(--sp-4);border-radius:22px}
+.home-link-card{padding:var(--sp-4) 18px;border-radius:20px;min-height:68px}
+.home-program-card{padding:var(--sp-4) 14px 14px;border-radius:18px}
+.teacher{padding:20px 20px 18px;margin-top:var(--gap-card);border-radius:22px}
+.pass{padding:18px;margin-bottom:var(--gap-card);border-radius:20px}
+.pass-note{margin-top:var(--gap-card);padding:12px 14px;border-radius:14px}
+.sum-card{padding:16px 18px;border-radius:18px}
+.coupon-pick{margin-top:var(--gap-block);padding:16px;border-radius:18px}
+.pm-row{padding:16px;gap:var(--gap-card);border-radius:18px}
+.notif{padding:16px;gap:var(--gap-card);border-radius:18px}
+.coupon-card{padding:16px;gap:14px;border-radius:18px}
+.faq-item{border-radius:18px}
+.card-form{padding:18px;border-radius:20px}
+.booking-row{padding:16px;gap:var(--gap-card);border-radius:20px;align-items:stretch}
+.booking-row .br-btns{width:100%}
+.booking-row .br-ics{width:100%}
+.booking-row .mtk{width:100%}
+.wallet-card,.dday-card{padding:18px}
+
+/* ---------- 5. 라벨-값·칩·버튼 간격 ---------- */
+.bk-progress{margin-top:22px}
+.bk-prog-top{margin-bottom:10px;align-items:flex-start}
+.bk-prog-count{margin-top:2px}
+.bk-prog-label small{font-size:var(--fs-cap);line-height:1.45;margin-top:var(--sp-1)}
+#screen-booking .wstep-title{margin:24px 0 6px}
+#screen-booking .wstep-sub{margin-bottom:18px}
+#screen-booking .form{padding:24px var(--pad-card) 22px;border-radius:22px}
+#screen-booking .field{margin-bottom:var(--gap-block)}
+.wiz-nav{margin-top:24px}
+.sum-line{padding:6px 0}
+.total{margin:var(--gap-block) 0 10px;padding-top:18px}
+.total b{font-size:26px;line-height:1.2}
+.discount-note{margin:2px 0 var(--gap-card);line-height:1.5}
+.coupon-chips{gap:var(--sp-2);margin-top:var(--gap-card)}
+.coupon-chip{padding:10px 14px;font-size:var(--fs-label)}
+.pays{gap:var(--sp-2)}
+.pay{padding:14px 12px;font-size:var(--fs-label);border-radius:14px}
+.notif-list,.coupon-list,.pm-list,.faq-list{gap:10px;margin-top:18px}
+.coupon-code{margin-top:18px}
+.coupon-code .input{min-height:48px}
+.coupon-code .btn{flex:0 0 auto;width:auto;min-width:76px;padding:0 20px}
+.pm-add{margin-top:var(--gap-card);min-height:48px}
+.card-form .field{margin-bottom:14px}
+.cf-row{gap:10px}
+.faq-q{padding:16px}
+.faq-a{padding:0 16px 18px 36px}
+.terms-tabs{margin-top:24px}
+.terms-body{margin-top:var(--gap-card);padding:18px}
+.br-ics{min-height:44px}
+.br-btns{gap:var(--sp-2)}
+.mp-banner{margin-top:var(--gap-block);padding:16px 18px;border-radius:16px;font-size:15px;line-height:1.45}
+.mp-consult{margin:var(--gap-card) var(--pad-x) 0;padding:10px 14px;font-size:var(--fs-label)}
+.mp-list{margin-top:10px}
+.mp-row{min-height:64px}
+.mp-guide-link{margin-top:10px}
+
+/* ---------- 6. 카드 테두리·그림자 1종 통일 (증상 카드는 v9 2중 그림자 유지) ---------- */
+.teacher .t-name{font-size:16px;line-height:1.35;letter-spacing:-.03em}
+.teacher .t-meta{font-size:12px;line-height:1.5;margin-top:var(--sp-1);color:#7B8798}
+#screen-teachers .page-head p,#screen-booking .page-head p,#screen-journal .page-head p{font-size:var(--fs-body);line-height:var(--lh-body);letter-spacing:var(--ls-body);color:#7B8798}
+#screen-booking .pass{padding:18px}
+#screen-booking .wstep-sub{font-size:var(--fs-body);line-height:var(--lh-body)}
+#screen-booking .total b{font-size:26px}
+.home-hero,.home-link-card,.teacher,.pass,.booking-row,.wallet-card,.dday-card,
+.notif,.coupon-card,.faq-item,.card-form{box-shadow:var(--v11-card);border-color:var(--v11-line)}
+.home-hero{box-shadow:var(--v11-card-raise)}
+.pass{border-color:rgba(15,23,42,.06)}
+.pass.is-on{border-color:var(--navy)}
+
+/* ---------- 7. 목록형 시트: 제목·설명은 왼쪽 정렬로 ---------- */
+#notifSheet .sheet-title,#couponSheet .sheet-title,#faqSheet .sheet-title,#paySheet .sheet-title,
+#notifSheet .sheet-desc,#couponSheet .sheet-desc,#faqSheet .sheet-desc,#paySheet .sheet-desc{text-align:left}
+#notifSheet .sheet-title,#couponSheet .sheet-title,#faqSheet .sheet-title,#paySheet .sheet-title{margin-top:10px}
 
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
@@ -2308,7 +2481,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <!-- step 4 -->
         <div class="wstep" id="wstep-4">
           <p class="wstep-title">확인하고 결제</p>
-          <p class="wstep-sub">결제 전 마지막 확인</p>
+          <p class="wstep-sub">아래 방문 정보와 금액을 한 번 더 확인해 주세요.</p>
 
           <div class="sum-card" id="bookSummary"></div>
 
@@ -3343,7 +3516,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="payTitle">결제 수단 · 영수증</h2>
       <p class="sheet-desc">등록된 결제 수단과 방문별 영수증을 확인할 수 있어요.</p>
-      <p class="sheet-label" style="margin-top:18px">등록된 결제 수단</p>
+      <p class="sheet-label" style="margin-top:20px">등록된 결제 수단</p>
       <div class="pm-list" id="pmList"></div>
       <button class="btn btn-outline pm-add" type="button" id="pmAddBtn" aria-expanded="false" aria-controls="cardForm">
         <svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>새 카드 추가
@@ -4468,7 +4641,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<span class="pass-radio" aria-hidden="true"></span>' +
         '<span class="pass-main">' +
           '<span class="pass-name">' + p.name + (p.tag ? '<span class="pass-tag">' + p.tag + '</span>' : '') + '</span>' +
-          '<span class="pass-sub">' + p.sub + ' · ' + p.per + '</span>' +
+          '<span class="pass-sub">' + p.sub + (p.sessions > 1 ? ' · ' + p.per : '') + '</span>' +
         '</span>' +
         '<span class="pass-price">' + priceHtml + '</span>' +
       '</button>';
@@ -4556,7 +4729,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         var meta = $('#bookTotalMeta');
         var per = $('#bookTotalPer');
         if (amt) amt.textContent = won(total);
-        if (meta) meta.textContent = p.name + ' · ' + p.sessions + '회' + (discount ? ' · 쿠폰 ' + won(discount) + ' 할인' : '');
+        if (meta) meta.textContent = p.name + (discount ? ' · 쿠폰 ' + won(discount) + ' 할인' : '');
         if (per) per.textContent = p.price === 0 ? '무료' : ('회당 ' + Math.round(p.price / p.sessions).toLocaleString('ko-KR') + '원');
       }
     }
@@ -4674,14 +4847,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       ['불편 부위', bk.syms.length ? bk.syms.join(', ') : '-'],
       ['방문 일정', bk.dateIso ? bk.dateLabel + ' (' + bk.dateDay + ') ' + bk.time : '-'],
       ['담당 선생님', bk.teacherId ? teacherName(bk.teacherId) : '추천 배정'],
-      ['이용권', p ? p.name + ' (' + p.sessions + '회)' : '-']
+      ['이용권', p ? p.name : '-']
     ];
     if (p && p.price > 0) {
       var dc = discountFor(p);
       if (dc) {
         var cp = selectedCoupon(p);
         rows.push(['정가', won(p.price)]);
-        rows.push(['쿠폰 할인', '-' + won(dc) + (cp ? ' (' + cp.title + ')' : '')]);
+        if (cp) rows.push(['사용 쿠폰', cp.title]);
+        rows.push(['쿠폰 할인', '-' + won(dc)]);
       }
     }
     $('#bookSummary').innerHTML = rows.map(function (r) {
@@ -4818,7 +4992,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (remaining !== null) rows.push(['이용권 잔여', remaining + '회 (첫 방문 1회 차감)']);
     if (discount > 0) {
       rows.push(['정가', won(listTotal)]);
-      rows.push(['쿠폰 할인', '-' + won(discount) + (usedCoupon ? ' (' + usedCoupon.title + ')' : '')]);
+      if (usedCoupon) rows.push(['사용 쿠폰', usedCoupon.title]);
+      rows.push(['쿠폰 할인', '-' + won(discount)]);
     }
 
     $('#doneSummary').innerHTML = rows.map(function (r) {
@@ -5112,7 +5287,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         var pct = Math.round((p.remaining / p.total) * 100);
         return '<div class="wallet-card">' +
           '<div class="wallet-top"><span>' + esc(p.name) + '</span><span>~' + esc(p.expire) + '</span></div>' +
-          '<div class="wallet-name">' + esc(p.name.replace(/ (방문권|집중 재활)$/, '')) + ' 잔여</div>' +
+          '<div class="wallet-name">잔여 회차</div>' +
           '<div class="wallet-count">' + p.remaining + '<small>회 / ' + p.total + '회</small></div>' +
           '<div class="wallet-bar"><span style="width:' + pct + '%"></span></div>' +
           '<div class="wallet-meta">' + esc(p.purchased) + ' 결제 · ' + used + '회 사용</div>' +
