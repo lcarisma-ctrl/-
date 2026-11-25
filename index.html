@@ -688,40 +688,143 @@ input[type="range"]{width:100%;margin:10px 0 2px;accent-color:var(--teal);height
 .time-chip{background:var(--surface-2);border:1px solid var(--line);color:#475569}
 .sheet-note{font-size:10px;color:var(--muted-2);line-height:1.5;margin-top:8px}
 
-/* ---------- login gate ---------- */
-.gate{position:fixed;inset:0;z-index:300;display:none;overflow-y:auto;padding:40px 20px calc(30px + env(safe-area-inset-bottom));background:radial-gradient(125% 85% at 50% 0%,#1B4079 0%,#0D1F3C 46%,#060D1A 100%);color:#fff}
-.gate.is-open{display:block}
+/* ---------- 시작 화면: 커버링 레퍼런스 (순백 · 1화면 미니멀) ---------- */
+.gate{
+  position:fixed;inset:0;z-index:300;display:none;
+  height:100vh;height:100dvh;
+  padding:calc(24px + env(safe-area-inset-top)) 20px calc(18px + env(safe-area-inset-bottom));
+  background:#FFFFFF;color:var(--ink);
+  overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+}
+.gate.is-open{display:block;animation:gateIn .28s var(--ease) both}
+@keyframes gateIn{from{opacity:0}to{opacity:1}}
 .gate-inner{max-width:392px;margin:0 auto;display:flex;flex-direction:column;min-height:100%}
-.gate-brand{text-align:center;padding-top:10px}
-.gate-logo{width:72px;height:72px;margin:0 auto 14px;border-radius:20px;box-shadow:0 18px 40px -14px rgba(0,0,0,.6)}
-.gate-brand h1{font-size:28px;font-weight:800;letter-spacing:-.045em;line-height:1.2}
-.gate-brand p{font-size:12px;color:rgba(232,239,250,.62);margin-top:7px}
-.gate-lead{font-size:13px;line-height:1.65;color:rgba(232,239,250,.8);text-align:center;margin:24px 0 16px}
-.gate-phone{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:17px;padding:14px 15px 12px}
-.gate-phone label{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:rgba(232,239,250,.68);margin-bottom:7px}
+.gate-brand{display:flex;flex-direction:column;align-items:center;gap:11px;padding-top:8px}
+.gate-brand-row{display:flex;align-items:center;gap:9px}
+.gate-logo{width:42px;height:42px;flex:0 0 42px;border-radius:13px;box-shadow:0 10px 22px -13px rgba(10,25,49,.6)}
+.gate-brand h1{font-size:26px;font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--navy)}
+.gate-brand h1 span{color:var(--blue)}
+.gate-region{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11.5px;font-weight:600;color:var(--muted);letter-spacing:-.02em;
+  background:#F5F7FA;border:1px solid var(--line);border-radius:999px;padding:6px 11px 6px 9px;
+  transition:background .15s,border-color .15s;
+}
+.gate-region .ic{width:13px;height:13px;color:var(--blue)}
+.gate-region b{color:var(--ink-2);font-weight:800}
+.gate-region:active{background:#EDF1F7}
+.gate-points{list-style:none;margin:26px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.gate-point{
+  display:flex;align-items:center;gap:14px;background:#fff;
+  border:1px solid rgba(15,23,42,.06);border-radius:18px;padding:15px 15px;
+  box-shadow:0 1px 2px rgba(15,23,42,.03),0 10px 22px -22px rgba(15,23,42,.4);
+}
+.gate-point-ico{width:48px;height:48px;flex:0 0 48px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:#EDF2FE;color:#2F5FD0}
+.gate-point-ico .ic{width:23px;height:23px;stroke-width:1.6}
+.gate-point:nth-child(2) .gate-point-ico{background:#E9F7F4;color:#0B7A6B}
+.gate-point:nth-child(3) .gate-point-ico{background:#FFF6E8;color:#B45309}
+.gate-point:nth-child(4) .gate-point-ico{background:#F2EEFF;color:#6D4AD8}
+.gate-point-body{min-width:0;flex:1}
+.gate-point b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.035em;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gate-point p{font-size:12px;color:var(--muted);line-height:1.4;margin-top:4px;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gate-bottom{margin-top:auto;padding-top:26px}
+.gate-tip{
+  position:relative;margin:0 auto 13px;width:max-content;max-width:100%;
+  background:#1E293B;color:#F8FAFC;font-size:12.5px;font-weight:700;letter-spacing:-.025em;
+  padding:10px 15px;border-radius:12px;text-align:center;line-height:1.35;
+  box-shadow:0 14px 26px -18px rgba(15,23,42,.85);
+}
+.gate-tip::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:#1E293B;transform:translateX(-50%) rotate(45deg);border-radius:2px}
+.gate-cta{
+  display:flex;align-items:center;justify-content:center;gap:6px;width:100%;min-height:56px;
+  border-radius:15px;background:var(--blue);color:#fff;
+  font-size:16px;font-weight:800;letter-spacing:-.03em;
+  box-shadow:0 14px 26px -14px rgba(37,99,235,.85);
+  transition:transform .12s var(--ease),filter .15s;
+}
+.gate-cta:active{transform:scale(.985)}
+.gate-cta .ic{width:17px;height:17px;stroke-width:1.8}
+.gate-links{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:11px}
+.gate-link{font-size:12px;font-weight:700;color:#475569;text-decoration:underline;text-underline-offset:3px;background:none;padding:6px 2px;letter-spacing:-.02em}
+.gate-link.is-primary{color:var(--blue)}
+.gate-links .gate-sep{width:1px;height:10px;background:#DCE3EC}
+.gate-legal{font-size:9.5px;line-height:1.55;color:var(--muted-2);text-align:center;margin-top:12px}
+
+@media(max-height:740px){
+  .gate{padding-top:calc(14px + env(safe-area-inset-top));padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .gate-brand{padding-top:0;gap:8px}
+  .gate-brand-row{gap:8px}
+  .gate-logo{width:36px;height:36px;flex:0 0 36px;border-radius:11px}
+  .gate-brand h1{font-size:22px}
+  .gate-region{padding:5px 10px 5px 8px;font-size:11px}
+  .gate-points{margin-top:16px;gap:8px}
+  .gate-point{padding:11px 13px;border-radius:16px;gap:12px}
+  .gate-point-ico{width:42px;height:42px;flex:0 0 42px;border-radius:13px}
+  .gate-point-ico .ic{width:20px;height:20px}
+  .gate-point b{font-size:14px}
+  .gate-point p{font-size:11px;margin-top:2px}
+  .gate-bottom{padding-top:14px}
+  .gate-tip{font-size:11.5px;padding:8px 13px;margin-bottom:10px}
+  .gate-cta{min-height:52px;font-size:15px;border-radius:14px}
+  .gate-links{margin-top:5px}
+  .gate-legal{margin-top:7px;font-size:9px}
+}
+@media(max-height:600px){
+  .gate-point p{display:none}
+  .gate-region{display:none}
+}
+
+/* 시작 화면 위에 올라오는 시트 (게이트 z-index 300보다 위) */
+.sheet-backdrop.is-gate{z-index:340}
+.sheet-backdrop.is-gate .sheet{z-index:350}
+.gate-sheet .sheet-scroll{padding:4px 20px calc(20px + env(safe-area-inset-bottom))}
+.gate-sheet .sheet-title{font-size:19px;margin-top:6px}
+.gate-sheet .sheet-desc{font-size:12px;margin-top:6px;line-height:1.6}
+.gate-phone{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;padding:13px 14px 11px;margin-top:18px}
+.gate-phone label{display:flex;align-items:center;gap:5px;font-size:11.5px;font-weight:800;color:var(--muted);margin-bottom:7px}
 .gate-phone label .ic{width:12px;height:12px}
-.gate-phone .input{background:rgba(255,255,255,.96);border-color:transparent;font-size:15.5px;letter-spacing:.01em}
-.gate-phone .input:focus{box-shadow:0 0 0 4px rgba(158,197,255,.25);border-color:transparent}
-.gate-demo{font-size:9.5px;color:rgba(232,239,250,.46);margin-top:8px;line-height:1.5}
-.gate-roles{display:flex;flex-direction:column;gap:9px;margin-top:14px}
-.role-card{display:flex;align-items:center;gap:12px;text-align:left;background:#fff;color:var(--navy);border-radius:18px;padding:15px 15px;box-shadow:0 16px 30px -18px rgba(0,0,0,.6);transition:transform .13s var(--ease)}
-.role-card:active{transform:scale(.985)}
-.role-card.is-tp{background:linear-gradient(135deg,#12365F,#0B1B33);color:#fff;border:1px solid rgba(158,197,255,.24)}
-.role-card.is-admin{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.14);box-shadow:none}
-.role-ico{width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:var(--blue-50);color:#2F5FD0}
+.gate-phone .input{background:#fff;font-size:16px;font-weight:700;letter-spacing:.01em;min-height:48px}
+.gate-demo{font-size:9.5px;color:var(--muted-2);margin-top:8px;line-height:1.5}
+.gate-roles{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.gate-roles-label{font-size:11px;font-weight:800;color:var(--muted-2);letter-spacing:.04em;margin-bottom:2px}
+.role-card{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:var(--surface-2);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:13px 14px;transition:transform .13s var(--ease),background .15s,border-color .15s}
+.role-card:active{transform:scale(.985);background:#F1F5FA}
+.role-ico{width:42px;height:42px;flex:0 0 42px;border-radius:13px;background:#EDF2FE;color:#2F5FD0}
 .role-ico .ic{width:20px;height:20px}
-.role-card.is-tp .role-ico{background:rgba(255,255,255,.12);color:#9EC5FF}
-.role-card.is-admin .role-ico{background:rgba(255,255,255,.1);color:#C7D7F2}
+.role-card.is-tp .role-ico{background:#E9F7F4;color:#0B7A6B}
+.role-card.is-admin .role-ico{background:#EFF2F6;color:#475569}
 .role-body{flex:1;min-width:0}
-.role-body b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-.03em}
-.role-body small{display:block;font-size:10.5px;line-height:1.5;margin-top:3px;color:var(--muted)}
-.role-card.is-tp .role-body small,.role-card.is-admin .role-body small{color:rgba(232,239,250,.62)}
+.role-body b{display:flex;align-items:center;gap:5px;font-size:14.5px;font-weight:800;letter-spacing:-.03em}
+.role-body small{display:block;font-size:11px;line-height:1.5;margin-top:2px;color:var(--muted)}
+.demo-badge{font-size:9px;font-weight:800;color:#1D4ED8;background:#E4ECFF;border-radius:5px;padding:2px 5px;vertical-align:2px}
 .role-arrow{color:#C3CBD8;flex:0 0 auto;display:flex}
 .role-arrow .ic{width:17px;height:17px}
-.role-card.is-tp .role-arrow,.role-card.is-admin .role-arrow{color:rgba(232,239,250,.45)}
-.gate-foot{margin-top:auto;padding-top:20px;text-align:center}
-.gate-link{font-size:12px;font-weight:700;color:#9EC5FF;text-decoration:underline;text-underline-offset:3px;background:none;padding:8px}
-.gate-foot p{font-size:9.5px;line-height:1.55;color:rgba(232,239,250,.4);margin-top:8px}
+
+/* 서비스 지역 확인 시트 */
+.region-quick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:16px}
+.region-quick button{
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:700;color:#44546A;
+  background:#fff;border:1px solid var(--line-strong);border-radius:999px;padding:9px 6px;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.region-quick button.is-on{background:var(--navy);border-color:var(--navy);color:#fff}
+.region-quick button .ic{width:12px;height:12px;color:#0B7A6B}
+.region-quick button.is-on .ic{color:#7FE3D6}
+.region-fields{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+.region-fields .field{margin:0}
+.region-result{margin-top:18px;border-radius:18px;padding:16px;border:1px solid var(--line);background:var(--surface-2)}
+.region-result.is-ok{background:#F3FBF8;border-color:rgba(13,148,136,.22)}
+.region-result.is-wait{background:#FFFCF4;border-color:rgba(180,83,9,.18)}
+.region-result[hidden]{display:none}
+.rr-badge{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:800;border-radius:999px;padding:4px 9px;background:#fff;border:1px solid var(--line-strong);color:var(--muted)}
+.rr-badge .ic{width:12px;height:12px;stroke-width:2}
+.region-result.is-ok .rr-badge{color:#0B7A6B;border-color:rgba(13,148,136,.32)}
+.region-result.is-wait .rr-badge{color:#9A5B12;border-color:rgba(180,83,9,.26)}
+.rr-title{display:block;font-size:15px;font-weight:800;letter-spacing:-.035em;margin-top:10px;color:var(--ink)}
+.rr-sub{font-size:12px;color:#546279;margin-top:6px;line-height:1.55}
+.rr-sub b{color:var(--navy);font-weight:800}
+.region-result .btn{margin-top:14px;min-height:50px;font-size:14px}
+.region-hint{font-size:11px;color:var(--muted-2);line-height:1.55;margin-top:14px;text-align:center}
 
 /* ---------- partner application ---------- */
 .back-link{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:700;color:var(--blue);padding:6px 0;margin-bottom:4px}
@@ -1126,6 +1229,33 @@ body.show-book-total .toast{bottom:184px}
 body.sheet-open .toast{top:calc(14px + env(safe-area-inset-top));bottom:auto}
 body.sheet-open .toast{transform:translate(-50%,-6px)}
 body.sheet-open .toast.is-on{transform:translate(-50%,0)}
+/* =====================================================================
+   v4 · 커버링 레퍼런스 톤 동기화
+   순백/아주 옅은 그레이 캔버스 + 넉넉한 여백 + 얇은 보더 카드
+   (값은 v2 변수를 그대로 쓰고 밀도만 낮춘다)
+   ===================================================================== */
+.app{
+  background:
+    radial-gradient(140% 220px at 50% -60px,#F3F6FC 0%,rgba(243,246,252,0) 72%),
+    linear-gradient(180deg,#FFFFFF 0,rgba(255,255,255,0) 160px),
+    var(--bg);
+}
+.screen{padding:16px 18px 10px}
+.page-head{padding:10px 2px 0}
+.sec{margin-top:27px}
+.sec-head{margin-bottom:12px}
+.card{padding:18px;border-radius:20px;box-shadow:0 1px 2px rgba(15,23,42,.03),0 18px 34px -30px rgba(15,23,42,.35)}
+.teacher{padding:18px;margin-top:11px;border-radius:20px;box-shadow:0 1px 2px rgba(15,23,42,.03),0 16px 30px -30px rgba(15,23,42,.35)}
+.t-top{gap:13px}
+.hero{padding:25px 21px 21px;margin-top:14px}
+.quick{gap:9px;margin-top:12px}
+.quick button{padding:14px 6px 13px;border-radius:17px}
+.price-row{padding:15px 16px;border-radius:18px}
+.sym{padding:16px 15px;border-radius:19px}
+.stat,.step-item,.side-card{border-radius:17px}
+.empty{border-radius:20px}
+.fine{margin-top:12px}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
@@ -2269,40 +2399,110 @@ body.sheet-open .toast.is-on{transform:translate(-50%,0)}
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<!-- 로그인 · 역할 선택 -->
+<!-- 시작 화면 · 서비스 지역 · 역할 선택 -->
 <div class="gate" id="entryGate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
   <div class="gate-inner">
     <div class="gate-brand">
-      <img class="gate-logo" id="gateLogo" src="" alt="똑똑쌤 로고">
-      <h1 id="gateTitle">똑똑쌤</h1>
-      <p>우리 집 문을 두드리는 전국 검증 재활 쌤</p>
-    </div>
-    <p class="gate-lead">어떤 화면으로 들어갈까요?</p>
-    <div class="gate-phone">
-      <label for="gatePhone">휴대폰 번호</label>
-      <input class="input" id="gatePhone" type="tel" inputmode="numeric" value="010-1234-5678" maxlength="13" autocomplete="tel">
-      <p class="gate-demo">* 데모 번호가 채워져 있습니다. 실제 인증 문자는 발송되지 않습니다.</p>
-    </div>
-    <div class="gate-roles">
-      <button class="role-card" type="button" data-login="customer">
-        <span class="role-ico" aria-hidden="true"><svg class="ic"><use href="#i-user"/></svg></span>
-        <span class="role-body"><b>고객</b><small>선생님 찾기 · 예약 · 일지</small></span>
-        <span class="role-arrow" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
-      </button>
-      <button class="role-card is-tp" type="button" data-login="therapist">
-        <span class="role-ico" aria-hidden="true"><svg class="ic"><use href="#i-stethoscope"/></svg></span>
-        <span class="role-body"><b>선생님</b><small>방문 요청 · 일정 · 정산</small></span>
-        <span class="role-arrow" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
-      </button>
-      <button class="role-card is-admin" type="button" data-login="admin">
-        <span class="role-ico" aria-hidden="true"><svg class="ic"><use href="#i-shield-check"/></svg></span>
-        <span class="role-body"><b>관리자 <span style="font-size:9px;font-weight:800;color:#9EC5FF;background:rgba(255,255,255,.12);border-radius:5px;padding:2px 5px;vertical-align:2px">DEMO</span></b><small>심사 콘솔 · 승인 · 보완</small></span>
-        <span class="role-arrow" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
+      <div class="gate-brand-row">
+        <img class="gate-logo" id="gateLogo" src="" alt="똑똑쌤 로고">
+        <h1 id="gateTitle">똑똑<span>쌤</span></h1>
+      </div>
+      <button class="gate-region" type="button" id="gateRegionBtn" aria-label="서비스 지역 확인하기">
+        <svg class="ic" aria-hidden="true"><use href="#i-map-pin"/></svg>
+        <span id="gateRegionText"><b>전국</b> 17개 시·도</span>
+        <svg class="ic" aria-hidden="true" style="color:#C3CBD8"><use href="#i-chev-r"/></svg>
       </button>
     </div>
-    <div class="gate-foot">
-      <button class="gate-link" type="button" data-login="demo">로그인 없이 둘러보기</button>
-      <p>똑똑쌤은 의료기관이 아니며 의료행위를 제공하지 않습니다.<br>방문 재활운동·생활 지원을 중개합니다.</p>
+
+    <ul class="gate-points" id="gatePoints">
+      <li class="gate-point">
+        <span class="gate-point-ico" aria-hidden="true"><svg class="ic"><use href="#i-shield-check"/></svg></span>
+        <div class="gate-point-body"><b>국가면허 검증 선생님</b><p>물리·작업치료사 직접 매칭</p></div>
+      </li>
+      <li class="gate-point">
+        <span class="gate-point-ico" aria-hidden="true"><svg class="ic"><use href="#i-home"/></svg></span>
+        <div class="gate-point-body"><b>병원 이동 없이 집에서</b><p>1:1 맞춤형 방문 재활 수업</p></div>
+      </li>
+      <li class="gate-point">
+        <span class="gate-point-ico" aria-hidden="true"><svg class="ic"><use href="#i-wallet"/></svg></span>
+        <div class="gate-point-body"><b>거품 뺀 합리적 비용</b><p>투명한 회차권 · 10% 낮은 수수료</p></div>
+      </li>
+      <li class="gate-point">
+        <span class="gate-point-ico" aria-hidden="true"><svg class="ic"><use href="#i-map-pin"/></svg></span>
+        <div class="gate-point-body"><b>전국 17개 시·도 연결</b><p>서울·경기부터 지방까지 빠른 매칭</p></div>
+      </li>
+    </ul>
+
+    <div class="gate-bottom">
+      <div class="gate-tip" id="gateTip">지금 시작하면 첫 1:1 방문 평가 0원</div>
+      <button class="gate-cta" type="button" id="gateCta">휴대폰 번호로 시작하기</button>
+      <div class="gate-links">
+        <button class="gate-link is-primary" type="button" id="gateRegionLink">서비스 지역 확인하기</button>
+        <span class="gate-sep" aria-hidden="true"></span>
+        <button class="gate-link" type="button" data-login="demo">로그인 없이 둘러보기</button>
+      </div>
+      <p class="gate-legal">똑똑쌤은 의료기관이 아니며 의료행위를 제공하지 않습니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 시작 화면 · 휴대폰 번호 + 역할 선택 시트 -->
+<div class="sheet-backdrop is-gate" id="gateSheet" role="dialog" aria-modal="true" aria-labelledby="gateSheetTitle">
+  <div class="sheet gate-sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close sheet-close-top" type="button" data-gate-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="sheet-scroll">
+      <h2 class="sheet-title" id="gateSheetTitle">휴대폰 번호로 시작하기</h2>
+      <p class="sheet-desc">번호만 확인하면 바로 시작할 수 있어요.<br>지금 이용할 화면을 골라 주세요.</p>
+      <div class="gate-phone">
+        <label for="gatePhone"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>휴대폰 번호</label>
+        <input class="input" id="gatePhone" type="tel" inputmode="numeric" value="010-1234-5678" maxlength="13" autocomplete="tel">
+        <p class="gate-demo">* 데모 번호가 채워져 있습니다. 실제 인증 문자는 발송되지 않습니다.</p>
+      </div>
+      <div class="gate-roles" id="gateRoles">
+        <p class="gate-roles-label">이용 화면 선택</p>
+        <button class="role-card" type="button" data-login="customer">
+          <span class="role-ico" aria-hidden="true"><svg class="ic"><use href="#i-user"/></svg></span>
+          <span class="role-body"><b>고객</b><small>선생님 찾기 · 예약 · 일지</small></span>
+          <span class="role-arrow" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
+        </button>
+        <button class="role-card is-tp" type="button" data-login="therapist">
+          <span class="role-ico" aria-hidden="true"><svg class="ic"><use href="#i-stethoscope"/></svg></span>
+          <span class="role-body"><b>선생님</b><small>방문 요청 · 일정 · 정산</small></span>
+          <span class="role-arrow" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
+        </button>
+        <button class="role-card is-admin" type="button" data-login="admin">
+          <span class="role-ico" aria-hidden="true"><svg class="ic"><use href="#i-shield-check"/></svg></span>
+          <span class="role-body"><b>관리자 <span class="demo-badge">DEMO</span></b><small>심사 콘솔 · 승인 · 보완</small></span>
+          <span class="role-arrow" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
+        </button>
+      </div>
+      <p class="region-hint">고객·선생님·관리자(데모) 화면은 언제든 상단에서 바꿀 수 있어요.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 시작 화면 · 서비스 지역 확인 시트 -->
+<div class="sheet-backdrop is-gate" id="regionSheet" role="dialog" aria-modal="true" aria-labelledby="regionTitle">
+  <div class="sheet gate-sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close sheet-close-top" type="button" data-region-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="sheet-scroll">
+      <h2 class="sheet-title" id="regionTitle">우리 동네도 되나요?</h2>
+      <p class="sheet-desc">시·도와 시·군·구를 고르면 바로 매칭이 가능한지 알려드려요.<br><span id="regionLead">전국 17개 시·도 가운데 6개 지역부터 선생님이 활동 중입니다.</span></p>
+      <div class="region-quick" id="regionQuick" role="group" aria-label="선생님이 활동 중인 지역"></div>
+      <div class="region-fields">
+        <div class="field">
+          <label for="regionProvince">시·도</label>
+          <select id="regionProvince"><option value="">시·도 선택</option></select>
+        </div>
+        <div class="field">
+          <label for="regionDistrict">시·군·구</label>
+          <select id="regionDistrict" disabled><option value="">시·도를 먼저 선택해 주세요</option></select>
+        </div>
+      </div>
+      <div class="region-result" id="regionResult" hidden></div>
+      <p class="region-hint">* 매칭 가능 여부는 선생님 활동 상황에 따라 달라질 수 있어요.</p>
     </div>
   </div>
 </div>
@@ -4902,6 +5102,10 @@ body.sheet-open .toast.is-on{transform:translate(-50%,0)}
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
+    var reg = $('#regionSheet');
+    if (reg && reg.classList.contains('is-open')) { closeRegionSheet(); return; }
+    var gs = $('#gateSheet');
+    if (gs && gs.classList.contains('is-open')) { closeGateSheet(); return; }
     if (chatSheetOpen()) { closeChat(); return; }
     var rs = $('#reviewSheet');
     if (rs && rs.classList.contains('is-open')) { closeReview(); return; }
@@ -4916,10 +5120,13 @@ body.sheet-open .toast.is-on{transform:translate(-50%,0)}
     try { saved = SafeStorage.getItem(PHONE_KEY); } catch (e) {}
     var input = $('#gatePhone');
     if (input && saved) input.value = saved;
+    syncGateRegion();
     $('#entryGate').classList.add('is-open');
   }
   function closeGate() {
     $('#entryGate').classList.remove('is-open');
+    closeGateSheet();
+    closeRegionSheet();
   }
   function loginAs(kind) {
     var input = $('#gatePhone');
@@ -4937,8 +5144,244 @@ body.sheet-open .toast.is-on{transform:translate(-50%,0)}
     }
   }
 
+  /* ================= 시작 화면 시트 · 서비스 지역 ================= */
+  var REGION_KEY = 'ttokttok_region_v1';
+  var REGION_NOTICE_KEY = 'ttokttok_region_notice_v1';
+
+  function readRegion() {
+    var raw = null;
+    try { raw = SafeStorage.getItem(REGION_KEY); } catch (e) {}
+    if (!raw) return null;
+    try {
+      var v = JSON.parse(raw);
+      return (v && v.province) ? v : null;
+    } catch (e) { return null; }
+  }
+  function saveRegion(province, district) {
+    try { SafeStorage.setItem(REGION_KEY, JSON.stringify({ province: province, district: district || '' })); } catch (e) {}
+  }
+  function regionNotices() {
+    var raw = null;
+    try { raw = SafeStorage.getItem(REGION_NOTICE_KEY); } catch (e) {}
+    if (!raw) return [];
+    try {
+      var v = JSON.parse(raw);
+      return Object.prototype.toString.call(v) === '[object Array]' ? v : [];
+    } catch (e) { return []; }
+  }
+  function isNotified(key) { return regionNotices().indexOf(key) !== -1; }
+  function addNotice(key) {
+    var list = regionNotices();
+    if (list.indexOf(key) === -1) list.push(key);
+    try { SafeStorage.setItem(REGION_NOTICE_KEY, JSON.stringify(list)); } catch (e) {}
+  }
+
+  function openGateSheet() {
+    var sheet = $('#gateSheet');
+    if (!sheet) return;
+    sheet.classList.add('is-open');
+    syncBodyState();
+    var input = $('#gatePhone');
+    if (input) {
+      try { input.focus({ preventScroll: true }); } catch (e) {}
+    }
+  }
+  function closeGateSheet() {
+    var sheet = $('#gateSheet');
+    if (sheet) sheet.classList.remove('is-open');
+    syncBodyState();
+  }
+
+  function teachersInProvince(province) {
+    return teachers.filter(function (t) { return String(t.regions || '').indexOf(province) === 0; });
+  }
+  function districtKeys(district) {
+    return String(district || '').split(' ').map(function (w) {
+      return w.replace(/(시|군|구|동)$/, '');
+    }).filter(function (w) { return w.length >= 2; });
+  }
+  function regionMatch(province, district) {
+    var pool = teachersInProvince(province);
+    var keys = districtKeys(district);
+    var hit = keys.length ? pool.filter(function (t) {
+      return keys.some(function (k) { return String(t.regions || '').indexOf(k) !== -1; });
+    }) : [];
+    return {
+      available: pool.length > 0,
+      exact: hit.length > 0,
+      count: hit.length || pool.length,
+      total: pool.length
+    };
+  }
+
+  function fillRegionDistricts() {
+    var prov = $('#regionProvince');
+    var dist = $('#regionDistrict');
+    if (!prov || !dist) return;
+    var p = prov.value;
+    dist.innerHTML = '';
+    if (!p) {
+      dist.appendChild(new Option('시·도를 먼저 선택해 주세요', ''));
+      dist.disabled = true;
+      renderRegionResult();
+      return;
+    }
+    dist.appendChild(new Option('시·군·구 선택 (선택)', ''));
+    (REGIONS[p] || []).forEach(function (d) {
+      dist.appendChild(new Option(d, d));
+    });
+    dist.disabled = false;
+    renderRegionResult();
+  }
+
+  function renderRegionResult() {
+    var prov = $('#regionProvince');
+    var dist = $('#regionDistrict');
+    var box = $('#regionResult');
+    if (!prov || !dist || !box) return;
+    var p = prov.value;
+    if (!p) { box.hidden = true; box.innerHTML = ''; return; }
+    var d = dist.value || '';
+    var st = regionMatch(p, d);
+    var where = p + (d ? ' ' + d : '');
+    box.hidden = false;
+    if (st.available) {
+      box.className = 'region-result is-ok';
+      box.innerHTML =
+        '<span class="rr-badge">' + icon('check-circle') + '바로 매칭 가능</span>' +
+        '<b class="rr-title">바로 매칭 가능 지역입니다</b>' +
+        '<p class="rr-sub">' + esc(where) + ' · 선생님 <b>' + st.count + '명</b> 활동중' +
+          (st.exact || !d ? '' : ' (인근 지역 포함)') + '</p>' +
+        '<button class="btn btn-navy" type="button" id="regionGo">이 지역 선생님 보기' + icon('arrow-r') + '</button>';
+    } else {
+      var key = p + '|' + d;
+      box.className = 'region-result is-wait';
+      box.innerHTML =
+        '<span class="rr-badge">' + icon('clock') + '오픈 준비 중</span>' +
+        '<b class="rr-title">아직 오픈 준비 중이에요</b>' +
+        '<p class="rr-sub">' + esc(where) + '는 선생님을 모으고 있어요.<br>오픈하면 가장 먼저 알려드릴게요.</p>' +
+        (isNotified(key)
+          ? '<button class="btn btn-ghost" type="button" id="regionNotify" disabled>' + icon('check') + '알림 신청 완료</button>'
+          : '<button class="btn btn-outline" type="button" id="regionNotify">' + icon('bell') + '오픈 알림 신청하기</button>');
+    }
+  }
+
+  function syncGateRegion() {
+    var text = $('#gateRegionText');
+    if (!text) return;
+    var saved = readRegion();
+    if (saved && saved.district) {
+      text.innerHTML = esc(saved.province) + ' <b>' + esc(saved.district) + '</b>';
+    } else if (saved) {
+      text.innerHTML = '내 지역 <b>' + esc(saved.province) + '</b>';
+    } else {
+      text.innerHTML = '<b>전국</b> 17개 시·도';
+    }
+  }
+
+  function buildRegionSheet() {
+    var prov = $('#regionProvince');
+    var quick = $('#regionQuick');
+    if (!prov || prov.getAttribute('data-ready') === '1') return;
+    PROVINCES.forEach(function (p) {
+      prov.appendChild(new Option(p, p));
+    });
+    prov.setAttribute('data-ready', '1');
+    if (quick) {
+      var open = PROVINCES.filter(function (p) { return teachersInProvince(p).length > 0; });
+      quick.innerHTML = open.map(function (p) {
+        return '<button type="button" data-region-quick="' + esc(p) + '">' + icon('check') + esc(p) + '</button>';
+      }).join('');
+      var lead = $('#regionLead');
+      if (lead) lead.textContent = '전국 ' + PROVINCES.length + '개 시·도 가운데 ' + open.length + '개 지역부터 선생님이 활동 중입니다.';
+    }
+    var saved = readRegion();
+    if (saved && saved.province) {
+      prov.value = saved.province;
+      fillRegionDistricts();
+      var dist = $('#regionDistrict');
+      if (dist && saved.district) dist.value = saved.district;
+      renderRegionResult();
+    }
+    syncQuickChips();
+  }
+
+  function syncQuickChips() {
+    var prov = $('#regionProvince');
+    var on = prov ? prov.value : '';
+    $$('#regionQuick [data-region-quick]').forEach(function (b) {
+      b.classList.toggle('is-on', b.getAttribute('data-region-quick') === on);
+    });
+  }
+
+  function openRegionSheet() {
+    var sheet = $('#regionSheet');
+    if (!sheet) return;
+    buildRegionSheet();
+    syncQuickChips();
+    sheet.classList.add('is-open');
+    syncBodyState();
+  }
+  function closeRegionSheet() {
+    var sheet = $('#regionSheet');
+    if (sheet) sheet.classList.remove('is-open');
+    syncBodyState();
+  }
+
+  function goRegionTeachers() {
+    var prov = $('#regionProvince');
+    var dist = $('#regionDistrict');
+    if (!prov || !prov.value) return;
+    var p = prov.value;
+    var d = dist ? (dist.value || '') : '';
+    saveRegion(p, d);
+    syncGateRegion();
+    var st = regionMatch(p, d);
+    closeGate();
+    teacherCat = 'all';
+    teacherZone = 'all';
+    teacherQuery = p;
+    setRole('customer');
+    renderTeachers();
+    showTab('teachers');
+    toast(p + (d ? ' ' + d : '') + ' 선생님 ' + st.count + '명을 보여드려요.');
+  }
+
+  (function bindRegionSheet() {
+    var prov = $('#regionProvince');
+    if (prov) prov.addEventListener('change', function () { fillRegionDistricts(); syncQuickChips(); });
+    var dist = $('#regionDistrict');
+    if (dist) dist.addEventListener('change', renderRegionResult);
+  })();
+
+
   /* ================= 공통 클릭 핸들러 ================= */
   document.addEventListener('click', function (e) {
+    if (e.target.closest('#gateCta')) { openGateSheet(); return; }
+    if (e.target.closest('#gateRegionBtn') || e.target.closest('#gateRegionLink')) { openRegionSheet(); return; }
+    if (e.target.closest('[data-gate-close]') || e.target.id === 'gateSheet') { closeGateSheet(); return; }
+    if (e.target.closest('[data-region-close]') || e.target.id === 'regionSheet') { closeRegionSheet(); return; }
+
+    var quick = e.target.closest('[data-region-quick]');
+    if (quick) {
+      var provSel = $('#regionProvince');
+      if (provSel) {
+        provSel.value = quick.getAttribute('data-region-quick');
+        fillRegionDistricts();
+        syncQuickChips();
+      }
+      return;
+    }
+    if (e.target.closest('#regionGo')) { goRegionTeachers(); return; }
+    if (e.target.closest('#regionNotify')) {
+      var pv = $('#regionProvince');
+      var dt = $('#regionDistrict');
+      addNotice((pv ? pv.value : '') + '|' + (dt ? (dt.value || '') : ''));
+      renderRegionResult();
+      toast('오픈 알림을 신청했어요. 준비되면 가장 먼저 알려드릴게요.');
+      return;
+    }
+
     var login = e.target.closest('[data-login]');
     if (login) { loginAs(login.getAttribute('data-login')); return; }
 
@@ -5716,6 +6159,7 @@ body.sheet-open .toast.is-on{transform:translate(-50%,0)}
   /* ================= 초기 실행 ================= */
   var gateLogo = $('#gateLogo');
   if (gateLogo && $('#brandMark')) gateLogo.src = $('#brandMark').src;
+  buildRegionSheet();
   setRole('customer', 'home');
   applySavedReviews();
   syncProvinceChips();
