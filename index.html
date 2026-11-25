@@ -7609,7 +7609,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<p class="rc-quote-top">' + icon('message') + '선생님 코멘트</p>' +
         '<p>' + esc(REPORT_COMMENT) + '</p>' +
       '</div>' +
-      '<div class="rc-foot"><span>똑똑쌤 · 국가면허 검증 선생님</span><span>가족에게만 공유해 주세요</span></div>';
+      '<div class="rc-foot"><span>똑똑쌤 · ' + (function () {
+        var t = teacherById(REPORT_PATIENT.teacherId);
+        return (t && TtModel.isVerified(t, 'license')) ? '국가면허 검증 선생님' : '방문재활 선생님';
+      })() + '</span><span>가족에게만 공유해 주세요</span></div>';
   }
 
   function reportCopyText() {
@@ -7885,12 +7888,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var el = $('#tpStatusCard');
     if (!el) return;
     if (isApproved()) {
+      var vSt = TtModel.verificationOf(partner);
+      var vDone = function (k) { return vSt[k] === 'verified' ? '완료' : '진행 중'; };
       el.innerHTML =
         '<div class="card">' +
           '<div class="card-head" style="margin-bottom:10px"><h2>파트너 심사 상태</h2><span class="status-badge is-on">심사 완료 · 활동중</span></div>' +
           '<div class="tp-detail">' +
-            '<div class="row"><span>면허 검증</span><b>' + esc(partner.license) + ' · 완료</b></div>' +
-            '<div class="row"><span>경력 확인</span><b>' + esc(partner.years) + ' · 완료</b></div>' +
+            '<div class="row"><span>면허 확인</span><b>' + esc(partner.license) + ' · ' + vDone('license') + '</b></div>' +
+            '<div class="row"><span>경력 확인</span><b>' + esc(partner.years) + ' · ' + vDone('career') + '</b></div>' +
+            '<div class="row"><span>신분 확인</span><b>' + vDone('identity') + '</b></div>' +
             '<div class="row"><span>범죄경력조회</span><b>완료 (' + esc(partner.approvedAt || '-') + ')</b></div>' +
             '<div class="row"><span>활동 지역</span><b>' + esc(partner.province) + ' ' + esc((partner.districts || []).join('·')) + '</b></div>' +
           '</div>' +
