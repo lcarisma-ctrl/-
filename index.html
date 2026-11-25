@@ -5555,6 +5555,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
   ];
 
+  /* 마스킹된 면허번호는 원본에서 파생해 시드에도 필드로 채워 둔다(화면은 이 값을 쓰지 않고 항상 maskLicenseNo를 다시 적용). */
+  teachers.forEach(function (t) { t.licenseMasked = TtModel.maskLicenseNo(t.licenseNo); });
+
   /* v9 · 선생님 일러스트 아바타 (파스텔 배경 + 플랫 인물 SVG, 외부 이미지 없음) */
   var AVA_THEMES = [
     { bg: 'linear-gradient(150deg,#DCE9FB 0%,#BCD3F6 100%)', skin: '#F2C9A7', shade: '#E4B491', hair: '#33405A', scrub: '#149C8C' },
