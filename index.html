@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v15">
+<meta name="app-version" content="v16">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2523,7 +2523,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             </div>
             <p class="discount-note" id="discountNote" hidden></p>
             <button class="btn btn-teal" type="button" id="payBtn">결제하고 예약 완료</button>
-            <p class="pay-note">프로토타입입니다. 실제 결제는 이루어지지 않습니다.<br>취소·환불은 방문 24시간 전까지 무료입니다.</p>          </div>
+            <p class="pay-note">프로토타입입니다. 실제 결제는 이루어지지 않습니다.<br>취소·환불은 방문 24시간 전까지 무료이며, 자세한 기준은 FAQ &gt; 서비스·환불(운영 기준 초안)에서 확인할 수 있습니다.</p>          </div>
 
           <div class="wiz-nav">
             <button class="btn btn-back" type="button" data-back="4">이전</button>
@@ -3629,10 +3629,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       <div class="faq-list" id="faqList"></div>
       <div class="terms-tabs" id="faqTabs" role="tablist" aria-label="약관 보기">
         <button type="button" class="is-on" data-terms="terms" role="tab" aria-selected="true">이용약관</button>
+        <button type="button" data-terms="policy" role="tab" aria-selected="false">서비스·환불</button>
         <button type="button" data-terms="privacy" role="tab" aria-selected="false">개인정보처리방침</button>
       </div>
       <div class="terms-body" id="termsBody"></div>
-      <p class="sheet-note">* 정식 오픈 전 약관 요약본입니다. 전문은 오픈 시 게시됩니다.</p>
+      <p class="sheet-note" id="faqDraftNote">* 정식 오픈 전 약관 요약본입니다. 서비스 기준·비용·환불 규정은 <b>법률 자문이 아닌 운영 기준 초안</b>이며, 정식 오픈 전 전문가 검토를 거칩니다.</p>
       <a class="sheet-beta-link" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">더 궁금한 점은 상담 폼으로 문의<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg></a>
     </div>
   </div>
@@ -4456,6 +4457,224 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
 
     /* =================================================================
+       v16 · 서비스 기준·비용·환불 규정 (POLICIES-AND-FEES.md)
+       ─────────────────────────────────────────────────────────────────
+       운영 기준 초안을 코드로 옮긴 계산 계층. 법률 자문이 아니다.
+       · POLICY_META   : 초안 표시·면책 고지·전문가 검토 항목(L1~L7)
+       · PRICING       : 회당 60분·회차권 단가·출장비·가산·수수료율
+       · REFUND_RULES  : 24시간 전/이내/이후 구간·사유별 환불율·노쇼 유예
+       · calculateRefundQuote : 단건·회차권 취소 견적
+       · calculatePassRefund  : 다회권 중도 해지(정상가 공제 후 잔액)
+       · POLICY_DOCS   : FAQ/약관 '서비스·환불' 탭 본문
+       어떤 함수도 DOM을 건드리지 않는다. 모르는 사유는 환불 0%로 막는다.
+       ================================================================= */
+    var POLICY_VERSION = 16;
+    var POLICY_META = {
+      version: 'v16',
+      docVersion: 'POLICIES-AND-FEES v1.0',
+      updatedAt: '2026-11-26',
+      isDraft: true,
+      draftLabel: '법률 자문이 아닌 운영 기준 초안',
+      legalDisclaimer: '이 기준은 똑똑쌤 사업의 운영 기준 초안이며, 의료법·직업안정법·전자상거래법 등 법률 자문이 아닙니다. 정식 오픈 전 전문가 검토가 필요합니다.',
+      reviewItems: [
+        { code: 'employment_agency', label: '유료직업소개사업 해당 여부(직업안정법)', note: '선생님 연결·수수료 구조' },
+        { code: 'medical_scope', label: '의료행위/비의료 재활·돌봄 범위 표현(의료법)', note: '진단·처방·치료 표현 금지' },
+        { code: 'ecommerce', label: '통신판매업 신고·청약철회 고지(전자상거래법)', note: '용역 시작 전 고지' },
+        { code: 'privacy', label: '건강정보 민감정보 동의·위탁(개인정보보호법)', note: '별도 동의' },
+        { code: 'door_to_door', label: '방문판매법 해당 여부', note: '가정 방문 계약' },
+        { code: 'tax', label: '부가세·원천징수 처리', note: '면세 용역 여부' },
+        { code: 'liability', label: '배상책임·보험', note: '방문 중 사고' }
+      ]
+    };
+
+    /* 가격표 — 화면 시드(passes[])와 같은 값. 어긋나면 테스트가 잡는다. */
+    var PRICING = {
+      version: 'v16',
+      currency: 'KRW',
+      visitMinutes: 60,
+      travelFee: 0,
+      weekendSurchargePct: 0,
+      nightSurchargePct: 0,
+      platformFeeRate: 0.10,
+      settlementDayOfMonth: 10,
+      passValidDays: 90,
+      freeEvalSessions: 1,
+      regularSinglePrice: 85000,
+      plans: [
+        { id: 'eval', name: '첫 1:1 방문 평가권', sessions: 1, price: 0, listPrice: 50000 },
+        { id: 'p1', name: '1회 방문권', sessions: 1, price: 85000, listPrice: 85000 },
+        { id: 'p4', name: '4회 방문권', sessions: 4, price: 320000, listPrice: 340000 },
+        { id: 'p8', name: '8회 방문권', sessions: 8, price: 592000, listPrice: 680000 },
+        { id: 'p12', name: '12회 집중 재활', sessions: 12, price: 840000, listPrice: 1020000 }
+      ]
+    };
+
+    var REFUND_RULES = {
+      version: 'v16',
+      isDraft: true,
+      noShowGraceMinutes: 30,
+      contactTryMinutes: 15,
+      changeFreeUntilHours: 24,
+      refundBusinessDays: { card: '3~5', bank: '3' },
+      /* 보호자 취소 구간. minHours 내림차순으로 판정한다. */
+      tiers: [
+        { code: 'before_24h', minHours: 24, pct: 100, label: '방문 24시간 전 · 전액 환불',
+          passLabel: '방문 24시간 전 · 회차 1회 복구', change: 'free', restoreSessions: 1 },
+        { code: 'within_24h', minHours: 0, pct: 50, label: '방문 24시간 이내 · 50% 환불',
+          passLabel: '방문 24시간 이내 · 1회 차감', change: 'deduct_1', deductSessions: 1 },
+        { code: 'after_start', minHours: null, pct: 0, label: '방문 시각 이후 · 환불 불가',
+          passLabel: '방문 시각 이후 · 1회 차감 · 환불 불가', change: 'none', deductSessions: 1 }
+      ],
+      /* 사유별. pct가 있으면 구간과 무관하게 그 비율을 쓴다. */
+      reasons: {
+        customer: { label: '보호자 취소', byTier: true },
+        no_show: { pct: 0, label: '노쇼(방문 시각 +30분 경과) · 환불 불가', deductSessions: 1 },
+        teacher: { pct: 100, label: '선생님 사정 취소 · 전액 환불 또는 대체 배정', restoreSessions: 1 },
+        center: { pct: 100, label: '센터 사정 취소 · 전액 환불', restoreSessions: 1 },
+        force_majeure: { pct: 100, label: '천재지변·재난 · 전액 환불 또는 대체 배정', restoreSessions: 1 }
+      },
+      /* 다회권 중도 해지: 이용 회차를 정상가로 공제한 뒤 잔액 환불 */
+      passRefund: { basis: 'regular_single_price', regularSinglePrice: 85000, minRefund: 0 }
+    };
+
+    function refundTierFor(hours) {
+      var h = num(hours, 0);
+      var tiers = REFUND_RULES.tiers;
+      for (var i = 0; i < tiers.length; i++) {
+        if (tiers[i].minHours !== null && h >= tiers[i].minHours) return tiers[i];
+      }
+      return tiers[tiers.length - 1];
+    }
+
+    function wonText(n) { return num(n, 0).toLocaleString('ko-KR') + '원'; }
+
+    /* 알림·화면에 넣는 한 줄 안내 */
+    function refundTextOf(q) {
+      var r = q || {};
+      if (num(r.refund, 0) > 0) return '환불 예정 금액은 ' + wonText(r.refund) + '이에요.';
+      if (num(r.restoreSessions, 0) > 0) return '이용권 잔여 ' + num(r.restoreSessions, 1) + '회가 복구돼요.';
+      if (num(r.deductSessions, 0) > 0) return '이용권 1회가 차감되고 환불 금액은 없어요.';
+      if (num(r.amount, 0) > 0) return '환불 가능한 금액이 없어요.';
+      return '결제 내역이 없어 환불은 없어요.';
+    }
+
+    /* 단건·회차권 예약 1건 취소 견적.
+       amount = 해당 예약 결제액, hoursBeforeVisit = 방문까지 남은 시간(음수=지난)
+       reason = customer | no_show | teacher | center | force_majeure
+       opts  = { isPass, passSessions, remainingSessions, regularSinglePrice } */
+    function calculateRefundQuote(amount, hoursBeforeVisit, reason, opts) {
+      var o = opts || {};
+      var amt = Math.max(0, Math.round(num(amount, 0)));
+      var h = num(hoursBeforeVisit, 0);
+      var key = String(reason == null || reason === '' ? 'customer' : reason);
+      var rule = REFUND_RULES.reasons[key];
+      var quote = {
+        isDraft: true, policyVersion: POLICY_META.version, legalDisclaimer: POLICY_META.legalDisclaimer,
+        ok: true, error: '', reason: key, reasonLabel: '', amount: amt, hoursBeforeVisit: h,
+        isPass: !!o.isPass, tier: '', ruleCode: '', pct: 0, refund: 0, retained: 0,
+        restoreSessions: 0, deductSessions: 0, label: '', note: ''
+      };
+      if (!rule) {
+        quote.ok = false;
+        quote.error = 'unknown_reason';
+        quote.label = '알 수 없는 취소 사유 · 환불 불가';
+        quote.retained = amt;
+        quote.note = refundTextOf(quote);
+        return quote;
+      }
+      quote.reasonLabel = rule.label;
+      var pct = 0, label = '';
+      if (rule.byTier) {
+        var tier = refundTierFor(h);
+        quote.tier = tier.code;
+        quote.ruleCode = tier.code;
+        quote.label = o.isPass ? tier.passLabel : tier.label;
+        if (o.isPass) {
+          quote.restoreSessions = num(tier.restoreSessions, 0);
+          quote.deductSessions = num(tier.deductSessions, 0);
+          quote.pct = quote.restoreSessions ? 100 : 0;
+          quote.refund = 0;
+        } else {
+          pct = num(tier.pct, 0);
+          quote.pct = pct;
+          quote.refund = Math.round(amt * pct / 100);
+        }
+      } else {
+        quote.ruleCode = key;
+        quote.label = rule.label;
+        pct = num(rule.pct, 0);
+        quote.pct = pct;
+        if (o.isPass) {
+          quote.restoreSessions = pct === 100 ? 1 : 0;
+          quote.deductSessions = pct === 100 ? 0 : 1;
+          quote.refund = 0;
+        } else {
+          quote.refund = Math.round(amt * pct / 100);
+        }
+      }
+      quote.retained = Math.max(0, amt - quote.refund);
+      quote.note = refundTextOf(quote);
+      return quote;
+    }
+
+    /* 다회권 중도 해지: 이용 회차 정상가 공제 후 잔액 환불 */
+    function calculatePassRefund(input) {
+      var o = input || {};
+      var paid = Math.max(0, Math.round(num(o.paidAmount, 0)));
+      var total = Math.max(0, Math.round(num(o.totalSessions, 0)));
+      var used = Math.max(0, Math.min(total, Math.round(num(o.usedSessions, 0))));
+      var regular = Math.max(0, Math.round(num(o.regularSinglePrice, REFUND_RULES.passRefund.regularSinglePrice)));
+      var usedCharge = Math.min(paid, used * regular);
+      var refund = Math.max(num(REFUND_RULES.passRefund.minRefund, 0), paid - usedCharge);
+      return {
+        isDraft: true, policyVersion: POLICY_META.version, mode: 'pass',
+        paidAmount: paid, totalSessions: total, usedSessions: used, remainingSessions: total - used,
+        regularSinglePrice: regular, usedCharge: usedCharge, refund: refund,
+        label: '다회권 중도 해지 · 이용 ' + used + '회 정상가 공제 후 잔액 환불',
+        note: '이용 회차는 정상가(회당 ' + wonText(regular) + ')로 공제하고 남은 금액을 환불해요.'
+      };
+    }
+
+    /* FAQ/약관 '서비스·환불' 탭 본문. 화면은 sections를 ul로 그린다. */
+    var POLICY_DOCS = {
+      policy: {
+        title: '서비스 기준 · 비용 · 환불 규정 (v16 운영 기준 초안)',
+        draft: true,
+        note: POLICY_META.legalDisclaimer,
+        sections: [
+          {
+            name: '서비스 이용 기준',
+            items: [
+              '가정으로 방문해 <b>재활 운동과 일상 기능 회복을 지도</b>하는 중개 서비스예요. 1회 60분이 기준이고, 진단·처방·치료를 대신하지 않아요.',
+              '병원에서 받은 진단을 바탕으로 집에서 이어가는 운동을 돕고, 응급 상황에서는 119 또는 병원 진료를 먼저 안내해요.',
+              '65세 이상·낙상 위험·인지 저하가 있으면 <b>보호자 동석</b>을 권해요. 방문 전 집 안 동선과 복용약을 확인해요.',
+              '전염성 질환 활동기, 안전하지 않은 방문 환경, 폭언·폭행 상황에서는 방문을 중단하고 회차 차감 없이 재배정하거나 환불해요.'
+            ]
+          },
+          {
+            name: '비용 안내',
+            items: [
+              '첫 1:1 방문 평가는 <b>신규 1인 1회 무료</b>예요. 평가 후 정규 회차권을 안내해요.',
+              '1회 85,000원 · 4회 320,000원(회당 80,000원) · 8회 592,000원(회당 74,000원) · 12회 840,000원(회당 70,000원).',
+              '<b>출장비·주말·야간 가산은 없어요.</b> 운동 도구는 선생님이 지참해요.',
+              '회차권 유효기간은 구매일로부터 90일이고, 결제 금액에는 플랫폼 이용 수수료가 포함돼 있어요.'
+            ]
+          },
+          {
+            name: '취소·변경·환불 규정',
+            items: [
+              '<b>방문 24시간 전까지</b>: 무료 변경·취소. 회차권은 회차 1회 복구, 단건 결제는 전액 환불해요.',
+              '<b>방문 24시간 이내</b>: 회차권은 1회 차감, 단건 결제는 50% 환불해요. 변경도 1회 차감 후 가능해요.',
+              '<b>방문 시각 이후·노쇼</b>: 환불이 어려워요. 노쇼는 방문 시각 +30분까지 연락이 닿지 않을 때 기록해요.',
+              '선생님·센터 사정이나 천재지변으로 방문이 어려우면 <b>전액 환불 또는 대체 배정</b>이에요.',
+              '다회권 중도 해지는 이용 회차를 정상가(회당 85,000원)로 공제한 뒤 잔액을 환불해요. 카드 환불은 영업일 3~5일 걸려요.'
+            ]
+          }
+        ]
+      }
+    };
+
+    /* =================================================================
        v13 · 예약 상태기계 (RESERVATION-STATE-MACHINE.md)
        ─────────────────────────────────────────────────────────────────
        7개 enum(received·assigned·confirmed·rescheduled·completed·canceled·no_show)의
@@ -4573,9 +4792,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         date: r.date || r.dateIso || '',
         day: r.day || '',
         time: r.time || '',
-        refund: refund > 0
-          ? ('환불 예정 금액은 ' + refund.toLocaleString('ko-KR') + '원이에요.')
-          : '결제 내역이 없어 환불은 없어요.'
+        refund: (m.refundText != null && m.refundText !== '')
+          ? String(m.refundText)
+          : (refund > 0
+            ? ('환불 예정 금액은 ' + refund.toLocaleString('ko-KR') + '원이에요.')
+            : '결제 내역이 없어 환불은 없어요.')
       };
     }
     function noticeFor(resv, key, meta) {
@@ -5275,6 +5496,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       newTeacherApplication: newTeacherApplication,
       intakeVersion: INTAKE_VERSION,
       consultFormUrl: CONSULT_FORM_URL,
+      policyVersion: POLICY_VERSION,
+      policyMeta: POLICY_META,
+      pricing: PRICING,
+      refundRules: REFUND_RULES,
+      policyDocs: POLICY_DOCS,
+      calculateRefundQuote: calculateRefundQuote,
+      calculatePassRefund: calculatePassRefund,
+      refundTextOf: refundTextOf,
       symptomCodesOf: symptomCodesOf,
       symptomLabel: symptomLabel,
       isValidReservationNo: isValidReservationNo,
@@ -10037,10 +10266,35 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return (d.getTime() - Date.now()) / 3600000;
   }
   function refundPolicy(b) {
-    var h = hoursUntil(b);
-    if (h >= 24) return { pct: 100, label: '방문 24시간 전 · 전액 환불' };
-    if (h > 0) return { pct: 50, label: '방문 24시간 이내 · 50% 환불' };
-    return { pct: 0, label: '방문 이후 · 환불 불가' };
+    var q = cancelQuoteFor(b);
+    return { pct: q.pct, label: q.label, quote: q };
+  }
+  function walletOf(b) {
+    if (!b || !b.walletId) return null;
+    return (account.passes || []).filter(function (x) { return x.id === b.walletId; })[0] || null;
+  }
+  function passPaidOf(w) {
+    if (!w) return 0;
+    var p = passById(w.passId || '');
+    return p ? p.price : 0;
+  }
+  /* v16 · 취소 견적 한 곳. 화면(예상 환불)·알림·상태 이력이 같은 계산을 쓴다. */
+  function cancelQuoteFor(b, reason) {
+    var w = walletOf(b);
+    var isPass = !!(w && w.total > 1);
+    var amt = isPass ? passPaidOf(w) : bookingAmount(b);
+    return TtModel.calculateRefundQuote(amt, hoursUntil(b), reason || 'customer', {
+      isPass: isPass,
+      passSessions: w ? w.total : 1,
+      remainingSessions: w ? w.remaining : 0,
+      regularSinglePrice: TtModel.pricing.regularSinglePrice
+    });
+  }
+  function refundAmountText(q) {
+    if (!q) return '결제 없음';
+    if (q.refund > 0) return won(q.refund);
+    if (q.restoreSessions > 0) return '회차 ' + q.restoreSessions + '회 복구';
+    return q.amount > 0 ? '0원' : '결제 없음';
   }
   function bookingAmount(b) {
     var p = passById(b.passId);
@@ -10093,23 +10347,24 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
 
     if (manageCtx.step === 'confirm') {
-      var pol = refundPolicy(b);
-      var amt = bookingAmount(b);
-      var refund = Math.round(amt * pol.pct / 100);
+      var q = cancelQuoteFor(b);
+      var tierHtml = TtModel.refundRules.tiers.map(function (t) {
+        return '· ' + esc(t.label) + (t.change === 'free' ? ' (변경 무료)' : (t.change === 'deduct_1' ? ' (변경 시 1회 차감)' : '')) + '<br>';
+      }).join('');
       body.innerHTML = head +
         '<div class="refund-box" style="margin-top:14px">' +
           '<b>환불 규정</b><br>' +
-          '· 방문 24시간 전까지: 전액 환불<br>' +
-          '· 방문 24시간 이내: 50% 환불<br>' +
-          '· 방문 이후: 환불 불가' +
-          '<span style="display:block;margin-top:6px;color:#9A5B12">이번 예약은 <b>' + pol.label + '</b></span>' +
+          tierHtml +
+          '· 선생님·센터 사정, 천재지변: 전액 환불 또는 대체 배정' +
+          '<span style="display:block;margin-top:6px;color:#9A5B12">이번 예약은 <b>' + esc(q.label) + '</b></span>' +
         '</div>' +
-        '<div class="refund-amt"><span>예상 환불</span><b>' + (refund ? won(refund) : (amt ? '0원' : '결제 없음')) + '</b></div>' +
+        '<div class="refund-amt"><span>예상 환불</span><b>' + esc(refundAmountText(q)) + '</b></div>' +
         '<div class="reject-foot">' +
           '<button class="btn btn-ghost" type="button" data-manage-back>돌아가기</button>' +
           '<button class="btn btn-navy" type="button" data-manage-confirm>예약 취소</button>' +
         '</div>' +
-        '<p class="sheet-note">* 취소하면 이용권 잔여 1회가 복구됩니다.</p>';
+        '<p class="sheet-note">* ' + esc(q.note) + '</p>' +
+        '<p class="sheet-note">* ' + esc(TtModel.policyMeta.draftLabel) + '입니다. 정식 오픈 전 전문가 검토를 거칩니다.</p>';
       return;
     }
 
@@ -10175,19 +10430,23 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       toast('이미 ' + TtModel.reservationLabel(b.status) + ' 상태라 취소할 수 없어요.');
       return;
     }
-    var pol = refundPolicy(b);
-    var amt = bookingAmount(b);
-    var refund = Math.round(amt * pol.pct / 100);
+    var q = cancelQuoteFor(b);
+    var refund = q.refund;
     var tr = TtModel.transitionReservation(b, 'canceled', {
-      actor: 'customer', reason: pol.label, refund: refund
+      actor: 'customer', reason: q.label, refund: refund, refundText: q.note
     });
     if (!tr.ok) { toast(tr.message); return; }
     b.refund = refund;
-    b.refundLabel = pol.label;
+    b.refundLabel = q.label;
     b.paymentStatus = refund > 0 ? 'refund_pending' : 'paid';
     if (b.walletId) {
       var p = (account.passes || []).filter(function (x) { return x.id === b.walletId; })[0];
-      if (p && p.remaining < p.total) { p.remaining = p.remaining + 1; p.status = 'active'; p.updatedAt = TtModel.nowIso(); }
+      /* v16 · 24시간 전 취소만 회차를 복구한다. 24시간 이내·이후는 차감 유지(환불 없음). */
+      if (p && q.restoreSessions > 0 && p.remaining < p.total) {
+        p.remaining = Math.min(p.total, p.remaining + q.restoreSessions);
+        p.status = 'active';
+        p.updatedAt = TtModel.nowIso();
+      }
     }
     if (refund > 0) {
       account.receipts.unshift(TtModel.normalizePayment({
@@ -10598,7 +10857,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     {
       id: 'faq-refund',
       q: '환불과 일정 변경은 어떻게 하나요?',
-      a: '방문 <b>24시간 전까지 무료</b>로 일정 변경·취소가 가능해요. 취소하면 이용권 잔여 회차가 그대로 복구되고, 카드 결제는 영업일 기준 3~5일 안에 환불됩니다. 방문 당일 취소는 1회 차감, 선생님 도착 후 취소는 환불이 어려워요.'
+      a: '방문 <b>24시간 전까지 무료</b>로 일정 변경·취소가 가능해요. 취소하면 이용권 잔여 회차가 그대로 복구되고, 카드 결제는 영업일 기준 3~5일 안에 환불됩니다. 방문 24시간 이내에는 회차 1회가 차감되거나 단건 결제의 50%가 환불되고, 방문 시각 이후·노쇼(방문 시각 +30분까지 연락 두절)는 환불이 어려워요. 자세한 기준은 아래 <b>서비스·환불</b> 탭(운영 기준 초안)에서 확인할 수 있어요.'
     },
     {
       id: 'faq-prepare',
@@ -10630,7 +10889,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<b>보유 기간</b> 회원 탈퇴 후 30일 안에 파기하며, 전자 영수증은 관계 법령에 따라 5년 보관합니다.',
         '<b>제3자 제공</b> 담당 선생님에게 방문에 필요한 최소 정보만 전달하고, 보호자 리포트는 이용자가 직접 공유합니다.'
       ]
-    }
+    },
+    policy: TtModel.policyDocs.policy
   };
 
   var faqOpenId = '';
@@ -10659,7 +10919,17 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var doc = TERMS_DOCS[kind] || TERMS_DOCS.terms;
     var body = $('#termsBody');
     if (body) {
-      body.innerHTML = '<h3>' + esc(doc.title) + '</h3><ul>' + doc.items.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>';
+      var html = '<h3>' + esc(doc.title) + '</h3>';
+      if (doc.sections) {
+        html += '<ul>' + doc.sections.map(function (s) {
+          return '<li><b>' + esc(s.name) + '</b><ul>' +
+            s.items.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul></li>';
+        }).join('') + '</ul>';
+        if (doc.note) html += '<p class="sheet-note">* ' + esc(doc.note) + '</p>';
+      } else {
+        html += '<ul>' + doc.items.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>';
+      }
+      body.innerHTML = html;
     }
     $$('#faqTabs [data-terms]').forEach(function (b) {
       var on = b.getAttribute('data-terms') === kind;
@@ -10858,6 +11128,20 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       },
       partnerProfile: function () {
         return { status: partner.status, verification: TtModel.verificationOf(partner), occupation: partner.occupation || '', licenseYear: partner.licenseYear || null, transport: partner.transport || '', intro: partner.intro || '', availableTimes: partner.availableTimes || [] };
+      },
+      /* v16 · 서비스 기준·비용·환불 규정(POLICIES-AND-FEES.md) — 검증·운영 도구용 */
+      policyVersion: TtModel.policyVersion,
+      policyMeta: TtModel.policyMeta,
+      pricing: TtModel.pricing,
+      refundRules: TtModel.refundRules,
+      policyDocs: TtModel.policyDocs,
+      passes: function () { return passes; },
+      calculateRefundQuote: function (amount, hours, reason, opts) { return TtModel.calculateRefundQuote(amount, hours, reason, opts); },
+      calculatePassRefund: function (input) { return TtModel.calculatePassRefund(input); },
+      refundTextOf: function (q) { return TtModel.refundTextOf(q); },
+      cancelQuoteOf: function (target) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return b ? cancelQuoteFor(b) : null;
       }
     };
   } catch (e) {}
