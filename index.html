@@ -8385,8 +8385,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     /* v15 · 프로필 구조(CONTENT-1 §4) 그대로 저장한다. */
     var appVerification = TtModel.newTeacherApplication({
       name: p.name, phone: p.phone, email: p.email, occupation: p.license, license: p.license,
-      licenseNo: p.licenseNo, licenseYear: p.licenseYear, years: p.years, fields: p.fields,
-      days: p.days, availableTimes: p.times, districts: p.districts, province: p.province,
+      licenseNo: p.licenseNo, licenseYear: p.licenseYear, years: p.years, careerYears: parseInt(p.years, 10) || 0,
+      fields: p.fields, days: p.days, availableTimes: p.times, districts: p.districts, province: p.province,
       transport: p.transport, intro: p.intro, createdAt: partner.createdAt || TtModel.nowIso()
     });
     partner.name = p.name;
