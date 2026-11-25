@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
+<meta name="app-version" content="v10">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -1800,6 +1801,139 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 .done-ics .ic{width:16px;height:16px;stroke-width:1.9;color:#2F6BE0}
 .done-ics:active{background:#EEF4FF}
 
+/* =====================================================================
+   v10 · 알림함 · 쿠폰함 · 결제수단 관리 · FAQ (상용화 완성팩)
+   원칙: v6~v9의 여백·라운드·톤 유지. 얇은 선 + 작은 표시만.
+   ===================================================================== */
+
+/* ---------- 상단 벨 아이콘 + 안 읽음 배지 ---------- */
+.ah-icons{display:flex;align-items:center;gap:2px}
+.ah-alert{position:relative}
+.ah-badge{position:absolute;top:5px;right:5px;min-width:17px;height:17px;padding:0 4px;border-radius:999px;
+  background:#E8506F;color:#fff;font-size:9.5px;font-weight:800;line-height:17px;text-align:center;
+  box-shadow:0 0 0 2px #F7F8FA;font-variant-numeric:tabular-nums}
+
+/* ---------- 내 정보 행 배지 ---------- */
+.mp-badge{display:inline-flex;align-items:center;justify-content:center;min-width:21px;height:21px;padding:0 7px;
+  margin-left:auto;border-radius:999px;background:#EAF2FF;color:#2C68DC;font-size:11px;font-weight:800;
+  font-variant-numeric:tabular-nums}
+.mp-badge.is-alert{background:#FFEDF1;color:#E8506F}
+.mp-row .mp-badge + .chev{margin-left:6px}
+
+/* ---------- 시트 머리: 제목 + 모두 읽음 ---------- */
+.sheet-head-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-right:44px}
+.sheet-head-row .sec-link{flex:0 0 auto;font-size:12px;font-weight:800;color:#2C68DC}
+.sheet-head-row .sec-link:disabled{color:#B4BECC}
+
+/* ---------- 알림함 ---------- */
+.notif-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.notif{position:relative;display:flex;align-items:flex-start;gap:11px;width:100%;padding:14px;text-align:left;
+  background:#fff;border:1px solid var(--v7-line);border-radius:16px;box-shadow:var(--v9-shadow);
+  transition:transform .15s cubic-bezier(.22,1,.36,1),box-shadow .22s var(--ease),background .2s}
+.notif:active{transform:scale(.99)}
+.notif .n-ico{width:38px;height:38px;flex:0 0 38px;border-radius:12px;background:#EAF2FF;color:#2F6BE0;
+  display:flex;align-items:center;justify-content:center}
+.notif .n-ico .ic{width:18px;height:18px;stroke-width:1.8}
+.notif.is-remind .n-ico{background:#FFF4E4;color:#C2760A}
+.notif.is-report .n-ico{background:#E7F6F3;color:#0D9488}
+.notif.is-coupon .n-ico{background:#FFF0F4;color:#E8506F}
+.notif-main{flex:1;min-width:0;padding-right:12px}
+.notif-main b{display:block;font-size:13.5px;font-weight:800;color:var(--v7-ink);letter-spacing:-.03em;line-height:1.4}
+.notif-main p{font-size:11.5px;color:#7B8798;line-height:1.55;margin-top:3px;word-break:keep-all}
+.notif-when{display:block;font-size:10.5px;color:#A6B0BF;margin-top:6px}
+.notif-dot{position:absolute;top:13px;right:13px;width:7px;height:7px;border-radius:50%;background:#E8506F}
+.notif.is-read{background:#FBFCFE;box-shadow:none}
+.notif.is-read .notif-dot{display:none}
+.notif.is-read .notif-main b{color:#5C6879;font-weight:700}
+
+/* ---------- 쿠폰함 ---------- */
+.coupon-code{display:flex;gap:7px;margin-top:16px}
+.coupon-code .input{flex:1;min-width:0;min-height:46px;border-radius:12px;background:var(--surface-2);font-size:13px;letter-spacing:.01em}
+.coupon-code .btn{flex:0 0 auto;min-height:46px;padding:0 18px;border-radius:12px;font-size:13px}
+.coupon-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.coupon-card{position:relative;display:flex;align-items:center;gap:12px;padding:14px;overflow:hidden;
+  background:#fff;border:1px solid var(--v7-line);border-radius:16px;box-shadow:var(--v9-shadow)}
+.coupon-card.is-used{background:#FBFCFE;box-shadow:none;opacity:.72}
+.coupon-stub{width:44px;height:44px;flex:0 0 44px;border-radius:13px;background:#EAF2FF;color:#2F6BE0;
+  display:flex;align-items:center;justify-content:center}
+.coupon-stub .ic{width:21px;height:21px;stroke-width:1.7}
+.coupon-stub.is-teal{background:#E7F6F3;color:#0D9488}
+.coupon-stub.is-amber{background:#FFF4E4;color:#C2760A}
+.coupon-main{flex:1;min-width:0}
+.coupon-main b{display:block;font-size:13.5px;font-weight:800;color:var(--v7-ink);letter-spacing:-.03em;line-height:1.4}
+.coupon-main p{font-size:11px;color:#7B8798;line-height:1.5;margin-top:3px;word-break:keep-all}
+.coupon-exp{display:block;font-size:10.5px;color:#A6B0BF;margin-top:5px}
+.coupon-state{flex:0 0 auto;font-size:13px;font-weight:800;color:#C2760A;letter-spacing:-.02em}
+.coupon-card.is-used .coupon-state{color:#A6B0BF;font-size:11.5px}
+
+/* ---------- 예약 3단계: 쿠폰 선택 ---------- */
+.coupon-pick{margin-top:16px;padding:14px;background:#fff;border:1px solid var(--v7-line);border-radius:16px;box-shadow:var(--v9-shadow)}
+.cp-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cp-title{font-size:12.5px;font-weight:800;color:var(--v7-ink);letter-spacing:-.03em}
+.cp-sub{font-size:10.5px;color:#96A1B2}
+.coupon-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.coupon-chip{display:inline-flex;align-items:center;gap:5px;padding:9px 12px;border-radius:999px;background:#F7F9FC;
+  border:1px solid var(--line-strong);font-size:12px;font-weight:700;color:#5A6B80;letter-spacing:-.02em}
+.coupon-chip .ic{width:13px;height:13px;stroke-width:1.9}
+.coupon-chip.is-on{background:var(--navy);border-color:var(--navy);color:#fff}
+.coupon-chip:active{transform:scale(.97)}
+.discount-note{margin:2px 0 10px;font-size:11px;font-weight:700;color:#C2760A;text-align:right;letter-spacing:-.02em}
+.sum-line.is-discount{color:#C2760A}
+.sum-line.is-discount b{color:#C2760A}
+
+/* ---------- 결제수단 관리 ---------- */
+.pm-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.pm-row{display:flex;align-items:center;gap:11px;padding:14px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:16px}
+.pm-row.is-default{border-color:rgba(47,107,224,.26);background:#F7FAFF}
+.pm-row .pm-ico{width:36px;height:36px;flex:0 0 36px;border-radius:11px;background:#fff;border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:#425065}
+.pm-row .pm-ico .ic{width:19px;height:19px}
+.pm-row .pm-main{flex:1;min-width:0}
+.pm-row .pm-main b{display:block;font-size:13.5px;font-weight:800;color:var(--ink);letter-spacing:-.03em}
+.pm-row .pm-main span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.pm-badge{flex:0 0 auto;font-size:9.5px;font-weight:800;color:#0B7A6B;background:var(--teal-50);border-radius:999px;padding:4px 8px}
+.pm-set{flex:0 0 auto;font-size:11px;font-weight:800;color:#2C68DC;padding:6px 10px;border-radius:999px;
+  background:#fff;border:1px solid var(--line-strong)}
+.pm-set:active{transform:scale(.97)}
+.pm-add{width:100%;margin-top:10px;min-height:46px;border-radius:14px;font-size:12.5px}
+.pm-add .ic{width:14px;height:14px;stroke-width:2.2}
+.card-form{margin-top:12px;padding:14px;background:#fff;border:1px solid var(--v7-line);border-radius:18px;box-shadow:var(--v9-shadow)}
+.card-form .field{margin-bottom:12px}
+.card-form .field > label{font-size:11.5px}
+.card-form .input{min-height:46px;border-radius:12px;background:var(--surface-2);font-size:14px}
+.cf-row{display:flex;gap:8px}
+.cf-row .field{flex:1;min-width:0}
+.cf-actions{display:flex;gap:7px;margin-top:2px}
+.cf-actions .btn{flex:1;min-height:44px;border-radius:999px;font-size:12.5px}
+
+/* ---------- FAQ · 약관 ---------- */
+.faq-list{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.faq-item{background:#fff;border:1px solid var(--v7-line);border-radius:16px;overflow:hidden;box-shadow:var(--v9-shadow)}
+.faq-q{display:flex;align-items:center;gap:9px;width:100%;padding:15px 14px;text-align:left;
+  font-size:13px;font-weight:700;color:var(--v7-ink);letter-spacing:-.03em;line-height:1.45}
+.faq-q .faq-n{flex:0 0 auto;font-size:11px;font-weight:800;color:#2C68DC}
+.faq-q .ic{margin-left:auto;width:16px;height:16px;stroke-width:2;color:#B4BECC;transition:transform .22s var(--ease)}
+.faq-item.is-open .faq-q .ic{transform:rotate(180deg)}
+.faq-a{display:none;padding:0 14px 15px 34px;font-size:11.5px;line-height:1.75;color:#5C6879;word-break:keep-all}
+.faq-a b{color:var(--v7-ink);font-weight:800}
+.faq-item.is-open .faq-a{display:block}
+.terms-tabs{display:flex;gap:4px;margin-top:20px;padding:4px;background:#EEF2F8;border-radius:13px}
+.terms-tabs button{flex:1;min-height:38px;border-radius:10px;font-size:12px;font-weight:700;color:#5A6B80}
+.terms-tabs button.is-on{background:#fff;color:var(--v7-ink);box-shadow:0 4px 10px -8px rgba(15,23,42,.45)}
+.terms-body{margin-top:12px;padding:15px;background:#fff;border:1px solid var(--v7-line);border-radius:16px;
+  font-size:11.5px;line-height:1.8;color:#5C6879;word-break:keep-all}
+.terms-body h3{font-size:12.5px;font-weight:800;color:var(--v7-ink);letter-spacing:-.03em;margin-bottom:8px}
+.terms-body ul{margin:0;padding-left:14px}
+.terms-body li{margin-bottom:6px}
+.terms-body li:last-child{margin-bottom:0}
+
+/* ---------- 내 예약 카드: 캘린더 추가 ---------- */
+.br-ics{display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border-radius:999px;
+  background:#F7FAFF;border:1px solid rgba(47,107,224,.24);color:#1D4ED8;font-size:12px;font-weight:800}
+.br-ics .ic{width:15px;height:15px;stroke-width:1.9}
+.br-ics:active{background:#EEF4FF;transform:scale(.98)}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
 }
@@ -1886,9 +2020,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <span id="homeRegionText">우리 집</span>
         <svg class="ic ah-chev" aria-hidden="true"><use href="#i-chev-d"/></svg>
       </button>
-      <button class="ah-ic-btn" type="button" id="homeTicketBtn" aria-label="이용권 · 예약 내역">
-        <svg class="ic" aria-hidden="true"><use href="#i-ticket"/></svg>
-      </button>
+      <div class="ah-icons">
+        <button class="ah-ic-btn" type="button" id="homeTicketBtn" aria-label="이용권 · 예약 내역">
+          <svg class="ic" aria-hidden="true"><use href="#i-ticket"/></svg>
+        </button>
+        <button class="ah-ic-btn ah-alert" type="button" id="btnNotif" aria-label="알림함">
+          <svg class="ic" aria-hidden="true"><use href="#i-bell"/></svg>
+          <span class="ah-badge" id="notifDot" hidden aria-hidden="true">0</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -2148,6 +2288,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           <p class="wstep-title">이용권 선택</p>
           <p class="wstep-sub">첫 평가 무료 · 많이 살수록 저렴</p>
           <div id="passList"></div>
+          <div class="coupon-pick" id="couponPick" hidden>
+            <div class="cp-head">
+              <p class="cp-title">쿠폰 사용</p>
+              <span class="cp-sub">고르면 총액에서 바로 빠져요</span>
+            </div>
+            <div class="coupon-chips" id="couponChips" role="group" aria-label="쿠폰 선택"></div>
+          </div>
           <div class="pass-note">
             <span aria-hidden="true">ℹ️</span>
             <span>결제한 이용권은 <b>내 정보 &gt; 보유 이용권</b>에 저장되고, 방문마다 1회씩 차감됩니다.</span>
@@ -2201,6 +2348,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
               <span>총 결제 금액</span>
               <b id="totalAmount">0원</b>
             </div>
+            <p class="discount-note" id="discountNote" hidden></p>
             <button class="btn btn-teal" type="button" id="payBtn">결제하고 예약 완료</button>
             <p class="pay-note">프로토타입입니다. 실제 결제는 이루어지지 않습니다.<br>취소·환불은 방문 24시간 전까지 무료입니다.</p>          </div>
 
@@ -2415,12 +2563,26 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       </div>
 
       <div class="mp-list">
+        <button class="mp-row" type="button" id="mpNotifRow">
+          <span>알림함</span>
+          <span class="mp-badge is-alert" id="mpNotifCount" hidden>0</span>
+          <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
+        </button>
+        <button class="mp-row" type="button" id="mpCouponRow">
+          <span>쿠폰함</span>
+          <span class="mp-badge" id="mpCouponCount">0</span>
+          <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
+        </button>
         <button class="mp-row" type="button" id="mpRegionRow">
           <span>서비스 지역</span>
           <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
         <button class="mp-row" type="button" id="mpPayRow">
           <span>결제 수단 · 영수증</span>
+          <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
+        </button>
+        <button class="mp-row" type="button" id="mpFaqRow">
+          <span>자주 묻는 질문 · 약관</span>
           <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
         <button class="mp-row" type="button" id="mpJournalRow">
@@ -3181,14 +3343,94 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="payTitle">결제 수단 · 영수증</h2>
       <p class="sheet-desc">등록된 결제 수단과 방문별 영수증을 확인할 수 있어요.</p>
-      <div class="pay-method">
-        <span class="pm-ico" aria-hidden="true"><svg class="ic"><use href="#i-card"/></svg></span>
-        <span class="pm-main"><b>카카오페이</b><span>010-****-5678 · 기본 결제 수단</span></span>
-        <button class="pm-edit" type="button" data-pay-edit>변경</button>
+      <p class="sheet-label" style="margin-top:18px">등록된 결제 수단</p>
+      <div class="pm-list" id="pmList"></div>
+      <button class="btn btn-outline pm-add" type="button" id="pmAddBtn" aria-expanded="false" aria-controls="cardForm">
+        <svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>새 카드 추가
+      </button>
+      <div class="card-form" id="cardForm" hidden>
+        <div class="field">
+          <label for="cardLabel">카드 별명</label>
+          <input class="input" id="cardLabel" type="text" placeholder="예: 생활비 카드 (선택)" maxlength="12" autocomplete="off">
+        </div>
+        <div class="cf-row">
+          <div class="field" id="f-cardLast4">
+            <label for="cardLast4">끝 4자리 <span class="req-mark">*</span></label>
+            <input class="input" id="cardLast4" type="tel" inputmode="numeric" placeholder="0000" maxlength="4" autocomplete="off">
+            <p class="err">카드 끝 4자리를 입력해 주세요.</p>
+          </div>
+          <div class="field" id="f-cardExpiry">
+            <label for="cardExpiry">유효기간 <span class="req-mark">*</span></label>
+            <input class="input" id="cardExpiry" type="tel" inputmode="numeric" placeholder="MM/YY" maxlength="5" autocomplete="off">
+            <p class="err">유효기간을 MM/YY로 입력해 주세요.</p>
+          </div>
+        </div>
+        <div class="cf-actions">
+          <button class="btn btn-navy" type="button" id="cardSave">카드 등록</button>
+          <button class="btn btn-ghost" type="button" id="cardCancel">취소</button>
+        </div>
+        <p class="sheet-note" style="margin-top:10px">* 데모 화면입니다. 카드번호 전체는 저장하지 않고 끝 4자리만 이 기기에 저장해요.</p>
       </div>
-      <p class="sheet-label" style="margin-top:20px">결제 내역</p>
+      <p class="sheet-label" style="margin-top:24px">결제 내역</p>
       <div class="list" id="receiptList"></div>
       <p class="sheet-note">* 영수증은 항목을 눌러 확인할 수 있어요. 전자 영수증은 5년간 보관됩니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 알림함 시트 -->
+<div class="sheet-backdrop" id="notifSheet" role="dialog" aria-modal="true" aria-labelledby="notifTitle">
+  <div class="sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close sheet-close-top" type="button" data-notif-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="sheet-scroll">
+      <div class="sheet-head-row">
+        <h2 class="sheet-title" id="notifTitle">알림함</h2>
+        <button class="sec-link" type="button" id="notifReadAll">모두 읽음</button>
+      </div>
+      <p class="sheet-desc">방문 확정·리마인드·회복 리포트 소식을 모았어요.</p>
+      <div class="notif-list" id="notifList"></div>
+      <p class="sheet-note">* 알림은 이 기기에만 저장되는 프로토타입입니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 쿠폰함 시트 -->
+<div class="sheet-backdrop" id="couponSheet" role="dialog" aria-modal="true" aria-labelledby="couponTitle">
+  <div class="sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close sheet-close-top" type="button" data-coupon-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="sheet-scroll">
+      <h2 class="sheet-title" id="couponTitle">쿠폰함</h2>
+      <p class="sheet-desc">받은 쿠폰을 확인하고 예약 결제 때 바로 쓸 수 있어요.</p>
+      <div class="coupon-code">
+        <input class="input" id="couponCode" type="text" placeholder="쿠폰 코드 입력 (예: WELCOME)" maxlength="20" autocomplete="off" aria-label="쿠폰 코드">
+        <button class="btn btn-navy" type="button" id="couponRegister">등록</button>
+      </div>
+      <p class="sheet-note" style="margin-top:8px">* 체험 코드: WELCOME · TTOKTTOK → 5,000원 추가 할인 쿠폰</p>
+      <p class="sheet-label" style="margin-top:20px">보유 쿠폰 <span id="couponUsable" style="font-size:11px;font-weight:700;color:var(--teal)"></span></p>
+      <div class="coupon-list" id="couponList"></div>
+      <p class="sheet-note">* 쿠폰은 1회용이며, 예약 3단계에서 고르면 총 결제 금액에서 바로 빠져요.</p>
+    </div>
+  </div>
+</div>
+
+<!-- 자주 묻는 질문 · 약관 시트 -->
+<div class="sheet-backdrop" id="faqSheet" role="dialog" aria-modal="true" aria-labelledby="faqTitle">
+  <div class="sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close sheet-close-top" type="button" data-faq-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="sheet-scroll">
+      <h2 class="sheet-title" id="faqTitle">자주 묻는 질문 · 약관</h2>
+      <p class="sheet-desc">궁금한 점을 먼저 확인해 보세요.</p>
+      <div class="faq-list" id="faqList"></div>
+      <div class="terms-tabs" id="faqTabs" role="tablist" aria-label="약관 보기">
+        <button type="button" class="is-on" data-terms="terms" role="tab" aria-selected="true">이용약관</button>
+        <button type="button" data-terms="privacy" role="tab" aria-selected="false">개인정보처리방침</button>
+      </div>
+      <div class="terms-body" id="termsBody"></div>
+      <p class="sheet-note">* 정식 오픈 전 약관 요약본입니다. 전문은 오픈 시 게시됩니다.</p>
+      <a class="sheet-beta-link" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">더 궁금한 점은 상담 폼으로 문의<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg></a>
     </div>
   </div>
 </div>
@@ -4033,7 +4275,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   /* ================= 예약 상태 ================= */
   var bk = {
     step: 1, province: '', district: '', address: '', syms: [], teacherId: '',
-    dateIso: '', dateLabel: '', dateDay: '', time: '', passId: '', name: '', phone: '', pay: ''
+    dateIso: '', dateLabel: '', dateDay: '', time: '', passId: '', name: '', phone: '', pay: '', couponId: ''
   };
 
   var dateOptions = [];
@@ -4237,14 +4479,69 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var btn = e.target.closest('[data-pass]');
     if (!btn) return;
     bk.passId = btn.getAttribute('data-pass');
+    bk.couponId = '';
     renderPasses();
+    renderCouponChips();
     updateTotal();
   });
 
+  /* 선택한 이용권에 실제로 쓸 수 있는 쿠폰인지 */
+  function couponAppliesTo(coupon, p) {
+    if (!coupon || coupon.used || !p) return false;
+    if (p.price === 0) return coupon.type === 'free' || coupon.target === 'eval';
+    return coupon.type === 'amount' && (coupon.target === 'paid' || coupon.target === 'all');
+  }
+
+  function selectedCoupon(p) {
+    if (!bk.couponId) return null;
+    var c = couponById(bk.couponId);
+    return couponAppliesTo(c, p) ? c : null;
+  }
+
+  function discountFor(p) {
+    var c = selectedCoupon(p);
+    if (!c || !p) return 0;
+    return Math.min(c.amount || 0, p.price);
+  }
+
+  function paidCoupons(p) {
+    return couponStore.filter(function (c) { return couponAppliesTo(c, p) && (c.amount || 0) > 0; });
+  }
+
+  function renderCouponChips() {
+    var wrap = $('#couponPick');
+    var chips = $('#couponChips');
+    if (!wrap || !chips) return;
+    var p = passById(bk.passId);
+    var list = (p && p.price > 0) ? paidCoupons(p) : [];
+    if (!list.length) {
+      wrap.hidden = true;
+      chips.innerHTML = '';
+      if (bk.couponId) bk.couponId = '';
+      return;
+    }
+    wrap.hidden = false;
+    if (bk.couponId && !list.some(function (c) { return c.id === bk.couponId; })) bk.couponId = '';
+    var html = '<button class="coupon-chip' + (bk.couponId ? '' : ' is-on') + '" type="button" data-coupon-pick="" aria-pressed="' + (bk.couponId ? 'false' : 'true') + '">쿠폰 사용 안 함</button>';
+    html += list.map(function (c) {
+      var on = bk.couponId === c.id;
+      return '<button class="coupon-chip' + (on ? ' is-on' : '') + '" type="button" data-coupon-pick="' + esc(c.id) + '" aria-pressed="' + on + '">' +
+        icon('tag') + esc(c.title) + '</button>';
+    }).join('');
+    chips.innerHTML = html;
+  }
+
   function updateTotal() {
     var p = passById(bk.passId);
-    var total = p ? p.price : 0;
+    var listTotal = p ? p.price : 0;
+    var discount = discountFor(p);
+    var total = Math.max(0, listTotal - discount);
     $('#totalAmount').textContent = won(total);
+    var note = $('#discountNote');
+    if (note) {
+      note.hidden = !discount;
+      if (discount) note.textContent = '쿠폰 ' + won(discount) + ' 할인 적용 · 정가 ' + won(listTotal);
+    }
     var btn = $('#payBtn');
     btn.textContent = total === 0 ? '무료로 예약 완료' : '결제하고 예약 완료';
     var bar = $('#bookTotalBar');
@@ -4259,7 +4556,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         var meta = $('#bookTotalMeta');
         var per = $('#bookTotalPer');
         if (amt) amt.textContent = won(total);
-        if (meta) meta.textContent = p.name + ' · ' + p.sessions + '회';
+        if (meta) meta.textContent = p.name + ' · ' + p.sessions + '회' + (discount ? ' · 쿠폰 ' + won(discount) + ' 할인' : '');
         if (per) per.textContent = p.price === 0 ? '무료' : ('회당 ' + Math.round(p.price / p.sessions).toLocaleString('ko-KR') + '원');
       }
     }
@@ -4299,7 +4596,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var cur = document.getElementById('wstep-' + n);
     if (cur) cur.classList.add('is-active');
     syncStepMeta(n);
-    if (n === 3) renderPasses();
+    if (n === 3) { renderPasses(); renderCouponChips(); }
     if (n === 4) renderSummary();
     if (n === 2) { renderDates(); renderSlots(); }
     updateTotal();
@@ -4379,8 +4676,17 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       ['담당 선생님', bk.teacherId ? teacherName(bk.teacherId) : '추천 배정'],
       ['이용권', p ? p.name + ' (' + p.sessions + '회)' : '-']
     ];
+    if (p && p.price > 0) {
+      var dc = discountFor(p);
+      if (dc) {
+        var cp = selectedCoupon(p);
+        rows.push(['정가', won(p.price)]);
+        rows.push(['쿠폰 할인', '-' + won(dc) + (cp ? ' (' + cp.title + ')' : '')]);
+      }
+    }
     $('#bookSummary').innerHTML = rows.map(function (r) {
-      return '<div class="sum-line"><span>' + r[0] + '</span><b>' + esc(r[1]) + '</b></div>';
+      var isDc = r[0] === '쿠폰 할인';
+      return '<div class="sum-line' + (isDc ? ' is-discount' : '') + '"><span>' + r[0] + '</span><b>' + esc(r[1]) + '</b></div>';
     }).join('');
     updateTotal();
   }
@@ -4394,7 +4700,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var errs = [];
     if (bk.name.length < 2) errs.push('f-bookName');
     if (digits(bk.phone).length < 9) errs.push('f-bookPhone');
-    var total = passById(bk.passId) ? passById(bk.passId).price : 0;
+    var total = passById(bk.passId) ? Math.max(0, passById(bk.passId).price - discountFor(passById(bk.passId))) : 0;
     if (total > 0 && !bk.pay) errs.push('f-pays');
     if (!bookAgree.checked) errs.push('f-bookAgree');
 
@@ -4431,7 +4737,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!passById(bk.passId)) bk.passId = 'eval';
     var p = passById(bk.passId);
     var no = 'TT-' + String(new Date().getFullYear()).slice(2) + pad2(new Date().getMonth() + 1) + pad2(new Date().getDate()) + '-' + String(Math.floor(Math.random() * 9000) + 1000);
-    var total = p.price;
+    var listTotal = p.price;
+    var usedCoupon = selectedCoupon(p);
+    var discount = usedCoupon ? Math.min(usedCoupon.amount || 0, listTotal) : 0;
+    var total = Math.max(0, listTotal - discount);
     var remaining = p.id === 'eval' ? null : Math.max(0, p.sessions - 1);
     var regionText = bk.province + ' ' + bk.district;
 
@@ -4465,11 +4774,24 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     account.receipts.unshift({
       no: no,
       date: todayLabel(),
-      item: p.name,
+      item: p.name + (usedCoupon ? ' · 쿠폰 ' + won(discount) + ' 할인' : ''),
       amount: total,
+      listAmount: listTotal,
+      discount: discount,
+      coupon: usedCoupon ? usedCoupon.title : '',
       method: total === 0 ? '무료' : bk.pay,
       status: '결제 완료'
     });
+    if (usedCoupon) {
+      usedCoupon.used = true;
+      usedCoupon.usedAt = todayLabel();
+      usedCoupon.usedOn = no;
+      saveJson(COUPON_KEY, couponStore);
+      renderCoupons();
+      renderCouponBadge();
+      bk.couponId = '';
+      renderCouponChips();
+    }
     saveAccount();
     renderAccount();
 
@@ -4494,6 +4816,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       ['결제 금액', won(total) + (total > 0 ? ' · ' + bk.pay : '')]
     ];
     if (remaining !== null) rows.push(['이용권 잔여', remaining + '회 (첫 방문 1회 차감)']);
+    if (discount > 0) {
+      rows.push(['정가', won(listTotal)]);
+      rows.push(['쿠폰 할인', '-' + won(discount) + (usedCoupon ? ' (' + usedCoupon.title + ')' : '')]);
+    }
 
     $('#doneSummary').innerHTML = rows.map(function (r) {
       return '<div class="sum-row"><span>' + r[0] + '</span><b>' + esc(r[1]) + '</b></div>';
@@ -4527,7 +4853,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function resetWizard() {
-    bk = { step: 1, province: '', district: '', address: '', syms: [], teacherId: '', dateIso: '', dateLabel: '', dateDay: '', time: '', passId: '', name: '', phone: '', pay: '' };
+    bk = { step: 1, province: '', district: '', address: '', syms: [], teacherId: '', dateIso: '', dateLabel: '', dateDay: '', time: '', passId: '', name: '', phone: '', pay: '', couponId: '' };
     bookProvince.value = '';
     fillDistrictSelect(bookDistrict, '', '시·도를 먼저 선택해 주세요');
     bookDistrict.value = '';
@@ -4542,6 +4868,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderDates();
     renderSlots();
     renderPasses();
+    renderCouponChips();
     updateTotal();
     $('#bookingWizard').hidden = false;
     $('#bookingDone').hidden = true;
@@ -4663,20 +4990,23 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return lines.map(icsFold).join('\r\n') + '\r\n';
   }
 
-  function downloadIcs() {
-    var b = lastBooking;
-    if (!b && account.bookings[0]) {
-      var fb = account.bookings[0];
-      var fp = passById(fb.passId) || {};
-      b = {
-        no: fb.no, dateIso: fb.dateIso || '', time: fb.time, teacher: fb.teacher,
-        teacherId: fb.teacherId || '', region: fb.region, passName: fp.name || '-'
-      };
+  function bookingIcsPayload(fb) {
+    var fp = passById(fb.passId) || {};
+    return {
+      no: fb.no, dateIso: fb.dateIso || '', time: fb.time, teacher: fb.teacher,
+      teacherId: fb.teacherId || '', region: fb.region, passName: fp.name || '-'
+    };
+  }
+
+  function downloadIcsFor(b) {
+    if (!b) {
+      if (lastBooking) b = lastBooking;
+      else if (account.bookings[0]) b = bookingIcsPayload(account.bookings[0]);
     }
     var ics = buildIcs(b);
     var start = icsStartParts(b && b.dateIso, b && b.time);
     var fileName = '똑똑쌤_방문재활_' + start.getFullYear() + pad2(start.getMonth() + 1) + pad2(start.getDate()) + '.ics';
-    try { window.__ttokttokIcs = { text: ics, name: fileName, at: Date.now() }; } catch (e) {}
+    try { window.__ttokttokIcs = { text: ics, name: fileName, at: Date.now(), no: (b && b.no) || '' }; } catch (e) {}
 
     var url = null, blob = null;
     try { blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' }); } catch (e) { blob = null; }
@@ -4695,6 +5025,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       }, 1200);
     }
     toast('캘린더 파일(.ics)을 내려받았어요. 열어서 일정을 추가하세요.');
+  }
+
+  function downloadIcs() { downloadIcsFor(lastBooking); }
+
+  /* 내 예약 카드에서 바로 추가 (예약번호 기준) */
+  function downloadIcsForBooking(no) {
+    var fb = (account.bookings || []).filter(function (x) { return x.no === no; })[0];
+    if (!fb || fb.status === '취소됨') { toast('취소된 예약은 캘린더에 추가할 수 없어요.'); return; }
+    downloadIcsFor(bookingIcsPayload(fb));
   }
   var doneIcsBtn = $('#doneIcs');
   if (doneIcsBtn) doneIcsBtn.addEventListener('click', downloadIcs);
@@ -4796,6 +5135,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             '<span class="chev" aria-hidden="true">' + icon('chev-r') + '</span>' +
           '</button>' +
           (canceled ? '' : matchBlockHtml(b)) +
+          (canceled ? '' : '<button class="br-ics" type="button" data-ics="' + esc(b.no) + '">' + icon('calendar') + '캘린더 추가</button>') +
           (canceled
             ? '<div class="br-btns"><button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '">문의</button><button class="btn btn-ghost" type="button" data-manage="' + esc(b.no) + '">내역</button><span></span></div>'
             : '<div class="br-btns">' +
@@ -4961,6 +5301,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       '<div class="sum-row"><span>결제번호</span><b>' + esc(r.no) + '</b></div>' +
       '<div class="sum-row"><span>결제일</span><b>' + esc(r.date) + '</b></div>' +
       '<div class="sum-row"><span>상품</span><b>' + esc(r.item) + '</b></div>' +
+      (r.discount > 0 ? '<div class="sum-row"><span>정가</span><b>' + won(r.listAmount || r.amount + r.discount) + '</b></div>' : '') +
+      (r.discount > 0 ? '<div class="sum-row"><span>쿠폰 할인</span><b>-' + won(r.discount) + '</b></div>' : '') +
       '<div class="sum-row"><span>결제 수단</span><b>' + esc(r.method) + '</b></div>' +
       '<div class="sum-row"><span>결제 금액</span><b>' + won(r.amount) + '</b></div>' +
       '<div class="sum-row"><span>공급자</span><b>똑똑쌤 (전국 방문재활 플랫폼)</b></div>';
@@ -6691,7 +7033,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
   function openGuideSheet() { openSheetEl('#guideSheet'); }
   function openAccountSheet() { renderAccount(); renderReviews(); openSheetEl('#accountSheet'); }
-  function openPaySheet() { renderAccount(); openSheetEl('#paySheet'); }
+  function openPaySheet() { renderAccount(); renderCards(); openSheetEl('#paySheet'); }
   function openRoleSheet() { openSheetEl('#roleSheet'); }
 
   function syncHomeRegion() {
@@ -6725,7 +7067,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (e.target.closest('[data-account-close]') || e.target.id === 'accountSheet') { closeSheetEl('#accountSheet'); return; }
     if (e.target.closest('#mpPayRow')) { openPaySheet(); return; }
     if (e.target.closest('[data-pay-close]') || e.target.id === 'paySheet') { closeSheetEl('#paySheet'); return; }
-    if (e.target.closest('[data-pay-edit]')) { toast('결제 수단 변경은 데모에서 지원하지 않아요.'); return; }
+    if (e.target.closest('[data-pay-edit]')) { toggleCardForm(true); return; }
     if (e.target.closest('#mpJournalRow')) { showTab('journal'); return; }
     if (e.target.closest('#mpRoleRow')) { openRoleSheet(); return; }
     if (e.target.closest('[data-role-close]') || e.target.id === 'roleSheet') { closeSheetEl('#roleSheet'); return; }
@@ -6988,6 +7330,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var visit = e.target.closest('[data-visit]');
     if (visit) {
       showTab('journal');
+      return;
+    }
+
+    var icsBtn = e.target.closest('[data-ics]');
+    if (icsBtn) {
+      downloadIcsForBooking(icsBtn.getAttribute('data-ics'));
       return;
     }
 
@@ -7548,6 +7896,439 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (c) c.textContent = total.toLocaleString('ko-KR');
   }
 
+  /* ===================================================================
+     v10 · 알림함 · 쿠폰함 · 결제수단 관리 · FAQ (상용화 완성팩)
+     저장은 SafeStorage(JSON) + 손상 데이터 폴백. 실패해도 앱은 멈추지 않는다.
+     =================================================================== */
+  var NOTIF_KEY = 'ttokttok_notifs_v1';
+  var COUPON_KEY = 'ttokttok_coupons_v1';
+  var CARD_KEY = 'ttokttok_cards_v1';
+  var COUPON_CODES = { WELCOME: 5000, TTOKTTOK: 5000 };
+
+  function readJson(key) {
+    try {
+      var raw = SafeStorage.getItem(key);
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      return obj == null ? null : obj;
+    } catch (e) { return null; }
+  }
+  function saveJson(key, val) {
+    try { SafeStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
+  function clockLabel() {
+    var d = new Date();
+    return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  /* ----- 알림함 ----- */
+  var NOTIF_META = {
+    visit: { ico: 'calendar', cls: '' },
+    remind: { ico: 'bell', cls: 'is-remind' },
+    report: { ico: 'chart', cls: 'is-report' },
+    coupon: { ico: 'gift', cls: 'is-coupon' }
+  };
+
+  function seedNotifs() {
+    return [
+      { id: 'nt-visit', kind: 'visit', title: '방문이 확정됐어요', body: '박서준 선생님이 다가오는 방문을 확정했어요. 준비물과 집 안 동선을 확인해 주세요.', when: '오늘 ' + clockLabel(), read: false, go: 'account' },
+      { id: 'nt-d1', kind: 'remind', title: '방문 D-1 리마인드', body: '내일 방문이 예정되어 있어요. 편한 옷과 복용약 목록을 준비해 주세요.', when: '어제 18:00', read: false, go: '' },
+      { id: 'nt-report', kind: 'report', title: '보호자 회복 리포트 업데이트', body: '5회기 회복 리포트가 새로 올라왔어요. 보행 안정성이 조금씩 좋아지고 있어요.', when: '2일 전', read: false, go: 'report' },
+      { id: 'nt-coupon', kind: 'coupon', title: '첫 방문 평가 무료 쿠폰 발급', body: '첫 1:1 방문 평가 무료 쿠폰이 도착했어요. 쿠폰함에서 확인해 보세요.', when: '3일 전', read: false, go: 'coupon' }
+    ];
+  }
+
+  var notifStore = (function () {
+    var saved = readJson(NOTIF_KEY);
+    if (!Array.isArray(saved) || !saved.length) saved = seedNotifs();
+    var list = saved.filter(function (n) { return n && n.id && n.title; }).map(function (n) {
+      return {
+        id: String(n.id), kind: n.kind || 'visit', title: String(n.title),
+        body: String(n.body || ''), when: String(n.when || ''), go: n.go || '',
+        read: !!n.read
+      };
+    });
+    return list.length ? list : seedNotifs();
+  })();
+
+  function unreadNotifs() {
+    return notifStore.filter(function (n) { return !n.read; }).length;
+  }
+
+  function renderNotifBadge() {
+    var n = unreadNotifs();
+    var dot = $('#notifDot');
+    if (dot) { dot.hidden = n === 0; dot.textContent = String(n); }
+    var mp = $('#mpNotifCount');
+    if (mp) { mp.hidden = n === 0; mp.textContent = String(n); }
+    var all = $('#notifReadAll');
+    if (all) all.disabled = n === 0;
+  }
+
+  function renderNotifs() {
+    var wrap = $('#notifList');
+    if (!wrap) return;
+    wrap.innerHTML = notifStore.map(function (n) {
+      var m = NOTIF_META[n.kind] || NOTIF_META.visit;
+      return '<button class="notif' + (n.read ? ' is-read' : '') + (m.cls ? ' ' + m.cls : '') + '" type="button" data-notif="' + esc(n.id) + '">' +
+        '<span class="n-ico" aria-hidden="true">' + icon(m.ico) + '</span>' +
+        '<span class="notif-main"><b>' + esc(n.title) + '</b><p>' + esc(n.body) + '</p><span class="notif-when">' + esc(n.when) + '</span></span>' +
+        (n.read ? '' : '<span class="notif-dot" aria-hidden="true"></span>') +
+      '</button>';
+    }).join('');
+    renderNotifBadge();
+  }
+
+  function openNotifSheet() { renderNotifs(); openSheetEl('#notifSheet'); }
+
+  function readNotif(id) {
+    var n = notifStore.filter(function (x) { return x.id === id; })[0];
+    if (!n) return null;
+    if (!n.read) { n.read = true; saveJson(NOTIF_KEY, notifStore); renderNotifs(); }
+    return n;
+  }
+
+  function readAllNotifs() {
+    if (!unreadNotifs()) { toast('이미 모든 알림을 읽었어요.'); return; }
+    notifStore.forEach(function (n) { n.read = true; });
+    saveJson(NOTIF_KEY, notifStore);
+    renderNotifs();
+    toast('알림을 모두 읽음으로 표시했어요.');
+  }
+
+  /* ----- 쿠폰함 ----- */
+  function seedCoupons() {
+    return [
+      { id: 'cp-eval', title: '첫 1:1 방문 평가 무료', sub: '신규 회원 1회 · 평가권 예약 시 자동 적용', type: 'free', amount: 0, target: 'eval', used: false, expire: expireDate(30), code: '' },
+      { id: 'cp-10000', title: '정규 회차권 10,000원 할인', sub: '1회 이상 방문권 결제 시 사용', type: 'amount', amount: 10000, target: 'paid', used: false, expire: expireDate(60), code: '' }
+    ];
+  }
+
+  var couponStore = (function () {
+    var saved = readJson(COUPON_KEY);
+    if (!Array.isArray(saved)) saved = seedCoupons();
+    var list = saved.filter(function (c) { return c && c.id && c.title; }).map(function (c) {
+      return {
+        id: String(c.id), title: String(c.title), sub: String(c.sub || ''),
+        type: c.type === 'free' ? 'free' : 'amount',
+        amount: Math.max(0, Number(c.amount) || 0),
+        target: c.target || 'paid', used: !!c.used,
+        expire: String(c.expire || expireDate(30)), code: String(c.code || ''),
+        usedAt: String(c.usedAt || ''), usedOn: String(c.usedOn || '')
+      };
+    });
+    return list;
+  })();
+
+  function couponById(id) {
+    return couponStore.filter(function (c) { return c.id === id; })[0] || null;
+  }
+  function usableCoupons() {
+    return couponStore.filter(function (c) { return !c.used; }).length;
+  }
+  function renderCouponBadge() {
+    var el = $('#mpCouponCount');
+    if (el) el.textContent = String(usableCoupons());
+    var u = $('#couponUsable');
+    if (u) u.textContent = '사용 가능 ' + usableCoupons() + '장';
+  }
+
+  function renderCoupons() {
+    var wrap = $('#couponList');
+    renderCouponBadge();
+    if (!wrap) { renderCouponChips(); return; }
+    var list = couponStore.slice().sort(function (a, b) { return (a.used ? 1 : 0) - (b.used ? 1 : 0); });
+    if (!list.length) {
+      wrap.innerHTML = '<div class="empty" style="box-shadow:none"><p>보유한 쿠폰이 없어요.<br>쿠폰 코드를 등록해 보세요.</p></div>';
+    } else {
+      wrap.innerHTML = list.map(function (c) {
+        var isFree = c.type === 'free';
+        return '<article class="coupon-card' + (c.used ? ' is-used' : '') + '">' +
+          '<span class="coupon-stub ' + (isFree ? 'is-teal' : 'is-amber') + '" aria-hidden="true">' + icon(isFree ? 'gift' : 'tag') + '</span>' +
+          '<div class="coupon-main"><b>' + esc(c.title) + '</b><p>' + esc(c.sub) + '</p>' +
+            '<span class="coupon-exp">' + (c.used ? (c.usedAt ? esc(c.usedAt) + ' 사용' : '사용 완료') : '~' + esc(c.expire) + '까지' + (c.code ? ' · 코드 ' + esc(c.code) : '')) + '</span></div>' +
+          '<span class="coupon-state">' + (c.used ? '사용됨' : (isFree ? '무료' : '-' + c.amount.toLocaleString('ko-KR') + '원')) + '</span>' +
+        '</article>';
+      }).join('');
+    }
+    renderCouponChips();
+  }
+
+  function openCouponSheet() { renderCoupons(); openSheetEl('#couponSheet'); }
+
+  function registerCoupon() {
+    var input = $('#couponCode');
+    if (!input) return;
+    var code = String(input.value || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (!code) { toast('쿠폰 코드를 입력해 주세요.'); return; }
+    var amount = COUPON_CODES[code];
+    if (!amount) { toast('사용할 수 없는 쿠폰 코드예요.'); return; }
+    if (couponStore.some(function (c) { return c.code === code; })) { toast('이미 등록한 쿠폰 코드예요.'); return; }
+    couponStore.unshift({
+      id: 'cp-' + code.toLowerCase() + '-' + Date.now(),
+      title: amount.toLocaleString('ko-KR') + '원 추가 할인',
+      sub: '쿠폰 코드 ' + code + ' · 정규 회차권 결제 시 사용',
+      type: 'amount', amount: amount, target: 'paid', used: false,
+      expire: expireDate(30), code: code, usedAt: '', usedOn: ''
+    });
+    saveJson(COUPON_KEY, couponStore);
+    input.value = '';
+    renderCoupons();
+    updateTotal();
+    toast(amount.toLocaleString('ko-KR') + '원 할인 쿠폰이 발급됐어요.');
+  }
+
+  /* ----- 결제수단 관리 ----- */
+  function seedCards() {
+    return [
+      { id: 'cd-shinhan', label: '신한카드', kind: 'card', last4: '4821', expiry: '09/28', isDefault: true },
+      { id: 'cd-kakao', label: '카카오페이', kind: 'pay', last4: '', expiry: '', isDefault: false }
+    ];
+  }
+
+  var cardStore = (function () {
+    var saved = readJson(CARD_KEY);
+    if (!Array.isArray(saved) || !saved.length) saved = seedCards();
+    var list = saved.filter(function (c) { return c && c.id && c.label; }).map(function (c) {
+      return {
+        id: String(c.id), label: String(c.label), kind: c.kind === 'pay' ? 'pay' : 'card',
+        last4: String(c.last4 || ''), expiry: String(c.expiry || ''), isDefault: !!c.isDefault
+      };
+    });
+    if (!list.length) list = seedCards();
+    if (!list.some(function (c) { return c.isDefault; })) list[0].isDefault = true;
+    return list;
+  })();
+
+  function cardTitle(c) {
+    return c.kind === 'pay' ? c.label : c.label + ' **** ' + c.last4;
+  }
+  function defaultCard() {
+    return cardStore.filter(function (c) { return c.isDefault; })[0] || cardStore[0] || null;
+  }
+
+  function renderCards() {
+    var wrap = $('#pmList');
+    if (!wrap) return;
+    if (!cardStore.length) {
+      wrap.innerHTML = '<div class="empty" style="box-shadow:none"><p>등록된 결제 수단이 없어요.</p></div>';
+      return;
+    }
+    wrap.innerHTML = cardStore.map(function (c) {
+      return '<div class="pm-row' + (c.isDefault ? ' is-default' : '') + '">' +
+        '<span class="pm-ico" aria-hidden="true">' + icon(c.kind === 'pay' ? 'message' : 'card') + '</span>' +
+        '<span class="pm-main"><b>' + esc(cardTitle(c)) + '</b><span>' + (c.isDefault ? '기본 결제수단' : '예비 결제수단') + (c.expiry ? ' · 유효기간 ' + esc(c.expiry) : '') + '</span></span>' +
+        (c.isDefault ? '<span class="pm-badge">기본</span>' : '<button class="pm-set" type="button" data-card-default="' + esc(c.id) + '">기본 설정</button>') +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleCardForm(show) {
+    var form = $('#cardForm');
+    var btn = $('#pmAddBtn');
+    if (!form) return;
+    var open = typeof show === 'boolean' ? show : !!form.hidden;
+    form.hidden = !open;
+    if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) {
+      var first = $('#cardLabel');
+      if (first) setTimeout(function () { try { first.focus(); } catch (e) {} }, 80);
+    } else {
+      clearFieldError('f-cardLast4');
+      clearFieldError('f-cardExpiry');
+    }
+  }
+
+  function addCard() {
+    var labelEl = $('#cardLabel');
+    var last4El = $('#cardLast4');
+    var expEl = $('#cardExpiry');
+    var label = labelEl ? String(labelEl.value || '').trim() : '';
+    var last4 = digits(last4El ? last4El.value : '');
+    var exp = digits(expEl ? expEl.value : '');
+    clearFieldError('f-cardLast4');
+    clearFieldError('f-cardExpiry');
+    if (last4.length !== 4) {
+      setFieldError('f-cardLast4');
+      toast('카드 끝 4자리를 입력해 주세요.');
+      return;
+    }
+    if (exp.length !== 4 || Number(exp.slice(0, 2)) < 1 || Number(exp.slice(0, 2)) > 12) {
+      setFieldError('f-cardExpiry');
+      toast('유효기간을 MM/YY로 입력해 주세요.');
+      return;
+    }
+    cardStore.forEach(function (c) { c.isDefault = false; });
+    cardStore.unshift({
+      id: 'cd-' + Date.now(), label: label || '새 카드', kind: 'card',
+      last4: last4, expiry: exp.slice(0, 2) + '/' + exp.slice(2), isDefault: true
+    });
+    saveJson(CARD_KEY, cardStore);
+    renderCards();
+    toggleCardForm(false);
+    if (labelEl) labelEl.value = '';
+    if (last4El) last4El.value = '';
+    if (expEl) expEl.value = '';
+    toast('카드를 등록하고 기본 결제수단으로 설정했어요.');
+  }
+
+  function setDefaultCard(id) {
+    var target = cardStore.filter(function (c) { return c.id === id; })[0];
+    if (!target) return;
+    cardStore.forEach(function (c) { c.isDefault = c.id === id; });
+    saveJson(CARD_KEY, cardStore);
+    renderCards();
+    toast(cardTitle(target) + '을 기본 결제수단으로 설정했어요.');
+  }
+
+  /* ----- FAQ · 약관 ----- */
+  var FAQ_ITEMS = [
+    {
+      id: 'faq-diff',
+      q: '방문재활과 병원 치료는 어떻게 다른가요?',
+      a: '병원 치료는 진단·검사·처치 중심이고, 방문재활은 이미 받은 진단을 바탕으로 <b>집에서 이어가는 기능 회복</b>에 집중해요. 선생님이 직접 방문해 걷기·계단·관절 가동범위를 확인하고, 집 구조에 맞는 운동을 알려드립니다. 통증이 심해지거나 새 증상이 생기면 병원 진료를 먼저 권해드려요.'
+    },
+    {
+      id: 'faq-license',
+      q: '선생님 면허는 어떻게 검증하나요?',
+      a: '물리치료사·작업치료사 국가면허 원본, 경력증명서, 범죄경력조회 동의서, 신분증까지 <b>서류 4종</b>을 모두 확인한 선생님만 활동해요. 면허번호는 보건복지부 조회로 대조하고, 승인 뒤에도 후기와 방문 기록을 계속 확인합니다.'
+    },
+    {
+      id: 'faq-refund',
+      q: '환불과 일정 변경은 어떻게 하나요?',
+      a: '방문 <b>24시간 전까지 무료</b>로 일정 변경·취소가 가능해요. 취소하면 이용권 잔여 회차가 그대로 복구되고, 카드 결제는 영업일 기준 3~5일 안에 환불됩니다. 방문 당일 취소는 1회 차감, 선생님 도착 후 취소는 환불이 어려워요.'
+    },
+    {
+      id: 'faq-prepare',
+      q: '방문 전에 무엇을 준비해야 하나요?',
+      a: '편한 옷과 미끄러지지 않는 양말, 최근 복용약 목록을 준비해 주세요. 평가 기록이 더 정확해지도록 보호자님이 함께 계시면 좋아요. 밴드·공 같은 운동 도구는 선생님이 가져갑니다.'
+    },
+    {
+      id: 'faq-region',
+      q: '우리 지역은 언제 열리나요?',
+      a: '현재 서울·경기·인천·부산·대구 등 <b>17개 시·도</b>에서 연결되고 있어요. 준비 중인 지역은 내 정보 &gt; 서비스 지역에서 오픈 알림을 신청하면 가장 먼저 안내드립니다. 선생님 모집이 끝난 지역부터 순서대로 열려요.'
+    }
+  ];
+
+  var TERMS_DOCS = {
+    terms: {
+      title: '똑똑쌤 이용약관 요약',
+      items: [
+        '<b>서비스</b> 똑똑쌤은 국가면허를 검증한 재활 선생님과 가정을 연결하는 방문재활 중개 플랫폼입니다.',
+        '<b>요금·결제</b> 이용권 금액은 예약 3단계에서 정찰제로 안내하며, 보유 쿠폰은 결제 화면에서 바로 적용됩니다.',
+        '<b>취소·환불</b> 방문 24시간 전까지 무료로 변경·취소할 수 있고, 이용권 잔여 회차는 전액 환불됩니다.',
+        '<b>책임 범위</b> 재활 프로그램은 선생님의 전문 판단에 따르며, 응급 상황에서는 119 또는 병원 진료를 우선합니다.'
+      ]
+    },
+    privacy: {
+      title: '개인정보 처리방침 요약',
+      items: [
+        '<b>수집 항목</b> 이름·연락처·방문 주소·불편 부위, 결제 수단의 끝 4자리와 유효기간.',
+        '<b>이용 목적</b> 방문 매칭, 일정 안내, 회복 일지와 보호자 리포트 제공.',
+        '<b>보유 기간</b> 회원 탈퇴 후 30일 안에 파기하며, 전자 영수증은 관계 법령에 따라 5년 보관합니다.',
+        '<b>제3자 제공</b> 담당 선생님에게 방문에 필요한 최소 정보만 전달하고, 보호자 리포트는 이용자가 직접 공유합니다.'
+      ]
+    }
+  };
+
+  var faqOpenId = '';
+
+  function renderFaq() {
+    var wrap = $('#faqList');
+    if (!wrap) return;
+    wrap.innerHTML = FAQ_ITEMS.map(function (f, i) {
+      var on = faqOpenId === f.id;
+      return '<div class="faq-item' + (on ? ' is-open' : '') + '">' +
+        '<button class="faq-q" type="button" data-faq="' + f.id + '" aria-expanded="' + (on ? 'true' : 'false') + '">' +
+          '<span class="faq-n">Q' + (i + 1) + '</span>' + esc(f.q) +
+          '<svg class="ic" aria-hidden="true"><use href="#i-chev-d"/></svg>' +
+        '</button>' +
+        '<div class="faq-a">' + f.a + '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function toggleFaq(id) {
+    faqOpenId = faqOpenId === id ? '' : id;
+    renderFaq();
+  }
+
+  function renderTerms(kind) {
+    var doc = TERMS_DOCS[kind] || TERMS_DOCS.terms;
+    var body = $('#termsBody');
+    if (body) {
+      body.innerHTML = '<h3>' + esc(doc.title) + '</h3><ul>' + doc.items.map(function (t) { return '<li>' + t + '</li>'; }).join('') + '</ul>';
+    }
+    $$('#faqTabs [data-terms]').forEach(function (b) {
+      var on = b.getAttribute('data-terms') === kind;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+
+  function openFaqSheet() {
+    renderFaq();
+    renderTerms('terms');
+    openSheetEl('#faqSheet');
+  }
+
+  /* ----- v10 클릭 바인딩 ----- */
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#btnNotif') || e.target.closest('#mpNotifRow')) { openNotifSheet(); return; }
+    if (e.target.closest('[data-notif-close]') || e.target.id === 'notifSheet') { closeSheetEl('#notifSheet'); return; }
+    if (e.target.closest('#notifReadAll')) { readAllNotifs(); return; }
+
+    var nt = e.target.closest('[data-notif]');
+    if (nt) {
+      var n = readNotif(nt.getAttribute('data-notif'));
+      if (!n) return;
+      if (n.go === 'coupon') { closeSheetEl('#notifSheet'); openCouponSheet(); }
+      else if (n.go === 'account') { closeSheetEl('#notifSheet'); openAccountSheet(); }
+      else if (n.go === 'report') { closeSheetEl('#notifSheet'); showTab('journal'); openReport(); }
+      return;
+    }
+
+    if (e.target.closest('#mpCouponRow')) { openCouponSheet(); return; }
+    if (e.target.closest('[data-coupon-close]') || e.target.id === 'couponSheet') { closeSheetEl('#couponSheet'); return; }
+    if (e.target.closest('#couponRegister')) { registerCoupon(); return; }
+
+    var pick = e.target.closest('[data-coupon-pick]');
+    if (pick) {
+      bk.couponId = pick.getAttribute('data-coupon-pick') || '';
+      renderCouponChips();
+      if (bk.step === 4) renderSummary(); else updateTotal();
+      toast(bk.couponId ? '쿠폰을 적용했어요. 총 결제 금액에서 바로 빠졌어요.' : '쿠폰 사용을 해제했어요.');
+      return;
+    }
+
+    if (e.target.closest('#pmAddBtn')) { toggleCardForm(); return; }
+    if (e.target.closest('#cardCancel')) { toggleCardForm(false); return; }
+    if (e.target.closest('#cardSave')) { addCard(); return; }
+    var defBtn = e.target.closest('[data-card-default]');
+    if (defBtn) { setDefaultCard(defBtn.getAttribute('data-card-default')); return; }
+
+    if (e.target.closest('#mpFaqRow')) { openFaqSheet(); return; }
+    if (e.target.closest('[data-faq-close]') || e.target.id === 'faqSheet') { closeSheetEl('#faqSheet'); return; }
+    var fq = e.target.closest('[data-faq]');
+    if (fq) { toggleFaq(fq.getAttribute('data-faq')); return; }
+    var termBtn = e.target.closest('[data-terms]');
+    if (termBtn) { renderTerms(termBtn.getAttribute('data-terms')); return; }
+  });
+
+  (function bindCardInputs() {
+    var last4 = $('#cardLast4');
+    if (last4) last4.addEventListener('input', function () { last4.value = digits(last4.value).slice(0, 4); });
+    var exp = $('#cardExpiry');
+    if (exp) exp.addEventListener('input', function () {
+      var d = digits(exp.value).slice(0, 4);
+      exp.value = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+    });
+    var code = $('#couponCode');
+    if (code) code.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); registerCoupon(); }
+    });
+  })();
+
   /* ================= 초기 실행 ================= */
   var gateLogo = $('#gateLogo');
   if (gateLogo && $('#brandMark')) gateLogo.src = $('#brandMark').src;
@@ -7563,6 +8344,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   updateTotal();
   renderAccount();
   renderReviews();
+  renderNotifs();
+  renderCoupons();
+  renderCards();
+  renderFaq();
+  renderTerms('terms');
   renderDday();
   renderJournalTimeline();
   updateTrustStrip();
