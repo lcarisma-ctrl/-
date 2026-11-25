@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v13">
+<meta name="app-version" content="v14">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2550,7 +2550,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           <p>방문 전에 선생님이 연락드립니다.</p>
           <div class="done-tracker" id="doneTracker" aria-live="polite"></div>
           <div class="summary" id="doneSummary"></div>
+          <p class="done-beta" id="doneSaved" aria-live="polite"></p>
           <div class="done-btns">
+            <button class="btn btn-outline" type="button" id="doneCopy">
+              <svg class="ic" aria-hidden="true"><use href="#i-clipboard"/></svg>접수 내용 복사
+            </button>
             <button class="btn btn-outline done-ics" type="button" id="doneIcs">
               <svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg>캘린더에 일정 추가
             </button>
@@ -2560,7 +2564,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
               오픈 전 상담 폼 남기기<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg>
             </a>
           </div>
-          <p class="done-beta">정식 오픈 전 궁금한 점은 네이버 상담 폼으로도 남길 수 있어요.</p>
+          <p class="done-beta">정식 오픈 전에는 위 '접수 내용 복사'를 누른 뒤 네이버 상담 폼에 붙여 넣으면 담당자가 더 빨리 확인해요.</p>
         </div>
       </div>
     </section>
@@ -3796,6 +3800,234 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return new Date(Date.UTC(Number(p[0]), Number(p[1]) - 1, Number(p[2]), 14, 59, 59)).toISOString();
     }
 
+    /* ------------------------------------------------------------------
+       v14 · 실제 상담·예약 접수 구조 (INTAKE-OPERATIONS.md)
+       ──────────────────────────────────────────────────────────────────
+       서버·DB가 없는 단계에서도 접수가 누락되지 않게 하는 세 가지 도구:
+         ① generateReservationId — 사람이 읽는 예약번호 TT-YYMMDD-XXXX (중복 검사)
+         ② verifyReservationSaved — 예약 완료 직후 실제 저장 여부 확인
+         ③ buildIntakeSummary — 보호자가 상담 폼/톡/문자로 그대로 보낼 접수 요약
+       DOM을 건드리지 않는다. 저장소는 useIntakeReader로 주입받는다.
+       ------------------------------------------------------------------ */
+    var INTAKE_VERSION = 14;
+    var CONSULT_FORM_URL = 'https://naver.me/G3vCkS0S';
+    var RESERVATION_NO_RE = /^TT-\d{6}-\d{4}$/;
+    var SYMPTOM_CODE = {
+      '뇌졸중·편마비': 'stroke',
+      '무릎·고관절 수술 후': 'knee_postop',
+      '어르신 보행·근력': 'senior_mobility',
+      '신경계 질환': 'neuro',
+      '통증·관절 관리': 'pain_joint',
+      '기타': 'etc'
+    };
+    var SYMPTOM_CODE_LIST = Object.keys(SYMPTOM_CODE);
+
+    /* 화면 라벨/코드 어느 쪽이 들어와도 코드 배열로 만든다. */
+    function symptomCodesOf(list) {
+      var out = [];
+      (Array.isArray(list) ? list : []).forEach(function (v) {
+        var s = String(v == null ? '' : v).trim();
+        if (!s) return;
+        var code = SYMPTOM_CODE[s] || s;
+        if (out.indexOf(code) === -1) out.push(code);
+      });
+      return out;
+    }
+    function symptomLabel(code) {
+      var c = String(code == null ? '' : code);
+      for (var i = 0; i < SYMPTOM_CODE_LIST.length; i++) {
+        if (SYMPTOM_CODE[SYMPTOM_CODE_LIST[i]] === c) return SYMPTOM_CODE_LIST[i];
+      }
+      return c;
+    }
+
+    /* 한국 시간(KST, UTC+9) 기준 날짜 조각. 저장은 UTC, 표시·번호는 KST. */
+    function kstParts(when) {
+      var d = (when === undefined || when === null) ? new Date() : new Date(when);
+      if (isNaN(d.getTime())) d = new Date();
+      var t = new Date(d.getTime() + 9 * 3600 * 1000);
+      return {
+        y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate(),
+        hh: t.getUTCHours(), mi: t.getUTCMinutes()
+      };
+    }
+    function yymmddKst(when) {
+      var p = kstParts(when);
+      return String(p.y).slice(2) + pad(p.m) + pad(p.d);
+    }
+    function kstLabel(when) {
+      var p = kstParts(when);
+      return p.y + '-' + pad(p.m) + '-' + pad(p.d) + ' ' + pad(p.hh) + ':' + pad(p.mi);
+    }
+
+    function isValidReservationNo(no) { return RESERVATION_NO_RE.test(String(no == null ? '' : no).trim().toUpperCase()); }
+
+    /* ① 예약번호 발급 — TT-YYMMDD-XXXX, 기존 목록과 절대 겹치지 않게.
+       opts: { now, date('YYMMDD'), random, existing } */
+    function generateReservationId(existing, opts) {
+      var o = opts || {};
+      var list = Array.isArray(existing) ? existing : (Array.isArray(o.existing) ? o.existing : []);
+      var taken = Object.create(null);
+      list.forEach(function (r) {
+        if (!r) return;
+        if (r.no) taken[String(r.no).trim().toUpperCase()] = true;
+        if (r.reservationNo) taken[String(r.reservationNo).trim().toUpperCase()] = true;
+      });
+      var stamp = (o.date && /^\d{6}$/.test(String(o.date))) ? String(o.date) : yymmddKst(o.now);
+      var rnd = typeof o.random === 'function' ? o.random : Math.random;
+      var cand, i;
+      for (i = 0; i < 64; i++) {
+        var r = Math.abs(Number(rnd()));
+        if (!isFinite(r)) r = 0;
+        r = r - Math.floor(r);
+        cand = 'TT-' + stamp + '-' + String(Math.floor(r * 9000) + 1000);
+        if (!taken[cand]) return cand;
+      }
+      /* 난수가 같은 값만 내는 환경(테스트·취약 난수)에서도 겹치지 않게 순번으로 대체 */
+      for (i = 1000; i <= 9999; i++) {
+        cand = 'TT-' + stamp + '-' + String(i);
+        if (!taken[cand]) return cand;
+      }
+      return 'TT-' + stamp + '-' + String(1000 + (Date.now() % 9000));
+    }
+
+    function wonText(n) {
+      var v = num(n, 0);
+      if (v === 0) return '무료';
+      try { return v.toLocaleString('ko-KR') + '원'; } catch (e) { return String(v) + '원'; }
+    }
+
+    /* 접수 요약에 넣는 지역 — 동/번지 이하는 넣지 않는다(개인정보 최소화). */
+    function intakeRegionText(resv) {
+      var b = (resv && typeof resv === 'object') ? resv : {};
+      var found = b.regionId ? findRegion(b.regionId) : null;
+      if (found && found.fullName) return found.fullName;
+      var txt = String(b.region || '').trim();
+      if (!txt) return '';
+      return txt.split(/\s+/).slice(0, 2).join(' ');
+    }
+    function intakeWhenText(resv) {
+      var b = (resv && typeof resv === 'object') ? resv : {};
+      var iso = String(b.dateIso || '').trim();
+      var label = String(b.date || '').trim();
+      var year = /^\d{4}-/.test(iso) ? iso.slice(0, 4) + '.' : '';
+      var head = '';
+      if (label) head = /^\d{4}/.test(label) ? label : (year + label);
+      else if (iso) {
+        var p = iso.split('-');
+        head = p.length === 3 ? (p[0] + '.' + p[1] + '.' + p[2]) : iso;
+      } else head = '일정 미정';
+      if (b.day) head += ' (' + b.day + ') ';
+      else head += ' ';
+      if (b.time) head += String(b.time);
+      return head.replace(/\s+/g, ' ').trim();
+    }
+
+    /* ③ 접수 요약 텍스트 — 보호자가 상담 폼·톡·문자에 그대로 붙여 넣는 형식.
+       opts: { name, phone, passName, payMethod, teacherLicense, regionName, contactUrl, now, no } */
+    function buildIntakeSummary(resv, opts) {
+      var b = (resv && typeof resv === 'object') ? resv : null;
+      if (!b) return '';
+      var o = opts || {};
+      var no = String(b.no || o.no || '').trim();
+      var status = reservationLabel(reservationStatus(b.status)) || '접수 완료';
+      var lines = [];
+      lines.push('[똑똑쌤 방문재활 예약 접수]');
+      lines.push('예약번호 : ' + (no || '(없음)'));
+      lines.push('접수 상태 : ' + status);
+      lines.push('접수 시각 : ' + kstLabel(o.now || b.createdAt) + ' (KST)');
+      lines.push('');
+
+      var body = [];
+      if (o.name) body.push('· 보호자 : ' + String(o.name).trim());
+      if (o.phone) body.push('· 연락처 : ' + String(o.phone).trim());
+      var region = String(o.regionName || '').trim() || intakeRegionText(b);
+      if (region) body.push('· 방문 지역 : ' + region + ' (상세 주소는 상담에서 확인)');
+      var when = intakeWhenText(b);
+      if (when) body.push('· 희망 일시 : ' + when);
+      var syms = (Array.isArray(b.symptomCodes) ? b.symptomCodes : []).map(symptomLabel).filter(function (s) { return !!s; });
+      if (syms.length) body.push('· 불편한 부위 : ' + syms.join(', '));
+
+      var passText = String(o.passName || '').trim();
+      var amount = num(b.amount, 0);
+      if (passText || amount > 0) {
+        var pay = passText || '방문 이용권';
+        pay += amount > 0
+          ? ' · ' + wonText(amount) + (o.payMethod ? ' (' + String(o.payMethod).trim() + ')' : '') + ' 결제'
+          : ' · 무료';
+        body.push('· 이용권 : ' + pay);
+      }
+
+      var teacherName = String(b.teacher || '').trim();
+      var license = String(o.teacherLicense || '').trim();
+      if (!teacherName || teacherName === '추천 배정') teacherName = '추천 배정 (상담 후 확정)';
+      else if (license) teacherName += ' (' + license + ')';
+      body.push('· 담당 선생님 : ' + teacherName);
+
+      if (!body.length) return lines.join('\n').trim();
+      lines = lines.concat(body);
+      lines.push('');
+      lines.push('아래 상담 폼에 이 내용을 그대로 붙여 넣어 주세요.');
+      lines.push(String(o.contactUrl || CONSULT_FORM_URL));
+      return lines.join('\n');
+    }
+
+    /* ② 저장 확인 — 예약 완료 직후 "정말 저장됐나"를 저장소에서 다시 읽어 확인한다.
+       reader() → { available:boolean, raw:string|null, memory:array }
+       결과: { persisted, storageMode('local'|'memory'|'unknown'), reservationId, checkedAt, ... } */
+    var intakeReader = null;
+    function useIntakeReader(fn) { intakeReader = typeof fn === 'function' ? fn : null; return intakeReader; }
+
+    function verifyReservationSaved(resvId, opts) {
+      var o = opts || {};
+      var id = String(resvId == null ? '' : resvId).trim();
+      var out = {
+        persisted: false, storageMode: 'unknown', reservationId: id, checkedAt: isIso(o.checkedAt) ? o.checkedAt : nowIso(),
+        storageAvailable: null, foundInStore: false, foundInMemory: null, count: 0, note: ''
+      };
+      if (!id) {
+        out.error = 'invalid_reservation_id';
+        out.note = '예약번호가 없어 저장을 확인할 수 없어요. 접수 내용을 복사해 두세요.';
+        return out;
+      }
+      var reader = typeof o.read === 'function' ? o.read : intakeReader;
+      if (!reader) {
+        out.error = 'no_reader';
+        out.note = '저장소를 확인할 수 없어요. 접수 내용을 복사해 두세요.';
+        return out;
+      }
+      var snap = null;
+      try { snap = reader() || {}; } catch (e) { snap = { available: false, raw: null, error: 'read_failed' }; }
+      var available = snap.available === true;
+      out.storageAvailable = available;
+      out.storageMode = available ? 'local' : 'memory';
+      var raw = snap.raw;
+      if (typeof raw === 'string' && raw) {
+        try {
+          var parsed = JSON.parse(raw);
+          var list = (parsed && Array.isArray(parsed.bookings)) ? parsed.bookings : [];
+          out.count = list.length;
+          out.foundInStore = list.some(function (r) {
+            return !!r && (String(r.no || '') === id || String(r.id || '') === id);
+          });
+        } catch (e) { out.error = 'store_corrupt'; }
+      }
+      if (Array.isArray(snap.memory)) {
+        out.foundInMemory = snap.memory.some(function (r) {
+          return !!r && (String(r.no || '') === id || String(r.id || '') === id);
+        });
+      }
+      out.persisted = available && out.foundInStore;
+      if (!available) {
+        out.note = '이 브라우저는 저장이 막혀 있어 임시 메모리에만 남아 있어요. 창을 닫으면 사라지니 접수 내용을 복사해 상담 폼에 꼭 남겨 주세요.';
+      } else if (!out.foundInStore) {
+        out.note = '저장된 예약에서 이 예약번호를 찾지 못했어요. 접수 내용을 복사해 상담 폼에 남겨 주세요.';
+      } else {
+        out.note = '이 기기에 저장된 것을 확인했어요.';
+      }
+      return out;
+    }
+
     /* ------------------ 지역 마스터 ------------------ */
     function buildRegionMaster(regions) {
       var ts = nowIso();
@@ -4730,6 +4962,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       SCHEMA_VERSION: SCHEMA_VERSION,
       STATUS: STATUS,
       newId: newId,
+      intakeVersion: INTAKE_VERSION,
+      consultFormUrl: CONSULT_FORM_URL,
+      symptomCodesOf: symptomCodesOf,
+      symptomLabel: symptomLabel,
+      isValidReservationNo: isValidReservationNo,
+      generateReservationId: generateReservationId,
+      buildIntakeSummary: buildIntakeSummary,
+      verifyReservationSaved: verifyReservationSaved,
+      useIntakeReader: useIntakeReader,
       nowIso: nowIso,
       isIso: isIso,
       isoOr: isoOr,
@@ -5988,7 +6229,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function completeBooking() {
     if (!passById(bk.passId)) bk.passId = 'eval';
     var p = passById(bk.passId);
-    var no = 'TT-' + String(new Date().getFullYear()).slice(2) + pad2(new Date().getMonth() + 1) + pad2(new Date().getDate()) + '-' + String(Math.floor(Math.random() * 9000) + 1000);
+    /* v14 · 예약번호는 저장된 기존 예약과 겹치지 않게 발급한다. */
+    var no = TtModel.generateReservationId(account.bookings);
     var listTotal = p.price;
     var usedCoupon = selectedCoupon(p);
     var discount = usedCoupon ? Math.min(usedCoupon.amount || 0, listTotal) : 0;
@@ -6018,6 +6260,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         teacherId: bk.teacherId || '',
         dateIso: bk.dateIso || '',
         regionId: TtModel.regionIdOf(bk.province, bk.district),
+        symptomCodes: TtModel.symptomCodesOf(bk.syms),
         passId: p.id,
         walletId: '',
         region: regionText + ' ' + (bk.address.length > 12 ? bk.address.slice(0, 12) + '…' : bk.address),
@@ -6084,6 +6327,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
     lastBooking = {
       no: no,
+      name: bk.name || '',
+      phone: bk.phone || '',
       dateIso: bk.dateIso || '',
       dateLabel: bk.dateLabel || '',
       dateDay: bk.dateDay || '',
@@ -6122,6 +6367,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
     $('#bookingWizard').hidden = true;
     $('#bookingDone').hidden = false;
+    /* v14 · 저장 확인 배지(로컬 저장 확인됨 / 임시 메모리 모드) */
+    var savedEl = $('#doneSaved');
+    if (savedEl) savedEl.innerHTML = intakeSavedHtml(TtModel.verifyReservationSaved(no));
     var tbar = $('#bookTotalBar');
     if (tbar) tbar.hidden = true;
     document.body.classList.remove('show-book-total');
@@ -6382,6 +6630,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   var account = normalizeAccount(loadAccount() || seedAccount());
   saveAccount();
+
+  /* v14 · 접수 저장 확인용 리더 — 예약 완료 직후 실제 저장소를 다시 읽는 데 쓴다. */
+  TtModel.useIntakeReader(function () {
+    var raw = null, available = false;
+    try { available = !!SafeStorage.available; raw = SafeStorage.getItem(STORE_KEY); } catch (e) { available = false; raw = null; }
+    return { available: available, raw: raw, memory: (account && account.bookings) || [] };
+  });
 
   function renderAccount() {
     var totalRemain = account.passes.reduce(function (sum, p) { return sum + (p.remaining > 0 ? p.remaining : 0); }, 0);
@@ -7000,6 +7255,60 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     } catch (e) { ok = false; }
     if (!ok) ok = legacyCopy(text);
     return ok;
+  }
+
+  /* ===================================================================
+     v14 · 접수(인테이크) 연계 — 저장 확인 배지 · 접수 내용 복사 · 상담 폼
+     INTAKE-OPERATIONS.md 의 3중 장치를 화면에 붙인다.
+     =================================================================== */
+  function savedPhone() {
+    try { return String(SafeStorage.getItem(PHONE_KEY) || ''); } catch (e) { return ''; }
+  }
+  function intakeContactName() {
+    try { return customerName(); } catch (e) { return ''; }
+  }
+
+  /* 저장 확인 결과 → 배지 + 안내 문구(기존 클래스만 사용, 레이아웃 변경 없음) */
+  function intakeSavedHtml(check) {
+    if (!check) return '';
+    var badge = check.persisted
+      ? '<span class="status is-on">로컬 저장 확인됨</span>'
+      : '<span class="status">' + (check.storageMode === 'memory' ? '임시 메모리 모드' : '저장 미확인') + '</span>';
+    return badge + (check.note ? '<br>' + esc(check.note) : '');
+  }
+
+  /* 예약 1건 → 복사용 접수 요약 텍스트 */
+  function intakeSummaryFor(target, extra) {
+    var b = (typeof target === 'string') ? findBooking(target) : target;
+    if (!b) return '';
+    var o = extra || {};
+    var p = passById(b.passId) || {};
+    var t = teacherById(b.teacherId) || {};
+    var r = receiptOf(b.no);
+    var isLast = !!(lastBooking && lastBooking.no && lastBooking.no === b.no);
+    var name = o.name || (isLast ? lastBooking.name : '') || intakeContactName();
+    var phone = o.phone || (isLast ? lastBooking.phone : '') || savedPhone();
+    return TtModel.buildIntakeSummary(b, {
+      name: name,
+      phone: phone,
+      passName: p.name || (b.passId === 'eval' ? '첫 1:1 방문 평가권' : ''),
+      payMethod: r ? r.method : '',
+      teacherLicense: t.license || ''
+    });
+  }
+
+  function copyIntake(target) {
+    var b = (typeof target === 'string') ? findBooking(target) : target;
+    if (!b) { toast('예약을 찾을 수 없어요.'); return false; }
+    var text = intakeSummaryFor(b);
+    if (!text) { toast('접수 내용을 만들 수 없어요.'); return false; }
+    var okCopy = copyToClipboard(text);
+    /* 검증용 훅(화면에는 영향 없음) */
+    try { window.__ttokttokIntake = { no: b.no, text: text, copied: okCopy, at: Date.now() }; } catch (e) {}
+    toast(okCopy
+      ? '접수 내용을 복사했어요. 네이버 상담 폼에 붙여 넣어 주세요.'
+      : '복사가 막혀 있어요. 상담 폼에서 예약번호 ' + b.no + '로 남겨 주세요.');
+    return okCopy;
   }
 
   function openReport() {
@@ -8082,6 +8391,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var mTime = e.target.closest('[data-manage-time]');
     if (mTime) { manageCtx.time = mTime.getAttribute('data-manage-time'); renderManage(); return; }
     if (e.target.closest('[data-manage-close]') || e.target.id === 'manageSheet') { closeManage(); return; }
+
+    /* v14 · 접수 내용 복사 (예약 완료 화면 · 내 예약 상세) */
+    if (e.target.closest('#doneCopy')) {
+      if (lastBooking && lastBooking.no) copyIntake(lastBooking.no);
+      else toast('예약 정보를 찾을 수 없어요.');
+      return;
+    }
+    var intakeBtn = e.target.closest('[data-intake-copy]');
+    if (intakeBtn) { copyIntake(intakeBtn.getAttribute('data-intake-copy')); return; }
 
     var dayChip = e.target.closest('[data-sched-day]');
     if (dayChip) {
@@ -9237,11 +9555,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<div class="row"><span>방문 일정</span><b>' + esc(b.date) + ' (' + esc(b.day) + ') ' + esc(b.time) + '</b></div>' +
         '<div class="row"><span>방문 지역</span><b>' + esc(b.region) + '</b></div>' +
         '<div class="row"><span>이용권</span><b>' + esc((passById(b.passId) || {}).name || '첫 방문 평가') + '</b></div>' +
-      '</div>';
+      '</div>' +
+      '<p class="sheet-note" id="manageSaved">' + intakeSavedHtml(TtModel.verifyReservationSaved(b.no)) + '</p>';
 
     if (canceled) {
       body.innerHTML = head + '<div class="refund-box" style="margin-top:14px">취소된 예약입니다. 환불은 결제 수단으로 3~5영업일 내 처리됩니다.</div>' +
-        '<div class="reject-foot"><button class="btn btn-ghost" type="button" data-manage-close>닫기</button></div>';
+        '<div class="reject-foot"><button class="btn btn-ghost" type="button" data-manage-close>닫기</button>' +
+        '<button class="btn btn-outline" type="button" data-intake-copy="' + esc(b.no) + '">접수 내용 복사</button></div>';
       return;
     }
 
@@ -9283,7 +9603,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<button class="btn btn-ghost" type="button" data-manage-cancel>예약 취소</button>' +
         '<button class="btn btn-navy" type="button" data-manage-save>이 시간으로 변경</button>' +
       '</div>' +
-      '<button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '" style="margin-top:8px">선생님께 문의</button>';
+      '<button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '" style="margin-top:8px">선생님께 문의</button>' +
+      '<button class="btn btn-outline" type="button" data-intake-copy="' + esc(b.no) + '" style="margin-top:8px">접수 내용 복사</button>' +
+      '<a class="sheet-beta-link" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">복사한 내용을 상담 폼에 붙여 넣기<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg></a>';
   }
 
   function saveManageChange() {
@@ -9954,7 +10276,29 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           })
         });
       },
-      integrity: function () { return TtModel.integrity(window.__ttokttokModel.export()); }
+      integrity: function () { return TtModel.integrity(window.__ttokttokModel.export()); },
+      /* v14 · 접수 구조(검증·운영 도구용) */
+      intakeVersion: TtModel.intakeVersion,
+      consultFormUrl: TtModel.consultFormUrl,
+      generateReservationId: function (existing, opts) {
+        return TtModel.generateReservationId(Array.isArray(existing) ? existing : (account.bookings || []), opts);
+      },
+      isValidReservationNo: function (no) { return TtModel.isValidReservationNo(no); },
+      symptomCodesOf: function (list) { return TtModel.symptomCodesOf(list); },
+      symptomLabel: function (code) { return TtModel.symptomLabel(code); },
+      buildIntakeSummary: function (target, opts) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return TtModel.buildIntakeSummary(b, opts);
+      },
+      intakeSummaryOf: function (target) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return b ? intakeSummaryFor(b) : '';
+      },
+      verifySaved: function (target, opts) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        var id = b ? (b.no || b.id) : target;
+        return TtModel.verifyReservationSaved(id, opts);
+      }
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
