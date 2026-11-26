@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v31">
+<meta name="app-version" content="v32">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2206,6 +2206,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   </header>
 
   <main>
+    <!-- v32 · 저장·읽기 실패를 한 곳에서 알리는 띠(성공하면 스스로 사라진다) -->
+    <div id="ttAlertHost" aria-live="polite" style="display:none;padding:10px 14px 0"></div>
+
     <!-- ================= 홈 (고객) ================= -->
     <section class="screen is-active home-v6" id="screen-home" aria-label="홈">
       <button class="home-notice" type="button" id="homeNotice">
@@ -2394,6 +2397,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       </div>
 
       <div id="bookingWizard">
+        <!-- v32 · 입력값 보존: 저장된 예약 초안이 있으면 이어서 쓸지 물어본다 -->
+        <div id="bookResume" class="card" hidden style="margin-bottom:10px;padding:14px">
+          <b style="display:block;font-size:13px">작성 중이던 예약이 있어요</b>
+          <p class="fine" id="bookResumeText" style="margin:5px 0 10px">이어서 작성하면 입력한 내용이 그대로 살아납니다.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-navy btn-sm" type="button" data-book-resume style="flex:0 0 auto">이어서 작성</button>
+            <button class="btn btn-ghost btn-sm" type="button" data-book-discard style="flex:0 0 auto">새로 예약</button>
+          </div>
+        </div>
         <div class="bk-progress" id="bookingStepper" role="group" aria-label="예약 진행">
           <div class="bk-prog-top">
             <p class="bk-prog-label"><span id="bookStepLabel">예약 진행</span><small id="bookStepHint">방문 정보를 입력해 주세요</small></p>
@@ -2548,6 +2560,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
               <b id="totalAmount">0원</b>
             </div>
             <p class="discount-note" id="discountNote" hidden></p>
+            <div id="payBusy" hidden style="margin-top:10px"></div>
+            <div id="bookError" style="margin-top:10px"></div>
             <button class="btn btn-teal" type="button" id="payBtn">결제하고 예약 완료</button>
             <p class="pay-note">프로토타입입니다. 실제 결제는 이루어지지 않습니다.<br>취소·환불은 방문 24시간 전까지 무료이며, 자세한 기준은 FAQ &gt; 서비스·환불(운영 기준 초안)에서 확인할 수 있습니다.</p>          </div>
 
@@ -2957,6 +2971,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
               <div id="qlPhotoPreview" hidden style="margin-top:8px"></div>
             </div>
           </div>
+          <div id="qlError" style="margin-top:10px"></div>
           <button class="btn btn-teal" type="button" id="qlSave" style="margin-top:12px">일지 저장 · 보호자 공유</button>
           <p class="fine" id="qlHint">필수: 통증 · 컨디션 · 수행 동작 1개</p>
         </div>
@@ -3411,6 +3426,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             </div>
           </div>
           <p class="fine" id="adminBackupResult" role="status" aria-live="polite" style="margin:10px 0 0"></p>
+          <div id="adminBackupBusy" hidden style="margin-top:10px"></div>
+          <div id="adminBackupError" style="margin-top:10px"></div>
         </div>
       </section>
 
@@ -4013,10 +4030,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <button class="sec-link" type="button" id="faqReset" hidden>검색 초기화</button>
       </div>
       <div class="faq-list" id="faqList" style="margin-top:8px"></div>
-      <div class="empty" id="faqEmpty" hidden style="margin-top:8px">
-        <p>검색 결과가 없어요.<br>다른 말로 찾아보시거나 1:1 상담을 남겨 주세요.</p>
-        <a class="btn btn-outline btn-sm" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer" style="text-decoration:none">1:1 상담 연결</a>
-      </div>
+      <div id="faqEmpty" hidden style="margin-top:8px"></div>
       <div class="terms-tabs" id="faqTabs" role="tablist" aria-label="약관 보기">
         <button type="button" class="is-on" data-terms="terms" role="tab" aria-selected="true">이용약관</button>
         <button type="button" data-terms="policy" role="tab" aria-selected="false">서비스·환불</button>
@@ -9185,6 +9199,504 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     };
   })();
 
+  /* ===================================================================
+     v32 · 빈 상태 · 로딩 · 오류 · 입력 보존 공통 UI (TtUI)
+     ─ 화면마다 흩어져 있던 빈 상태를 한 곳(PRESETS)에 모아
+       「짧은 제목 + 한 줄 설명 + 다음 행동 CTA」 구조로 통일한다.
+     ─ 로딩: 실제로 기다리는 구간(결제·일지 저장·사진 처리·백업 파일 읽기/복원·
+       인쇄·목록 다시 불러오기)에만 같은 모양의 로딩 블록과 버튼 잠금(busy)을 건다.
+     ─ 오류: 원인 문구 + 「다시 시도」 버튼. 재시도는 onRetry(key)로 등록한 함수를
+       그대로 다시 부른다(성공하면 alert/오류 블록을 지운다).
+     ─ 입력 보존: 저장·제출이 실패하거나 화면이 다시 그려져도 폼 값이 남도록
+       draft 스냅샷을 저장소 어댑터(TtStorage)에 둔다.
+     ─ <style>은 건드리지 않는다(디자인 토큰 정리는 v35 범위). 기존 클래스
+       (empty·empty-v7·btn·fine)와 인라인 스타일만 쓴다.
+     =================================================================== */
+  var TtUI = (function () {
+    var VERSION = 'v32';
+
+    /* ── 빈 상태 문구 한 곳 ──────────────────────────────────────────
+       title: 짧은 제목 · desc: 한 줄 설명 · cta: 다음 행동 버튼(1~2개)
+       attrs 는 기존 위임 클릭 핸들러(data-go·data-book·data-view …)를 그대로 쓴다. */
+    var PRESETS = {
+      'booking-list': {
+        title: '다가오는 방문이 없어요',
+        desc: '원하는 날짜와 지역으로 첫 방문을 예약해 보세요.',
+        cta: [{ label: '예약하기', attrs: 'data-go="booking"' }]
+      },
+      'wallet-passes': {
+        title: '보유한 이용권이 없어요',
+        desc: '첫 방문 평가는 무료예요. 평가 뒤에 회차권을 고르면 됩니다.',
+        cta: [{ label: '무료 평가 예약', attrs: 'data-book="eval"' }]
+      },
+      'receipts': {
+        title: '결제 내역이 없어요',
+        desc: '결제를 마치면 영수증이 여기에 쌓입니다.',
+        cta: [{ label: '예약하기', attrs: 'data-go="booking"' }]
+      },
+      'journal-timeline': {
+        title: '아직 방문 기록이 없어요',
+        desc: '첫 방문이 끝나면 회복 기록이 여기에 쌓입니다.',
+        cta: [{ label: '방문 예약', attrs: 'data-go="booking"' }]
+      },
+      'teachers-filter': {
+        title: '조건에 맞는 선생님이 없어요',
+        desc: '검색어를 바꾸거나 필터를 초기화해 보세요.',
+        cta: [{ label: '필터 초기화', attrs: 'data-teacher-reset' }]
+      },
+      'teachers-fav': {
+        title: '아직 찜한 선생님이 없어요',
+        desc: '마음에 드는 선생님의 하트를 눌러 모아 두세요.',
+        cta: [{ label: '전체 선생님 보기', attrs: 'data-fav-clear' }]
+      },
+      'near-empty': {
+        title: '이 지역에는 활동 선생님이 없어요',
+        desc: '다른 시·군·구를 고르거나 목록에서 찾아보세요.',
+        cta: [{ label: '목록에서 찾기', attrs: 'data-teacher-list' }]
+      },
+      'search-teacher': {
+        title: '찾는 선생님이 없어요',
+        desc: '지역(예: 부산)이나 이름으로 다시 검색해 보세요.',
+        cta: [{ label: '검색어 지우기', attrs: 'data-teacher-reset' }]
+      },
+      'notif-list': {
+        title: '새 알림이 없어요',
+        desc: '방문 일정·리포트·정산 소식이 생기면 여기에 모입니다.',
+        cta: [{ label: '예약 보기', attrs: 'data-go="booking"' }]
+      },
+      'notif-filter': {
+        title: '이 분류의 알림이 없어요',
+        desc: '‘전체’로 바꾸면 다른 알림을 볼 수 있어요.',
+        cta: [{ label: '전체 알림 보기', attrs: 'data-notif-cat="all" data-notif-scope="customer"' }]
+      },
+      'tp-notif': {
+        title: '아직 선생님 알림이 없어요',
+        desc: '방문 요청이 배정되면 여기에 쌓입니다.',
+        cta: [{ label: '일정 보기', attrs: 'data-go="tp-schedule"' }]
+      },
+      'tp-requests': {
+        title: '대기 중인 방문 요청이 없어요',
+        desc: '새 요청이 오면 알림으로 알려드립니다.',
+        cta: [{ label: '일정 보기', attrs: 'data-go="tp-schedule"' }]
+      },
+      'tp-schedule': {
+        title: '확정된 방문이 없어요',
+        desc: '예약이 확정되면 이번 주 일정이 여기에 표시됩니다.',
+        cta: [{ label: '가능 시간 등록', attrs: 'data-go="tp-mypage"' }]
+      },
+      'tp-journals': {
+        title: '아직 작성한 일지가 없어요',
+        desc: '방문 뒤 2분 일지로 남기면 보호자에게 공유됩니다.',
+        cta: [{ label: '2분 일지 쓰기', attrs: 'data-scroll="tpQuickCard"' }]
+      },
+      'tp-settle': {
+        title: '이 달에는 정산 내역이 없어요',
+        desc: '방문 일지를 저장하면 회차가 자동으로 쌓여요.',
+        cta: [{ label: '방문 일정 보기', attrs: 'data-go="tp-schedule"' }]
+      },
+      'coupons': {
+        title: '보유한 쿠폰이 없어요',
+        desc: '쿠폰 코드를 등록하면 결제에서 바로 쓸 수 있어요.',
+        cta: [{ label: '쿠폰 코드 등록', attrs: 'data-coupon-focus' }]
+      },
+      'cards': {
+        title: '등록된 결제 수단이 없어요',
+        desc: '카드를 등록하면 다음 결제가 빨라져요.',
+        cta: [{ label: '카드 등록', attrs: 'data-card-add' }]
+      },
+      'reviews': {
+        title: '아직 후기를 남길 방문이 없어요',
+        desc: '방문을 마치면 그 회차의 후기를 남길 수 있어요.',
+        cta: [{ label: '방문 일정 보기', attrs: 'data-go="booking"' }]
+      },
+      'faq-empty': {
+        title: '검색 결과가 없어요',
+        desc: '다른 말로 찾거나 검색을 초기화해 보세요.',
+        cta: [
+          { label: '검색 초기화', attrs: 'data-faq-reset' },
+          { label: '1:1 상담 연결', href: 'https://naver.me/G3vCkS0S', cls: 'btn-outline', mt: 8 }
+        ]
+      },
+      'chat-log': {
+        title: '아직 대화가 없어요',
+        desc: '궁금한 점을 먼저 남기면 선생님이 답해 드려요.',
+        cta: [{ label: '일정 변경 문의', attrs: 'data-chat-quick="방문 시간을 바꿀 수 있을까요?"' }]
+      },
+      'admin-queue': {
+        title: '심사 대기 중인 지원서가 없어요',
+        desc: '새 지원서가 접수되면 여기에 표시됩니다.',
+        cta: [{ label: '예약 큐 보기', attrs: 'data-scroll="adminResvSec"' }]
+      },
+      'admin-recent': {
+        title: '아직 처리한 지원서가 없어요',
+        desc: '지원서를 승인하거나 보완 요청하면 이력이 남습니다.',
+        cta: [{ label: '심사 대기 보기', attrs: 'data-scroll="adminQueue"' }]
+      },
+      'admin-resv': {
+        title: '이 상태의 예약이 없어요',
+        desc: '다른 상태를 고르면 해당 예약을 볼 수 있어요.',
+        cta: [{ label: '전체 예약 보기', attrs: 'data-admin-resv-filter="all"' }]
+      },
+      'admin-ops-queue': {
+        title: '미배정·재확정 대기 예약이 없어요',
+        desc: '모두 배정·확정됐습니다.',
+        cta: [{ label: '운영 지표 보기', attrs: 'data-scroll="adminMetricsSec"' }]
+      },
+      'admin-reminders': {
+        title: '오늘 발송할 리마인드가 없어요',
+        desc: '방문 D-1·4주 재평가·정산 확정 일정이 생기면 여기에 모입니다.',
+        cta: [{ label: '오늘 처리할 일', attrs: 'data-scroll="adminOpsSec"' }]
+      },
+      'admin-metrics-regions': {
+        title: '이번 기간 수요가 있는 지역이 없어요',
+        desc: '새 예약이 접수되면 지역별 수요·공급 갭이 여기에 모입니다.',
+        cta: [{ label: '전체 기간으로 보기', attrs: 'data-metrics-period="all"' }]
+      }
+    };
+
+    var RETRY = {};
+    var ALERTS = {};
+
+    function esc0(s) {
+      return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+      });
+    }
+
+    /* ── 빈 상태 ─────────────────────────────────────────────────── */
+    function ctaHtml(c) {
+      if (!c) return '';
+      var cls = 'btn ' + (c.cls || 'btn-navy') + ' btn-sm';
+      var mt = c.mt ? 'margin-top:' + c.mt + 'px;' : '';
+      if (c.href) {
+        return '<a class="' + cls + '" href="' + esc0(c.href) + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;' + mt + '">' + esc0(c.label) + '</a>';
+      }
+      return '<button class="' + cls + '" type="button" ' + (c.attrs || '') + (mt ? ' style="' + mt + '"' : '') + '>' + esc0(c.label) + '</button>';
+    }
+
+    function emptyHtml(key, opt) {
+      var p = PRESETS[key] || {};
+      opt = opt || {};
+      var title = opt.title || p.title || '';
+      var desc = opt.desc || p.desc || '';
+      var ctas = opt.cta || p.cta || [];
+      var html = '<div class="empty empty-v7" data-empty="' + esc0(opt.key || key) + '" role="group" aria-label="' + esc0(title || desc) + '"' +
+        (opt.style ? ' style="' + opt.style + '"' : '') + '>';
+      if (opt.art) html += opt.art;
+      if (title) html += '<b>' + esc0(title) + '</b>';
+      if (desc) html += '<p>' + esc0(desc) + '</p>';
+      for (var i = 0; i < ctas.length; i++) html += ctaHtml(ctas[i]);
+      html += '</div>';
+      return html;
+    }
+
+    function fill(el, key, opt) {
+      if (!el) return false;
+      el.innerHTML = emptyHtml(key, opt);
+      return true;
+    }
+
+    /* ── 로딩 표시 ─────────────────────────────────────────────────── */
+    var dotTimer = null;
+    var dotStep = 0;
+    function tickDots() {
+      var nodes = document.querySelectorAll('[data-loading-dots]');
+      if (!nodes.length) { if (dotTimer) { clearInterval(dotTimer); dotTimer = null; } return; }
+      dotStep = (dotStep + 1) % 3;
+      var txt = ['·', '··', '···'][dotStep];
+      for (var i = 0; i < nodes.length; i++) nodes[i].textContent = txt;
+    }
+    function ensureDots() {
+      if (dotTimer || typeof setInterval !== 'function') return;
+      dotTimer = setInterval(tickDots, 400);
+    }
+
+    function loadingHtml(label) {
+      return '<div class="empty" data-loading="1" role="status" aria-live="polite" aria-busy="true" style="box-shadow:none;padding:18px 14px;text-align:center">' +
+        '<p style="margin:0;font-weight:700;color:#475569;font-size:13px"><span data-loading-label>' + esc0(label || '불러오는 중') + '</span><span data-loading-dots>·</span></p>' +
+      '</div>';
+    }
+
+    function showLoading(el, label) {
+      if (!el) return false;
+      el.innerHTML = loadingHtml(label);
+      ensureDots();
+      return true;
+    }
+
+    function isBusy(el) {
+      return !!(el && el.getAttribute && el.getAttribute('data-busy') === '1');
+    }
+
+    /* 버튼 잠금 — 이중 클릭 방지 + 화면 낭독기 상태 */
+    function busy(btn, label) {
+      if (!btn || !btn.setAttribute) return false;
+      if (btn.disabled || isBusy(btn)) return false;
+      btn.__v32Html = btn.innerHTML;
+      btn.setAttribute('data-busy', '1');
+      btn.setAttribute('aria-busy', 'true');
+      btn.disabled = true;
+      if (label) btn.textContent = label;
+      return true;
+    }
+
+    function idle(btn) {
+      if (!btn || !btn.setAttribute) return false;
+      if (!isBusy(btn)) return false;
+      if (typeof btn.__v32Html === 'string') btn.innerHTML = btn.__v32Html;
+      btn.removeAttribute('data-busy');
+      btn.removeAttribute('aria-busy');
+      btn.disabled = false;
+      return true;
+    }
+
+    /* 목록 다시 불러오기 — 로딩 자리표시를 먼저 보여 주고 render를 한 틱 뒤에 부른다.
+       render가 던지면 같은 자리에 원인 + 「다시 시도」를 그린다. */
+    function reload(el, opts) {
+      if (!el) return false;
+      opts = opts || {};
+      var key = opts.key || 'reload';
+      showLoading(el, opts.label || '불러오는 중');
+      var run = function () {
+        try {
+          opts.render();
+          return true;
+        } catch (e) {
+          showError(el, {
+            key: key,
+            title: opts.errorTitle || '목록을 불러오지 못했어요',
+            message: (opts.errorDesc || '잠시 뒤 다시 시도해 주세요.') + (e && e.message ? ' (' + e.message + ')' : ''),
+            retry: opts.retry
+          });
+          return false;
+        }
+      };
+      if (opts.sync) return run();
+      setTimeout(run, opts.delay || 0);
+      return true;
+    }
+
+    /* ── 오류 + 재시도 ─────────────────────────────────────────────── */
+    function errorHtml(opt) {
+      opt = opt || {};
+      var key = opt.key || 'error';
+      return '<div class="empty" data-error="' + esc0(key) + '" role="alert" style="box-shadow:none;background:#FFF7F7;border-color:#F3C9C9;padding:16px 14px;text-align:center">' +
+        '<b style="display:block;font-size:13.5px;font-weight:800;color:#7A2E2E">' + esc0(opt.title || '문제가 생겼어요') + '</b>' +
+        (opt.message ? '<p style="margin:6px 0 12px;font-size:12px;color:#A03B3B;line-height:1.55">' + esc0(opt.message) + '</p>' : '') +
+        (opt.retry === false ? '' : '<button class="btn btn-outline btn-sm" type="button" data-retry="' + esc0(opt.retry || key) + '">' + esc0(opt.retryLabel || '다시 시도') + '</button>') +
+        (opt.secondaryLabel ? ' <button class="btn btn-ghost btn-sm" type="button" ' + (opt.secondaryAttrs || '') + '>' + esc0(opt.secondaryLabel) + '</button>' : '') +
+      '</div>';
+    }
+
+    function showError(el, opt) {
+      if (!el) return false;
+      el.innerHTML = errorHtml(opt);
+      if (opt && typeof opt.onRetry === 'function') onRetry((opt && opt.retry) || (opt && opt.key) || 'error', opt.onRetry);
+      return true;
+    }
+
+    function clear(el) {
+      if (el) el.innerHTML = '';
+    }
+
+    function onRetry(key, fn) {
+      if (!key || typeof fn !== 'function') return false;
+      RETRY[key] = fn;
+      return true;
+    }
+
+    function hasRetry(key) { return typeof RETRY[key] === 'function'; }
+
+    function runRetry(key) {
+      var fn = RETRY[key];
+      if (typeof fn !== 'function') return false;
+      try { return fn() !== false; } catch (e) { return false; }
+    }
+
+    /* ── 상단 알림 띠(#ttAlertHost) — 저장/읽기 실패를 한 곳에 ──────── */
+    function host() { return document.getElementById('ttAlertHost'); }
+
+    function paintAlerts() {
+      var el = host();
+      if (!el) return false;
+      var keys = Object.keys(ALERTS);
+      if (!keys.length) {
+        el.innerHTML = '';
+        el.style.display = 'none';
+        return true;
+      }
+      el.style.display = '';
+      el.innerHTML = keys.map(function (k) {
+        var a = ALERTS[k];
+        return '<div data-alert="' + esc0(k) + '" role="alert" style="margin:0 0 8px;padding:11px 13px;border-radius:14px;background:#FFF7F7;border:1px solid #F3C9C9;color:#7A2E2E">' +
+          '<b style="display:block;font-size:12.5px;font-weight:800">' + esc0(a.title) + '</b>' +
+          '<p style="font-size:11.5px;line-height:1.5;margin:3px 0 8px">' + esc0(a.message) + '</p>' +
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+            (a.retry === false ? '' : '<button class="btn btn-outline btn-sm" type="button" data-retry="' + esc0(k) + '" style="flex:0 0 auto">' + esc0(a.retryLabel || '다시 시도') + '</button>') +
+            '<button class="btn btn-ghost btn-sm" type="button" data-alert-close="' + esc0(k) + '" style="flex:0 0 auto">닫기</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      return true;
+    }
+
+    function alert(opts) {
+      opts = opts || {};
+      var key = opts.key || 'alert';
+      ALERTS[key] = {
+        title: opts.title || '문제가 생겼어요',
+        message: opts.message || '잠시 뒤 다시 시도해 주세요.',
+        retry: opts.retry === false ? false : (opts.retry || key),
+        retryLabel: opts.retryLabel || '다시 시도',
+        at: Date.now()
+      };
+      if (typeof opts.onRetry === 'function') onRetry(ALERTS[key].retry, opts.onRetry);
+      paintAlerts();
+      return true;
+    }
+
+    function clearAlert(key) {
+      if (!key) return false;
+      if (!Object.prototype.hasOwnProperty.call(ALERTS, key)) return false;
+      delete ALERTS[key];
+      paintAlerts();
+      return true;
+    }
+
+    function alertKeys() { return Object.keys(ALERTS); }
+
+    /* 저장 실패를 한 줄로 알린다(같은 키는 한 번만). */
+    function storageError(scope, what, retryFn) {
+      var key = (scope || 'store') + '-save';
+      return alert({
+        key: key,
+        title: '기기에 저장하지 못했어요',
+        message: (what || '이 화면') + ' 내용은 지금 화면에 그대로 남아 있어요. 다시 시도해 주세요.',
+        retry: key,
+        retryLabel: '다시 저장',
+        onRetry: retryFn
+      });
+    }
+
+    /* ── 테스트·검증용: 저장소 어댑터 실패 주입 ───────────────────── */
+    function failingAdapter() {
+      return {
+        kind: 'failing', version: 'ttokttok.storage.v32-sim',
+        available: function () { return true; },
+        getRaw: function () { return null; },
+        get: function (k, d) { return d === undefined ? null : d; },
+        setRaw: function () { return false; },
+        set: function () { return false; },
+        remove: function () { return false; },
+        keys: function () { return []; }
+      };
+    }
+    function simulateStorageFailure(on) {
+      try {
+        if (on) return TtStorage.use(failingAdapter());
+        return TtStorage.reset();
+      } catch (e) { return false; }
+    }
+
+    /* ── 입력값 보존(draft) ───────────────────────────────────────── */
+    var DRAFT_PREFIX = 'ttokttok_draft_v32_';
+    function saveDraft(key, value) {
+      try { return TtStorage.set(DRAFT_PREFIX + key, { at: Date.now(), value: value }) !== false; }
+      catch (e) { return false; }
+    }
+    function readDraft(key, maxAgeMs) {
+      var box = null;
+      try { box = TtStorage.get(DRAFT_PREFIX + key, null); } catch (e) { box = null; }
+      if (!box || typeof box !== 'object' || !box.value) return null;
+      if (maxAgeMs && Date.now() - Number(box.at || 0) > maxAgeMs) return null;
+      return box.value;
+    }
+    function clearDraft(key) {
+      try { return TtStorage.remove(DRAFT_PREFIX + key) !== false; } catch (e) { return false; }
+    }
+
+    /* ── 빈 상태 감사(테스트·QA 공용) ──────────────────────────────── */
+    function audit(root) {
+      var bad = [];
+      var nodes = (root || document).querySelectorAll('.empty');
+      for (var i = 0; i < nodes.length; i++) {
+        var el = nodes[i];
+        if (el.hasAttribute('data-loading') || el.hasAttribute('data-error')) continue;
+        if (el.hidden) continue;
+        var closesHidden = false;
+        var p = el.parentNode;
+        while (p && p.nodeType === 1) {
+          if (p.hidden) { closesHidden = true; break; }
+          p = p.parentNode;
+        }
+        if (closesHidden) continue;
+        var missing = [];
+        if (!el.getAttribute('data-empty')) missing.push('data-empty');
+        var d = el.querySelector('p');
+        if (!d || !String(d.textContent || '').trim()) missing.push('desc');
+        var c = el.querySelector('.btn');
+        if (!c) missing.push('cta');
+        if (missing.length) {
+          bad.push({ key: el.getAttribute('data-empty') || '', missing: missing, text: String(el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 60) });
+        }
+      }
+      return bad;
+    }
+
+    function keys() { return Object.keys(PRESETS); }
+
+    /* 재시도·알림 닫기 위임 — 앱의 다른 클릭 처리기보다 먼저 등록된다. */
+    if (typeof document !== 'undefined' && document.addEventListener) {
+      document.addEventListener('click', function (e) {
+        var t = e.target;
+        if (!t || !t.closest) return;
+        var closeBtn = t.closest('[data-alert-close]');
+        if (closeBtn) { clearAlert(closeBtn.getAttribute('data-alert-close')); return; }
+        var retryBtn = t.closest('[data-retry]');
+        if (retryBtn) {
+          var ok = runRetry(retryBtn.getAttribute('data-retry'));
+          if (!ok) alert({ key: 'retry-failed', title: '다시 시도하지 못했어요', message: '잠시 뒤 다시 눌러 주세요.', retry: false });
+          return;
+        }
+      }, true);
+    }
+
+    return {
+      version: VERSION,
+      presets: PRESETS,
+      keys: keys,
+      emptyHtml: emptyHtml,
+      fill: fill,
+      loadingHtml: loadingHtml,
+      showLoading: showLoading,
+      busy: busy,
+      idle: idle,
+      isBusy: isBusy,
+      reload: reload,
+      errorHtml: errorHtml,
+      showError: showError,
+      clear: clear,
+      onRetry: onRetry,
+      hasRetry: hasRetry,
+      runRetry: runRetry,
+      alert: alert,
+      clearAlert: clearAlert,
+      alertKeys: alertKeys,
+      storageError: storageError,
+      storageAdapter: TtStorage.adapter,
+      storageKind: TtStorage.kind,
+      failingAdapter: failingAdapter,
+      simulateStorageFailure: simulateStorageFailure,
+      saveDraft: saveDraft,
+      readDraft: readDraft,
+      clearDraft: clearDraft,
+      draftPrefix: DRAFT_PREFIX,
+      audit: audit
+    };
+  })();
+  /* v32 · 검증 훅 — 화면에는 영향 없음(빈 상태 감사·로딩·재시도·초안) */
+  try { window.__ttokttokUI = TtUI; } catch (e) {}
+
   /* ================= 전국 지역 ================= */
   function TTMain() {
   var REGIONS = {
@@ -9642,7 +10154,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function emptyFavHtml() {
-    return '<div class="empty empty-v7">' +
+    return '<div class="empty empty-v7" data-empty="teachers-fav" role="group" aria-label="찜한 선생님이 없어요">' +
       '<svg class="empty-art" viewBox="0 0 132 110" role="img" aria-label="찜한 선생님이 없어요">' +
         '<ellipse cx="66" cy="97" rx="44" ry="6.5" fill="#EFF5FC"/>' +
         '<circle cx="101" cy="24" r="12" fill="#F2F8FF"/>' +
@@ -9656,7 +10168,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<path d="M38 92h44" stroke="#E3EDF9" stroke-width="2.4" stroke-linecap="round"/>' +
       '</svg>' +
       '<b>아직 찜한 선생님이 없어요</b>' +
-      '<p>마음에 드는 선생님의 하트를 눌러<br>한곳에 모아두세요.</p>' +
+      '<p>마음에 드는 선생님의 하트를 눌러 모아 두세요.</p>' +
       '<button class="btn btn-navy btn-sm" type="button" data-fav-clear>전체 선생님 보기</button>' +
     '</div>';
   }
@@ -9722,9 +10234,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '</article>';
     }).join('');
     if (!html) {
-      html = favOnly
-        ? emptyFavHtml()
-        : '<p class="fine" style="text-align:center;padding:26px 0">해당 조건의 선생님을 준비 중이에요.<br>검색어를 바꾸거나 필터를 초기화해 보세요.</p>';
+      html = favOnly ? emptyFavHtml() : TtUI.emptyHtml('teachers-filter');
     }
     list.innerHTML = html;
     renderTeacherQueryBar();
@@ -9871,7 +10381,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (body) {
       body.innerHTML = clusters.length
         ? clusters.map(dongCardHtml).join('')
-        : '<p class="fine" style="text-align:center;padding:22px 0">' + esc(nearProvince + (nearDistrict ? ' ' + nearDistrict : '')) + '에는 아직 활동 선생님이 없어요.<br>다른 시·군·구를 골라 보세요.</p>';
+        : TtUI.emptyHtml('near-empty', {
+          title: nearProvince + (nearDistrict ? ' ' + nearDistrict : '') + '에는 활동 선생님이 없어요',
+          style: 'box-shadow:none'
+        });
     }
     try {
       window.__ttokttokNear = {
@@ -9925,6 +10438,23 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     dongFilter = null;
     renderTeachers();
     toast('동네 필터를 해제했어요.');
+  }
+  /* v32 · 빈 상태 CTA — 검색어·분야·지역·찜·동네 필터를 한 번에 되돌린다. */
+  function resetTeacherFilters() {
+    teacherQuery = '';
+    teacherCat = 'all';
+    teacherZone = 'all';
+    favOnly = false;
+    dongFilter = null;
+    var hs = $('#homeSearch');
+    if (hs) hs.value = '';
+    if (searchResultsEl) { searchResultsEl.classList.remove('is-open'); searchResultsEl.innerHTML = ''; }
+    syncTeacherFilterChips();
+    teacherView = 'list';
+    renderTeacherView();
+    renderTeachers();
+    toast('검색·필터를 초기화했어요.');
+    return true;
   }
 
   /* ================= 선생님 상세 바텀시트 ================= */
@@ -10105,7 +10635,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       '</button>';
     }).join('');
     if (!hits.length) {
-      rows = '<p class="search-empty">“' + esc(q) + '”에 맞는 선생님이 없어요.<br>지역(예: 부산)이나 이름으로 검색해 보세요.</p>';
+      rows = TtUI.emptyHtml('search-teacher', {
+        title: '“' + q + '”에 맞는 선생님이 없어요',
+        style: 'box-shadow:none;padding:16px 12px',
+        cta: [{ label: '검색어 지우기', attrs: 'data-teacher-reset', cls: 'btn-outline' }]
+      });
     } else {
       rows += '<button class="search-all" type="button" data-search-all>지역·분야 필터에서 전체 보기' + icon('arrow-r') + '</button>';
     }
@@ -10593,6 +11127,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     updateTotal();
     var prog = $('#bookingProgress');
     if (prog) prog.style.width = Math.round((n / 4) * 100) + '%';
+    /* v32 · 단계가 바뀌면 초안에도 단계를 남긴다(새로 열어도 그 단계에서 이어서). */
+    try { if (hasBookingProgress()) saveBookingDraft(); } catch (e) {}
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
     catch (err) { window.scrollTo(0, 0); }
   }
@@ -10714,18 +11250,27 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
     paying = true;
     var btn = this;
-    btn.disabled = true;
-    btn.textContent = '결제 중...';
+    /* v32 · 저장/제출 중 표시 — 버튼 잠금(이중 클릭 방지) + 같은 모양의 로딩 줄 */
+    TtUI.busy(btn, '결제 중…');
+    var payBusy = $('#payBusy');
+    if (payBusy) { payBusy.hidden = false; TtUI.showLoading(payBusy, '예약을 접수하고 있어요'); }
+    TtUI.clear($('#bookError'));
 
     setTimeout(function () {
-      completeBooking();
+      try {
+        completeBooking();
+        TtUI.clear($('#bookError'));
+      } catch (e) {
+        showBookingError(e);
+      }
       paying = false;
-      btn.disabled = false;
-      btn.textContent = '결제하고 예약 완료';
+      TtUI.idle(btn);
+      if (payBusy) { payBusy.hidden = true; payBusy.innerHTML = ''; }
     }, 900);
   });
 
   function completeBooking() {
+    if (v32ForceBookingError) { v32ForceBookingError = false; throw new Error('접수 저장 실패(검증용 시뮬레이션)'); }
     if (!passById(bk.passId)) bk.passId = 'eval';
     var p = passById(bk.passId);
     /* v14 · 예약번호는 저장된 기존 예약과 겹치지 않게 발급한다. */
@@ -10866,6 +11411,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
     $('#bookingWizard').hidden = true;
     $('#bookingDone').hidden = false;
+    /* v32 · 접수가 끝나면 초안을 비운다(다음 예약은 빈 화면에서 시작). */
+    clearBookingDraft();
+    TtUI.clear($('#bookError'));
     /* v14 · 저장 확인 배지(로컬 저장 확인됨 / 임시 메모리 모드) */
     var savedEl = $('#doneSaved');
     if (savedEl) savedEl.innerHTML = intakeSavedHtml(TtModel.verifyReservationSaved(no));
@@ -10905,6 +11453,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderPasses();
     renderCouponChips();
     updateTotal();
+    clearBookingDraft();
     $('#bookingWizard').hidden = false;
     $('#bookingDone').hidden = true;
     var notice = $('#bookingNotice');
@@ -10913,8 +11462,17 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function startBooking(opts) {
-    resetWizard();
     opts = opts || {};
+    /* v32 · 입력값 보존: 미리 채울 조건이 없고 작성 중인 예약이 있으면 초기화하지 않는다. */
+    var hasPrefill = !!(opts.province || opts.teacherId || opts.passId || opts.sym ||
+      (opts.syms && opts.syms.length) || opts.rebook);
+    if (!hasPrefill && hasBookingProgress() && $('#bookingDone').hidden !== false) {
+      paintBookingDraftNotice();
+      showTab('booking');
+      try { window.__ttokttokBookingResume = { kept: true, step: bk.step, at: Date.now() }; } catch (e) {}
+      return;
+    }
+    resetWizard();
     if (opts.province) {
       bk.province = opts.province;
       bookProvince.value = opts.province;
@@ -11186,14 +11744,44 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function loadAccount() {
-    try {
-      var obj = TtStorage.get(STORE_KEY, null);   /* v23 · 어댑터 경유 */
-      if (!obj || !Array.isArray(obj.passes) || !Array.isArray(obj.bookings) || !Array.isArray(obj.receipts)) return null;
-      return normalizeAccount(obj);
-    } catch (e) { return null; }
+    /* v32 · 읽기 실패를 구분한다 — ① 저장된 값 없음 ② 손상(JSON·형태 오류).
+       ②는 예시 데이터로 열되 화면 위에 원인 + 「다시 읽기」를 남긴다. */
+    var raw = null;
+    try { raw = TtStorage.getRaw(STORE_KEY); } catch (e) { raw = null; }
+    if (raw == null || raw === '') return null;
+    var obj = null;
+    try { obj = JSON.parse(raw); } catch (e) { obj = null; }
+    if (!obj || typeof obj !== 'object' || !Array.isArray(obj.passes) || !Array.isArray(obj.bookings) || !Array.isArray(obj.receipts)) {
+      TtUI.alert({
+        key: 'account-read',
+        title: '저장된 예약 데이터를 읽지 못했어요',
+        message: '저장된 값이 손상되어 예시 데이터로 열었습니다. 기기 데이터는 지우지 않았어요.',
+        retry: 'account-read',
+        retryLabel: '다시 읽기',
+        onRetry: function () { return retryAccountRead(); }
+      });
+      return null;
+    }
+    try { return normalizeAccount(obj); }
+    catch (e) {
+      TtUI.alert({
+        key: 'account-read',
+        title: '저장된 예약 데이터를 읽지 못했어요',
+        message: '저장된 값의 형식이 맞지 않아 예시 데이터로 열었습니다.',
+        retry: 'account-read',
+        retryLabel: '다시 읽기',
+        onRetry: function () { return retryAccountRead(); }
+      });
+      return null;
+    }
   }
   function saveAccount() {
-    try { TtStorage.set(STORE_KEY, account); } catch (e) {}
+    /* v32 · 저장 실패를 조용히 삼키지 않는다 — 화면 값은 그대로 두고 「다시 저장」을 준다. */
+    var ok = false;
+    try { ok = TtStorage.set(STORE_KEY, account) !== false; } catch (e) { ok = false; }
+    if (ok) TtUI.clearAlert('account-save');
+    else TtUI.storageError('account', '예약·이용권·일지', function () { return saveAccount(); });
+    return ok;
   }
 
   var account = normalizeAccount(loadAccount() || seedAccount());
@@ -11213,7 +11801,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var wallet = $('#walletList');
     var active = account.passes.filter(function (p) { return p.remaining > 0; });
     if (!active.length) {
-      wallet.innerHTML = '<div class="empty"><p>아직 보유한 이용권이 없어요.<br>무료 방문 평가부터 시작해 보세요.</p><button class="btn btn-navy btn-sm" type="button" data-book="eval">무료 평가 예약</button></div>';
+      TtUI.fill(wallet, 'wallet-passes', { style: 'box-shadow:none' });
     } else {
       wallet.innerHTML = active.map(function (p) {
         var used = p.total - p.remaining;
@@ -11230,7 +11818,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
     var bl = $('#bookingList');
     if (!account.bookings.length) {
-      bl.innerHTML = '<div class="empty" style="box-shadow:none"><p>다가오는 방문이 없어요.</p><button class="btn btn-navy btn-sm" type="button" data-go="booking">예약하기</button></div>';
+      TtUI.fill(bl, 'booking-list', { style: 'box-shadow:none' });
     } else {
       bl.innerHTML = account.bookings.map(function (b) {
         var st = TtModel.reservationStatus(b.status);
@@ -11266,7 +11854,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
     var rl = $('#receiptList');
     if (!account.receipts.length) {
-      rl.innerHTML = '<div class="empty" style="box-shadow:none"><p>결제 내역이 없어요.</p></div>';
+      TtUI.fill(rl, 'receipts', { style: 'box-shadow:none' });
     } else {
       rl.innerHTML = account.receipts.map(function (r) {
         return '<button class="list-item" type="button" data-receipt="' + esc(r.no) + '">' +
@@ -11530,7 +12118,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '</div><p class="tl-note">' + esc((s.pass || '방문권') + ' · ' + (s.reviewed ? '후기 등록' : '후기 남기기 가능')) + '</p></div>' +
       '</div>');
     });
-    el.innerHTML = rows.join('') || '<div class="tl-item"><span class="tl-dot"><i></i></span><div class="tl-main"><p class="tl-note">아직 방문 기록이 없어요.</p></div></div>';
+    el.innerHTML = rows.join('') || TtUI.emptyHtml('journal-timeline');
     var sub = $('#jlTlSub');
     if (sub) sub.textContent = '최근 ' + rows.length + '건';
   }
@@ -12167,10 +12755,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
   var lastPhotoGuard = null;
   function savePartner() {
+    var ok = false;
     try {
       lastPhotoGuard = TtModel.pruneJournalPhotos(partner, {});
-      TtStorage.set(P_KEY, partner);
-    } catch (e) {}
+      ok = TtStorage.set(P_KEY, partner) !== false;
+    } catch (e) { ok = false; }
+    if (ok) TtUI.clearAlert('partner-save');
+    else TtUI.storageError('partner', '파트너 일지·정산', function () { return savePartner(); });
+    return ok;
   }
 
   var partner = TtModel.normalizePartner(loadPartner() || seedPartner());
@@ -13196,7 +13788,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!isApproved()) {
       html = '<div class="locked"><div class="lk-ico" aria-hidden="true">' + icon('lock') + '</div><p>심사 승인 후 방문 요청을 받을 수 있어요.</p></div>';
     } else if (!pending.length) {
-      html = '<div class="locked"><div class="lk-ico" aria-hidden="true">' + icon('inbox') + '</div><p>지금은 대기 중인 요청이 없어요.<br>새 요청이 오면 알림으로 알려드립니다.</p></div>';
+      html = TtUI.emptyHtml('tp-requests', { style: 'box-shadow:none' });
     } else {
       html = pending.map(requestHtml).join('');
     }
@@ -13243,7 +13835,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       if (!isApproved()) {
         full.innerHTML = '<div class="locked" style="box-shadow:none"><div class="lk-ico" aria-hidden="true">' + icon('lock') + '</div><p>심사 승인 후 일정을 관리할 수 있어요.</p></div>';
       } else if (!list.length) {
-        full.innerHTML = '<div class="locked" style="box-shadow:none"><p>' + (schedDay ? schedDay + '요일 방문이 없어요.' : '확정된 방문이 없어요.') + '</p></div>';
+        full.innerHTML = TtUI.emptyHtml('tp-schedule', {
+          title: schedDay ? schedDay + '요일 방문이 없어요' : '확정된 방문이 없어요',
+          desc: schedDay ? '다른 요일을 고르거나 전체 일정을 확인해 보세요.' : '예약이 확정되면 이번 주 일정이 여기에 표시됩니다.'
+        });
       } else {
         full.innerHTML = list.map(function (s) { return schedHtml(s, true); }).join('');
       }
@@ -13255,7 +13850,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       if (!isApproved()) {
         mini.innerHTML = '<div class="locked" style="box-shadow:none"><p>심사 승인 후 일정이 표시됩니다.</p></div>';
       } else {
-        mini.innerHTML = all.slice(0, 3).map(function (s) { return schedHtml(s, false); }).join('') || '<div class="locked" style="box-shadow:none"><p>이번 주 일정이 없어요.</p></div>';
+        mini.innerHTML = all.slice(0, 3).map(function (s) { return schedHtml(s, false); }).join('') || TtUI.emptyHtml('tp-schedule', { style: 'box-shadow:none', title: '이번 주 일정이 없어요' });
       }
     }
   }
@@ -13302,7 +13897,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!isApproved()) {
       el.innerHTML = '<div class="locked"><p>심사 승인 후 일지를 작성할 수 있어요.</p></div>';
     } else if (!list.length) {
-      el.innerHTML = '<div class="locked"><p>아직 작성한 일지가 없어요.</p></div>';
+      el.innerHTML = TtUI.emptyHtml('tp-journals', { style: 'box-shadow:none' });
     } else {
       el.innerHTML = list.map(function (j) {
         var quick = j.quick || j.source === 'quick';
@@ -13519,7 +14114,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (s.rows.length) {
       html += '<div id="tpsRows">' + s.rows.map(statementRowHtml).join('') + '</div>';
     } else {
-      html += '<div class="locked" id="tpsRows"><div class="lk-ico" aria-hidden="true">' + icon('inbox') + '</div><p>이 달에는 정산 내역이 없어요.<br>방문 일지를 저장하면 회차가 자동으로 쌓여요.</p></div>';
+      html += '<div id="tpsRows">' + TtUI.emptyHtml('tp-settle') + '</div>';
     }
     html += '</section>';
     el.innerHTML = html;
@@ -14025,7 +14620,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     } catch (e) { return null; }
   }
   function saveAdmin() {
-    try { TtStorage.set(ADMIN_KEY, adminStore); } catch (e) {}
+    var ok = false;
+    try { ok = TtStorage.set(ADMIN_KEY, adminStore) !== false; } catch (e) { ok = false; }
+    if (ok) TtUI.clearAlert('admin-save');
+    else TtUI.storageError('admin', '관리자 처리 이력', function () { return saveAdmin(); });
+    return ok;
   }
 
   var adminStore = TtModel.normalizeAdmin(loadAdmin() || seedAdmin());
@@ -14188,9 +14787,17 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       if (box) box.hidden = true;
       var msgs = (res.errors || []).slice(0, 3).map(function (e) { return e.message; });
       setBackupResult('복원하지 않았어요 · ' + (msgs.join(' / ') || '알 수 없는 오류'), true);
+      TtUI.showError($('#adminBackupError'), {
+        key: 'backup-read',
+        title: '백업 파일을 복원할 수 없어요',
+        message: msgs.join(' / ') || '알 수 없는 오류',
+        retryLabel: '다른 파일 선택',
+        onRetry: function () { var f = $('#adminBackupFile'); if (f) { try { f.click(); } catch (e) {} } return true; }
+      });
       try { window.__ttokttokRestore = { ok: false, stage: 'rejected', fileName: fileName || '', errors: res.errors || [] }; } catch (e) {}
       return res;
     }
+    TtUI.clear($('#adminBackupError'));
     pendingImport = { data: res.data, counts: res.counts, fileName: fileName || '', exportedAt: res.exportedAt, warnings: res.warnings || [] };
     var txt = $('#adminBackupConfirmText');
     if (txt) {
@@ -14234,13 +14841,39 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     };
   }
 
+  var lastRestoreJob = null;
   function confirmRestore() {
     if (!pendingImport) { setBackupResult('먼저 백업 파일을 선택해 주세요.', true); return { ok: false }; }
     var job = pendingImport;
     pendingImport = null;
+    lastRestoreJob = job;
     var box = $('#adminBackupConfirmBox');
     if (box) box.hidden = true;
-    var applied = applyWorkspaceSnapshot(job.data);
+    var busyEl = $('#adminBackupBusy');
+    if (busyEl) { busyEl.hidden = false; TtUI.showLoading(busyEl, '백업 내용을 복원하는 중'); }
+    var applied;
+    try {
+      applied = applyWorkspaceSnapshot(job.data);
+    } catch (e) {
+      applied = { ok: false, message: String(e && e.message || e) };
+    }
+    if (busyEl) { busyEl.hidden = true; busyEl.innerHTML = ''; }
+    if (!applied.ok) {
+      TtUI.showError($('#adminBackupError'), {
+        key: 'backup-apply',
+        title: '복원을 마무리하지 못했어요',
+        message: (applied.message || '') + ' · 지금 기기 데이터는 그대로예요.',
+        retryLabel: '다시 복원',
+        onRetry: function () {
+          if (!lastRestoreJob) return false;
+          pendingImport = lastRestoreJob;
+          confirmRestore();
+          return true;
+        }
+      });
+    } else {
+      TtUI.clear($('#adminBackupError'));
+    }
     var msg = applied.ok
       ? '복원했어요 · ' + TtModel.snapshotSummaryText(applied.counts) + (job.fileName ? ' · ' + job.fileName : '')
       : '복원하지 못했어요 · ' + (applied.message || '');
@@ -14263,7 +14896,23 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   var backupExportBtn = $('#adminBackupExport');
-  if (backupExportBtn) backupExportBtn.addEventListener('click', function () { downloadWorkspaceBackup(); });
+  if (backupExportBtn) backupExportBtn.addEventListener('click', function () {
+    /* 내려받기는 같은 틱에서 끝난다(즉시 파일 생성) — 실패만 원인 + 재시도로 남긴다. */
+    if (TtUI.isBusy(this)) return;
+    TtUI.busy(this, '백업 만드는 중…');
+    try {
+      downloadWorkspaceBackup();
+      TtUI.clear($('#adminBackupError'));
+    } catch (e) {
+      setBackupResult('백업 파일을 만들지 못했어요 · ' + String(e && e.message || e), true);
+      TtUI.showError($('#adminBackupError'), {
+        key: 'backup-export', title: '백업 파일을 만들지 못했어요',
+        message: String(e && e.message || e), retryLabel: '다시 만들기',
+        onRetry: function () { var b = $('#adminBackupExport'); if (b) b.click(); return true; }
+      });
+    }
+    TtUI.idle(this);
+  });
   var backupPickBtn = $('#adminBackupPick');
   var backupFileInput = $('#adminBackupFile');
   if (backupPickBtn && backupFileInput) {
@@ -14271,12 +14920,34 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     backupFileInput.addEventListener('change', function () {
       var f = (this.files && this.files[0]) || null;
       if (!f) return;
+      var busyEl = $('#adminBackupBusy');
+      var pick = $('#adminBackupPick');
+      if (busyEl) { busyEl.hidden = false; TtUI.showLoading(busyEl, '백업 파일을 읽는 중'); }
+      if (pick) TtUI.busy(pick, '파일 확인 중…');
+      var finish = function () {
+        if (busyEl) { busyEl.hidden = true; busyEl.innerHTML = ''; }
+        if (pick) TtUI.idle(pick);
+      };
+      var fail = function (msg) {
+        finish();
+        setBackupResult(msg, true);
+        TtUI.showError($('#adminBackupError'), {
+          key: 'backup-read-file',
+          title: '백업 파일을 읽지 못했어요',
+          message: msg + ' 파일을 다시 선택해 주세요.',
+          retryLabel: '다시 선택',
+          onRetry: function () { try { backupFileInput.click(); } catch (e) {} return true; }
+        });
+      };
       try {
         var reader = new FileReader();
-        reader.onload = function () { beginRestoreFromText(String(reader.result || ''), f.name || ''); };
-        reader.onerror = function () { setBackupResult('파일을 읽지 못했어요. 다시 시도해 주세요.', true); };
+        reader.onload = function () {
+          finish();
+          beginRestoreFromText(String(reader.result || ''), f.name || '');
+        };
+        reader.onerror = function () { fail('파일을 읽지 못했어요. 다시 시도해 주세요.'); };
         reader.readAsText(f);
-      } catch (e) { setBackupResult('파일을 읽지 못했어요. 다시 시도해 주세요.', true); }
+      } catch (e) { fail('파일을 읽지 못했어요. 다시 시도해 주세요.'); }
     });
   }
   var backupConfirmBtn = $('#adminBackupConfirm');
@@ -14295,8 +14966,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var queue = $('#adminQueue');
     if (!queue) return;
     var apps = adminQueueApps();
-    queue.innerHTML = apps.length ? apps.map(adminAppHtml).join('') :
-      '<div class="empty" style="box-shadow:none"><p>지금은 심사 대기 중인 지원서가 없어요.<br>새 지원서가 접수되면 여기에 표시됩니다.</p></div>';
+    queue.innerHTML = apps.length ? apps.map(adminAppHtml).join('') : TtUI.emptyHtml('admin-queue', { style: 'box-shadow:none' });
     var sub = $('#adminQueueSub');
     if (sub) sub.textContent = apps.length ? '서류 4종을 확인하면 승인할 수 있어요.' : '모든 지원서를 처리했어요.';
 
@@ -14308,7 +14978,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         return '<div class="admin-log' + (ok ? '' : ' is-warn') + '">' + icon(ok ? 'check-circle' : 'alert') +
           '<div><b>' + esc(d.name) + '</b> 선생님 · ' + (ok ? '승인 완료' : '보완 요청') + '</div>' +
           '<span class="when">' + esc(d.at) + '</span></div>';
-      }).join('') : '<p class="fine" style="margin:2px">아직 처리한 지원서가 없어요.</p>';
+      }).join('') : TtUI.emptyHtml('admin-recent', { style: 'box-shadow:none' });
     }
   }
 
@@ -14568,8 +15238,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var filters = $('#adminResvFilters');
     if (filters) filters.innerHTML = adminResvFiltersHtml(counts);
     var list = adminResvSorted().filter(function (b) { return adminResvMatch(b, adminResvFilter); });
-    queue.innerHTML = list.length ? list.map(adminResvCardHtml).join('') :
-      '<div class="empty" style="box-shadow:none"><p>이 상태의 예약이 없어요.<br>새 예약이 접수되면 여기에 표시됩니다.</p></div>';
+    queue.innerHTML = list.length ? list.map(adminResvCardHtml).join('') : TtUI.emptyHtml('admin-resv', { style: 'box-shadow:none' });
     var sub = $('#adminResvSub');
     if (sub) {
       sub.textContent = '접수 ' + counts.received + ' · 배정 ' + counts.assigned +
@@ -14664,7 +15333,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (queueEl) {
       queueEl.innerHTML = (q.waiting && q.waiting.length)
         ? q.waiting.map(adminQueueItemHtml).join('')
-        : '<div class="empty" style="box-shadow:none"><p>미배정·재확정 대기 예약이 없어요.<br>모두 배정·확정됐습니다.</p></div>';
+        : TtUI.emptyHtml('admin-ops-queue', { style: 'box-shadow:none' });
     }
     var exEl = $('#adminExceptionBoard');
     if (exEl) {
@@ -16127,7 +16796,17 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return;
     }
     if (e.target.closest('#qlSave')) {
-      saveQuickJournal();
+      var qlBtn = e.target.closest('#qlSave');
+      if (TtUI.isBusy(qlBtn)) return;
+      TtUI.busy(qlBtn, '저장 중…');
+      try {
+        var qlRes = saveQuickJournal();
+        if (qlRes && qlRes.ok) TtUI.clear($('#qlError'));
+        else showQuickLogError(qlRes);
+      } catch (qlErr) {
+        showQuickLogError({ message: String(qlErr && qlErr.message || qlErr) });
+      }
+      TtUI.idle(qlBtn);
       return;
     }
     if (e.target.closest('[data-ql-photo-remove]')) {
@@ -16279,7 +16958,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     qlPhotoEl.addEventListener('change', function () {
       var file = qlPhotoEl.files && qlPhotoEl.files[0];
       if (!file) return;
-      readQuickPhotoFile(file);
+      /* v32 · 사진 처리 중 표시 — 긴 변 720px로 줄이는 동안 버튼을 잠근다 */
+      var pick = $('#qlPhotoPick');
+      if (pick) TtUI.busy(pick, '사진 처리 중…');
+      var release = function () { if (pick) TtUI.idle(pick); };
+      try { readQuickPhotoFile(file, release); } catch (e) { release(); }
+      setTimeout(release, 4000);   /* 파일을 못 읽는 경우에도 잠금이 남지 않게 */
       qlPhotoEl.value = '';   /* 같은 사진을 다시 고를 수 있게 비운다 */
     });
   }
@@ -16480,7 +17164,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         headAv +
         '<div style="min-width:0"><p class="chat-name" id="chatName">' + esc(title) + '</p><p class="chat-sub">' + esc(sub) + '</p></div>' +
       '</div>' +
-      '<div class="chat-log" id="chatLog">' + log + '</div>' +
+      '<div class="chat-log" id="chatLog">' + (log || TtUI.emptyHtml('chat-log', {
+        style: 'box-shadow:none;padding:18px 12px;margin:8px 0',
+        cta: [{ label: '일정 변경 문의', attrs: 'data-chat-quick="방문 시간을 바꿀 수 있을까요?"', cls: 'btn-outline' }]
+      })) + '</div>' +
       '<div class="chat-quick" id="chatQuick">' +
         '<button type="button" data-chat-quick="방문 시간을 바꿀 수 있을까요?">일정 변경</button>' +
         '<button type="button" data-chat-quick="증상 상담도 가능한가요?">증상 상담</button>' +
@@ -16631,7 +17318,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var html = rows.join('');
     ['#reviewList', '#journalReviewList'].forEach(function (sel) {
       var el = $(sel);
-      if (el) el.innerHTML = html || '<p class="fine">완료된 방문이 없어요.</p>';
+      if (el) el.innerHTML = html || TtUI.emptyHtml('reviews', { style: 'box-shadow:none;padding:16px 12px' });
     });
   }
 
@@ -16865,7 +17552,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var body = $('#manageSheetBody');
     if (!body) return;
     var b = findBooking(manageCtx.no);
-    if (!b) { body.innerHTML = '<p class="sheet-desc">예약을 찾을 수 없어요.</p>'; return; }
+    if (!b) {
+      TtUI.showError(body, {
+        key: 'manage-load', title: '예약 정보를 불러오지 못했어요',
+        message: '예약 내역이 바뀌었을 수 있어요. 다시 불러와 주세요.',
+        retryLabel: '다시 불러오기',
+        onRetry: function () { renderManage(); return true; }
+      });
+      return;
+    }
     var t = teacherById(b.teacherId);
     var d = teacherDetails[b.teacherId] || {};
     var canceled = TtModel.reservationStatus(b.status) === 'canceled';
@@ -17087,7 +17782,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     } catch (e) { return null; }
   }
   function saveJson(key, val) {
-    try { TtStorage.set(key, val); } catch (e) {}
+    var ok = false;
+    try { ok = TtStorage.set(key, val) !== false; } catch (e) { ok = false; }
+    if (ok) TtUI.clearAlert('json-save');
+    else TtUI.storageError('json', '알림·쿠폰·대화', function () { return saveJson(key, val); });
+    return ok;
   }
   function clockLabel() {
     var d = new Date();
@@ -17260,9 +17959,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     '</button>';
   }
   function notifEmptyHtml(total, scope) {
-    var msg = total ? '이 분류의 알림이 없어요.<br>‘전체’로 바꾸면 다른 알림을 볼 수 있어요.'
-      : (scope === 'teacher' ? '아직 선생님 알림이 없어요.<br>방문 요청이 배정되면 여기에 쌓입니다.' : '아직 알림이 없어요.');
-    return '<div class="empty" style="box-shadow:none"><p>' + msg + '</p></div>';
+    /* v32 · 빈 상태 통일 — 분류에 남은 알림이 있는지에 따라 CTA가 달라진다. */
+    if (total) {
+      return TtUI.emptyHtml('notif-filter', {
+        style: 'box-shadow:none',
+        cta: [{ label: '전체 알림 보기', attrs: 'data-notif-cat="all" data-notif-scope="' + (scope === 'teacher' ? 'teacher' : 'customer') + '"' }]
+      });
+    }
+    return TtUI.emptyHtml(scope === 'teacher' ? 'tp-notif' : 'notif-list', { style: 'box-shadow:none' });
   }
   function setNotifCategory(scope, cat) {
     var key = String(cat || 'all');
@@ -17431,7 +18135,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
     board.innerHTML = (q.items && q.items.length)
       ? q.items.map(adminReminderCardHtml).join('')
-      : '<div class="empty" style="box-shadow:none"><p>오늘 발송할 리마인드가 없어요.<br>내일 방문·재평가 도래·정산 확정 일정이 생기면 여기에 모입니다.</p></div>';
+      : TtUI.emptyHtml('admin-reminders', { style: 'box-shadow:none' });
     try {
       window.__ttokttokReminders = {
         todayIso: q.todayIso, total: q.total, counts: q.counts,
@@ -17629,7 +18333,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var summary = m.regions.summary || {};
       regEl.innerHTML = (rows.length
         ? rows.map(adminMetricsRegionCardHtml).join('')
-        : '<div class="empty" style="box-shadow:none"><p>이번 기간 수요가 있는 지역이 없어요.<br>새 예약이 접수되면 지역별 수요·공급 갭이 여기에 모입니다.</p></div>') +
+        : TtUI.emptyHtml('admin-metrics-regions', { style: 'box-shadow:none' })) +
         '<p class="fine" style="margin:2px 2px 0;padding:0 2px">수요 있는 지역 ' + (summary.demandRegions || 0) + '곳 · 모집 필요 ' + (summary.shortage || 0) +
         '곳 · 균형 ' + (summary.balanced || 0) + '곳 · 여유 ' + (summary.surplus || 0) + '곳 · 선생님 ' + (summary.teachers || 0) +
         '명이 ' + (summary.supplyDistricts || 0) + '개 시·군·구에 활동 중입니다(선생님 1명당 ' + m.visitsPerTeacher + '건 기준).</p>';
@@ -17735,7 +18439,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!wrap) { renderCouponChips(); return; }
     var list = couponStore.slice().sort(function (a, b) { return (a.used ? 1 : 0) - (b.used ? 1 : 0); });
     if (!list.length) {
-      wrap.innerHTML = '<div class="empty" style="box-shadow:none"><p>보유한 쿠폰이 없어요.<br>쿠폰 코드를 등록해 보세요.</p></div>';
+      wrap.innerHTML = TtUI.emptyHtml('coupons', { style: 'box-shadow:none' });
     } else {
       wrap.innerHTML = list.map(function (c) {
         var isFree = c.type === 'free';
@@ -17805,7 +18509,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var wrap = $('#pmList');
     if (!wrap) return;
     if (!cardStore.length) {
-      wrap.innerHTML = '<div class="empty" style="box-shadow:none"><p>등록된 결제 수단이 없어요.</p></div>';
+      wrap.innerHTML = TtUI.emptyHtml('cards', { style: 'box-shadow:none' });
       return;
     }
     wrap.innerHTML = cardStore.map(function (c) {
@@ -18001,7 +18705,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       ? '검색 결과 ' + list.length + '건'
       : '자주 묻는 질문 ' + list.length + '개';
     var empty = $('#faqEmpty');
-    if (empty) empty.hidden = list.length !== 0;
+    if (empty) {
+      empty.hidden = list.length !== 0;
+      if (!list.length && !empty.querySelector('[data-empty]')) empty.innerHTML = TtUI.emptyHtml('faq-empty', { style: 'box-shadow:none' });
+    }
     var reset = $('#faqReset');
     if (reset) reset.hidden = !filtering;
   }
@@ -18148,6 +18855,248 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     });
   })();
 
+  /* ===================================================================
+     v32 · 빈 상태 CTA · 오류 재시도 · 입력값 보존
+     ─ 빈 상태 CTA는 기존 위임 핸들러(data-go·data-book …)를 그대로 쓰고,
+       새로 필요한 동작만 여기서 받는다.
+     ─ 예약 4단계 입력값은 초안(draft)으로 남겨 화면을 옮기거나 새로 열어도
+       잃지 않는다. 저장·결제가 실패하면 「다시 시도」로 같은 입력을 재사용한다.
+     =================================================================== */
+  var BK_DRAFT_KEY = 'booking';
+
+  /* ---- 예약 입력값 보존 --------------------------------------------- */
+  function bookingSnapshot() {
+    try { syncForm(); } catch (e) {}
+    return {
+      step: bk.step || 1,
+      province: bk.province || '', district: bk.district || '', address: bk.address || '',
+      syms: (bk.syms || []).slice(), teacherId: bk.teacherId || '',
+      dateIso: bk.dateIso || '', dateLabel: bk.dateLabel || '', dateDay: bk.dateDay || '', time: bk.time || '',
+      passId: bk.passId || '', name: bk.name || '', phone: bk.phone || '',
+      pay: bk.pay || '', couponId: bk.couponId || '',
+      agree: !!(bookAgree && bookAgree.checked)
+    };
+  }
+  function hasBookingProgress() {
+    return !!(bk && (bk.step > 1 || bk.province || bk.district || bk.address || (bk.syms && bk.syms.length) ||
+      bk.dateIso || bk.passId || bk.name || bk.phone));
+  }
+  function saveBookingDraft() {
+    try { return TtUI.saveDraft(BK_DRAFT_KEY, bookingSnapshot()); } catch (e) { return false; }
+  }
+  function clearBookingDraft() {
+    try { TtUI.clearDraft(BK_DRAFT_KEY); } catch (e) {}
+    var box = $('#bookResume');
+    if (box) box.hidden = true;
+    return true;
+  }
+  /* 저장된 초안이 있고 지금 위저드가 비어 있으면 「이어서 작성」 카드를 보여 준다. */
+  function paintBookingDraftNotice() {
+    var box = $('#bookResume');
+    if (!box) return false;
+    var d = null;
+    try { d = TtUI.readDraft(BK_DRAFT_KEY, 24 * 60 * 60 * 1000); } catch (e) { d = null; }
+    var show = !!d && !hasBookingProgress() && $('#bookingDone').hidden !== false;
+    box.hidden = !show;
+    if (show) {
+      var txt = $('#bookResumeText');
+      if (txt) {
+        var where = d.province ? d.province + (d.district ? ' ' + d.district : '') : '지역 미선택';
+        txt.textContent = '저장된 초안 · ' + where + ' · ' + (Number(d.step) || 1) + '/4 단계 — 이어서 작성하면 입력한 내용이 그대로 살아납니다.';
+      }
+    }
+    return show;
+  }
+  function applyBookingDraft(d) {
+    if (!d || typeof d !== 'object') return false;
+    bk.province = d.province || '';
+    bookProvince.value = bk.province;
+    fillDistrictSelect(bookDistrict, bk.province, '시·도를 먼저 선택해 주세요');
+    bk.district = d.district || '';
+    bookDistrict.value = bk.district;
+    bk.address = d.address || '';
+    bookAddress.value = bk.address;
+    bk.teacherId = d.teacherId || '';
+    bookTeacher.value = bk.teacherId;
+    bk.syms = Array.isArray(d.syms) ? d.syms.slice() : [];
+    $$('#bookSyms .pick').forEach(function (b) {
+      var on = bk.syms.indexOf(b.getAttribute('data-val')) !== -1;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    bk.dateIso = d.dateIso || ''; bk.dateLabel = d.dateLabel || ''; bk.dateDay = d.dateDay || ''; bk.time = d.time || '';
+    bk.passId = d.passId || '';
+    bk.name = d.name || '';
+    bookName.value = bk.name;
+    bk.phone = d.phone || '';
+    bookPhone.value = bk.phone;
+    bk.pay = d.pay || '';
+    $$('#payMethods .pay').forEach(function (b) {
+      var on = b.getAttribute('data-pay') === bk.pay;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    bk.couponId = d.couponId || '';
+    if (bookAgree) bookAgree.checked = !!d.agree;
+    syncProvinceChips();
+    renderDates(); renderSlots(); renderPasses(); renderCouponChips(); updateTotal();
+    goStep(Math.min(4, Math.max(1, Number(d.step) || 1)));
+    showTab('booking');
+    paintBookingDraftNotice();
+    return true;
+  }
+  /* 위저드 안에서 값이 바뀔 때마다 초안을 남긴다(입력이 있던 경우만). */
+  (function bindBookingDraftSaver() {
+    var wiz = $('#bookingWizard');
+    if (!wiz || !wiz.addEventListener) return;
+    var saver = function () { if (hasBookingProgress()) saveBookingDraft(); };
+    wiz.addEventListener('input', saver, true);
+    wiz.addEventListener('change', saver, true);
+    wiz.addEventListener('click', function (e) {
+      var t = e.target;
+      if (t && t.closest && t.closest('[data-next], [data-back], [data-sym-pick], .pick, .pay, .pass')) saver();
+    }, true);
+  })();
+
+  /* ---- 결제 실패 → 원인 + 재시도(입력값 유지) ------------------------ */
+  function showBookingError(e) {
+    var box = $('#bookError');
+    var msg = '입력한 내용은 그대로 남아 있어요. 다시 시도해 주세요.';
+    if (e && e.message) msg += ' (' + String(e.message).slice(0, 80) + ')';
+    TtUI.showError(box, {
+      key: 'booking-submit',
+      title: '예약을 마무리하지 못했어요',
+      message: msg,
+      retryLabel: '다시 시도',
+      onRetry: function () { retryBooking(); return true; }
+    });
+    toast('예약을 마무리하지 못했어요. 입력한 내용은 그대로예요.');
+    return false;
+  }
+  function retryBooking() {
+    var box = $('#bookError');
+    if (!hasBookingProgress()) return false;
+    if (box) TtUI.showLoading(box, '다시 예약을 마무리하는 중');
+    setTimeout(function () {
+      try {
+        completeBooking();
+        TtUI.clear($('#bookError'));
+      } catch (e) {
+        showBookingError(e);
+      }
+    }, 60);
+    return true;
+  }
+
+  /* ---- 일지 저장 실패 → 원인 + 재시도(초안 유지) -------------------- */
+  function showQuickLogError(res) {
+    var box = $('#qlError');
+    var msg = (res && res.message ? res.message + ' · ' : '') + '입력한 내용은 초안으로 남아 있어요.';
+    TtUI.showError(box, {
+      key: 'quicklog-save',
+      title: '일지를 저장하지 못했어요',
+      message: msg,
+      retryLabel: '다시 저장',
+      onRetry: function () {
+        var btn = $('#qlSave');
+        if (btn) btn.click();
+        return true;
+      }
+    });
+    return false;
+  }
+
+  /* ---- v32 빈 상태 CTA (새로 생긴 동작만) --------------------------- */
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t || !t.closest) return;
+    if (t.closest('[data-teacher-reset]')) { resetTeacherFilters(); return; }
+    if (t.closest('[data-teacher-list]')) { setTeacherView('list'); return; }
+    if (t.closest('[data-faq-reset]')) { resetFaqFilter(); return; }
+    if (t.closest('[data-coupon-focus]')) {
+      var ci = $('#couponCode');
+      if (ci) { try { ci.focus(); } catch (err) {} }
+      toast('쿠폰 코드를 입력해 주세요.');
+      return;
+    }
+    if (t.closest('[data-card-add]')) { toggleCardForm(true); return; }
+    if (t.closest('[data-book-resume]')) {
+      var d = null;
+      try { d = TtUI.readDraft(BK_DRAFT_KEY, 24 * 60 * 60 * 1000); } catch (err2) { d = null; }
+      if (d && applyBookingDraft(d)) toast('작성 중이던 예약을 이어서 엽니다.');
+      else { clearBookingDraft(); toast('이어서 열 초안이 없어요.'); }
+      return;
+    }
+    if (t.closest('[data-book-discard]')) {
+      clearBookingDraft();
+      paintBookingDraftNotice();
+      toast('초안을 지우고 새로 시작해요.');
+      return;
+    }
+  });
+
+  /* 손상된 계정 데이터를 다시 읽는 재시도 */
+  function retryAccountRead() {
+    var raw = null;
+    try { raw = TtStorage.getRaw(STORE_KEY); } catch (e) { return false; }
+    if (!raw) { TtUI.clearAlert('account-read'); return true; }
+    var obj = null;
+    try { obj = JSON.parse(raw); } catch (e) { return false; }
+    if (!obj || !Array.isArray(obj.passes) || !Array.isArray(obj.bookings) || !Array.isArray(obj.receipts)) return false;
+    account = normalizeAccount(obj);
+    saveAccount();
+    try { renderAccount(); } catch (e) {}
+    try { renderHomeSummary(); } catch (e) {}
+    try { renderAdmin(); } catch (e) {}
+    TtUI.clearAlert('account-read');
+    toast('저장된 예약 데이터를 다시 불러왔어요.');
+    return true;
+  }
+  TtUI.onRetry('account-read', retryAccountRead);
+
+  /* v32 · 검증 훅(화면에는 영향 없음) — 빈 상태 감사·로딩·재시도·초안 */
+  var v32ForceBookingError = false;
+  try {
+    window.__ttokttokV32 = {
+      version: TtUI.version,
+      emptyKeys: function () { return TtUI.keys(); },
+      emptyHtml: function (k) { return TtUI.emptyHtml(k); },
+      audit: function (root) { return TtUI.audit(root || document); },
+      loadingHtml: function (l) { return TtUI.loadingHtml(l); },
+      showLoading: function (sel, l) { return TtUI.showLoading($(sel), l); },
+      busy: function (sel, l) { return TtUI.busy($(sel), l); },
+      idle: function (sel) { return TtUI.idle($(sel)); },
+      isBusy: function (sel) { var el = $(sel); return !!(el && el.getAttribute('data-busy') === '1'); },
+      hasRetry: function (k) { return TtUI.hasRetry(k); },
+      runRetry: function (k) { return TtUI.runRetry(k); },
+      onRetry: function (k, fn) { return TtUI.onRetry(k, fn); },
+      showErrorTo: function (sel, key, title, msg) {
+        return TtUI.showError($(sel), { key: key, title: title, message: msg });
+      },
+      clear: function (sel) { return TtUI.clear($(sel)); },
+      alerts: function () { return TtUI.alertKeys().slice(); },
+      simulateStorageFailure: function (on) { return TtUI.simulateStorageFailure(on); },
+      saveAccountNow: function () { return saveAccount(); },
+      saveJsonNow: function (k, v) { return saveJson(k, v); },
+      bookingDraft: function () { return TtUI.readDraft('booking', 0); },
+      saveDraftObject: function (k, v) { return TtUI.saveDraft(k, v); },
+      clearBookingDraft: function () { return clearBookingDraft(); },
+      paintBookingDraft: function () { return paintBookingDraftNotice(); },
+      resumeVisible: function () { var el = $('#bookResume'); return !!(el && !el.hidden); },
+      failNextBooking: function (on) { v32ForceBookingError = on !== false; return v32ForceBookingError; },
+      showBookingError: function (msg) { return showBookingError({ message: msg || '검증용 오류' }); },
+      bookingInputs: function () {
+        return {
+          address: bookAddress ? bookAddress.value : '',
+          name: bookName ? bookName.value : '',
+          phone: bookPhone ? bookPhone.value : '',
+          agree: !!(bookAgree && bookAgree.checked),
+          step: bk.step
+        };
+      }
+    };
+  } catch (e) {}
+
   /* ================= 초기 실행 ================= */
   var gateLogo = $('#gateLogo');
   if (gateLogo && $('#brandMark')) gateLogo.src = $('#brandMark').src;
@@ -18185,6 +19134,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   renderPartner();
   renderAdmin();
   renderChatEntryState();
+  try { paintBookingDraftNotice(); } catch (e) {}
 
   /* v12 · 데이터 모델 노출(검증·이전 도구용). 화면에는 영향을 주지 않는다. */
   try {
@@ -18622,9 +19572,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       storageRead: function (key) { return TtStorage.get(key, null); },
       storageWrite: function (key, value) { return TtStorage.set(key, value); },
       /* v24 · 모바일·접근성·성능 QA */
-      qaVersion: 'v31',
+      qaVersion: 'v32',
       a11y: {
-        version: 'v31',
+        version: 'v32',
         dialogOrder: DIALOG_ORDER.slice(),
         openDialog: function () { return topOpenDialog(); },
         focusInside: function (sel) {
