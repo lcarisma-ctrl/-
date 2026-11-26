@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v20">
+<meta name="app-version" content="v21">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2834,7 +2834,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <div class="list" id="tpSchedMini"></div>
       </section>
 
-      <p class="fine" style="text-align:center;margin-bottom:6px">* 수수료 22.2%(보호자 결제액 기준) · 정산은 매월 10일 · 예시 데이터입니다.</p>
+      <p class="fine" style="text-align:center;margin-bottom:6px">* 수수료 22.2%(보호자 결제액 기준) · 회차 완료 D+3 정산 확정 · 월 2회(15일·말일) 지급 · 예시 데이터입니다.</p>
     </section>
 
     <!-- ================= 일정·요청 (선생님) ================= -->
@@ -3387,7 +3387,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <span class="gate-sep" aria-hidden="true"></span>
         <button class="gate-link" type="button" data-login="demo">로그인 없이 둘러보기</button>
       </div>
-      <p class="gate-legal">똑똑쌤은 의료기관이 아니며 의료행위를 제공하지 않습니다.</p>
+      <p class="gate-legal">똑똑쌤은 의료기관이 아니며 의료행위를 제공하지 않습니다.<br><span id="gateBizInfo">상호 똑똑쌤 · 대표 임현수 · 사업자등록번호 발급 진행 중 · 문의 031-919-8577</span></p>
     </div>
   </div>
 </div>
@@ -3654,7 +3654,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     <button class="sheet-close sheet-close-top" type="button" data-account-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="accountTitle">내 예약 · 이용권</h2>
-      <p class="sheet-desc">보유 회차와 다가오는 방문을 한 곳에서 관리해요.</p>
+      <p class="sheet-desc">보유 회차와 방문 일정을 한 곳에서 관리해요.</p>
 
       <div class="dday-wrap" id="accountDday" style="margin-top:16px"></div>
 
@@ -3668,7 +3668,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
       <section class="sec" style="margin-top:20px">
         <div class="sec-head" style="margin-bottom:9px">
-          <h3 class="sheet-label" style="margin:0">다가오는 방문</h3>
+          <h3 class="sheet-label" style="margin:0">방문 일정</h3>
           <button class="sec-link" type="button" data-go="booking">새 예약</button>
         </div>
         <div class="list" id="bookingList"></div>
@@ -3782,6 +3782,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       </div>
       <div class="terms-body" id="termsBody"></div>
       <p class="sheet-note" id="faqDraftNote">* 정식 오픈 전 약관 요약본입니다. 서비스 기준·비용·환불 규정은 <b>법률 자문이 아닌 운영 기준 초안</b>이며, 정식 오픈 전 전문가 검토를 거칩니다.</p>
+      <p class="sheet-note" id="faqBizInfo">상호 똑똑쌤 · 대표 임현수 · 사업자등록번호 발급 진행 중 · 문의 031-919-8577</p>
       <a class="sheet-beta-link" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">더 궁금한 점은 상담 폼으로 문의<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg></a>
     </div>
   </div>
@@ -5107,6 +5108,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       ]
     };
 
+    /* 정산 일정 — 2026-11-26 대표 확정: 회차 완료 D+3 정산 확정 · 월 2회(15일·말일) 지급.
+       업계가 보통 월 1회 말일 지급인 것과 비교해 '지급 속도'를 차별점으로 둔다. */
+    var SETTLEMENT_RULE = {
+      confirmDays: 3,                 /* 회차 완료(일지 기준) +3일에 지급액 확정 */
+      payDays: [15, 'end'],           /* 매월 15일 · 말일 지급 */
+      label: '회차 완료 D+3 정산 확정 · 월 2회(15일·말일) 지급',
+      shortLabel: 'D+3 확정 · 15일·말일 지급'
+    };
+
     /* 가격표 — 화면 시드(passes[])와 같은 값. 어긋나면 테스트가 잡는다.
        2026-11-26 대표 확정: 보호자 부담 회당 90,000원(VAT 포함 표시) · 선생님 지급 회당 70,000원.
        실효 수수료 22.2% = 1 − 70,000/90,000. 회차권(4·8·12회) 단가는 아직 대표 미확정 가정치다. */
@@ -5120,7 +5130,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       consumerPrice: 90000,
       teacherPayout: 70000,
       platformFeeRate: 0.2222,
-      settlementDayOfMonth: 10,
+      settlementConfirmDays: SETTLEMENT_RULE.confirmDays,
+      settlementPayDays: SETTLEMENT_RULE.payDays.slice(),
       passValidDays: 90,
       freeEvalSessions: 1,
       regularSinglePrice: 90000,
@@ -5143,6 +5154,41 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var g = Math.max(0, Math.round(Number(grossAmount) || 0));
       return Math.max(0, g - payoutOf(g));
     }
+
+    /* --- 정산 일정: 회차 완료 D+3 확정 → 월 2회(15일·말일) 지급 --------
+       방문일(또는 완료일)이 d면 확정일은 d+3, 지급일은 확정일 이후 첫 15일/말일이다.
+       예: 11/26 완료 → 11/29 확정 → 11/30 지급 / 11/28 완료 → 11/31(12/1) 확정 → 12/15 지급. */
+    function payoutDayListOf(y, m) {
+      return [isoDateString(y, m, 15), isoDateString(y, m, lastDayOfMonthOf(y, m))];
+    }
+    function isoDateString(y, m, d) { return y + '-' + pad(m) + '-' + pad(d); }
+    function lastDayOfMonthOf(y, m) { return new Date(Date.UTC(y, m, 0)).getUTCDate(); }
+    function payoutConfirmIsoOf(visitIso) {
+      var d = dateObjOf(visitIso);
+      if (!d) d = new Date();
+      var c = new Date(d.getTime() + SETTLEMENT_RULE.confirmDays * 86400000);
+      return isoDateOf(c);
+    }
+    function nextPayoutDue(visitIso) {
+      var confirmIso = payoutConfirmIsoOf(visitIso);
+      var p = confirmIso.split('-');
+      var y = Number(p[0]), m = Number(p[1]);
+      for (var i = 0; i < 4; i++) {
+        var yy = y, mm = m + i;
+        while (mm > 12) { mm -= 12; yy += 1; }
+        var cands = payoutDayListOf(yy, mm);
+        for (var j = 0; j < cands.length; j++) {
+          if (cands[j] >= confirmIso) return cands[j];
+        }
+      }
+      return '';
+    }
+    /* '2026-11-30' → '2026.11.30' (화면 표기용) */
+    function payoutDueLabel(visitIso) {
+      var iso = nextPayoutDue(visitIso);
+      return iso ? iso.replace(/-/g, '.') : '-';
+    }
+    function settlementRuleText() { return SETTLEMENT_RULE.label; }
 
     var REFUND_RULES = {
       version: 'v16',
@@ -6584,6 +6630,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       pricing: PRICING,
       payoutOf: payoutOf,
       feeOf: feeOf,
+      settlementRule: SETTLEMENT_RULE,
+      settlementRuleText: settlementRuleText,
+      nextPayoutDue: nextPayoutDue,
+      payoutDueLabel: payoutDueLabel,
+      payoutConfirmIsoOf: payoutConfirmIsoOf,
+      payoutDayListOf: payoutDayListOf,
       refundRules: REFUND_RULES,
       policyDocs: POLICY_DOCS,
       calculateRefundQuote: calculateRefundQuote,
@@ -8400,7 +8452,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         { id: 'seed-pass', userId: 'usr-demo', passId: 'p8', name: '8회 방문권', total: 8, remaining: 5, purchased: '2026.10.28', expire: '2027.01.27', status: 'active' }
       ],
       bookings: [
-        { id: 'res-tt-261021-7302', no: 'TT-261021-7302', userId: 'usr-demo', date: '11.27', day: '금', time: '10:30', teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구', status: 'confirmed', passId: 'p8', walletId: 'seed-pass', dateIso: nextIso(2), amount: 74000, paymentStatus: 'paid' }
+        { id: 'res-tt-261021-7302', no: 'TT-261021-7302', userId: 'usr-demo', date: '11.27', day: '금', time: '10:30', teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구', status: 'confirmed', passId: 'p8', walletId: 'seed-pass', dateIso: nextIso(2), amount: 74000, paymentStatus: 'paid' },
+        /* v21 · 4주 재평가 데모 — 36일 전 첫 방문(무료 평가)을 '방문 완료'로 남긴다.
+           관리자 「오늘 처리할 일」의 4주 재평가 보드·알림이 기본 시드에서 바로 보인다. */
+        demoPastVisit()
       ],
       receipts: [
         { id: 'pay-tt-261028-4192', no: 'TT-261028-4192', date: '2026.10.28', item: '8회 방문권', amount: 592000, method: '신용/체크카드', status: 'paid' },
@@ -8414,6 +8469,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function nextIso(dayOffset) {
     var d = new Date(Date.now() + (dayOffset || 0) * 86400000);
     return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  /* v21 · 기본 시드의 과거 완료 방문 1건(4주 재평가 데모).
+     오늘 기준 36일 전 첫 방문 → 4주(28일) 재평가 D+8 도래. 날짜는 오늘 기준 상대값이라
+     언제 열어도 보드에 그대로 뜬다. */
+  function demoPastVisit() {
+    var iso = nextIso(-36);
+    return {
+      id: 'res-tt-261019-4811', no: 'TT-261019-4811', userId: 'usr-demo',
+      memberName: '현수', firstVisitIso: iso,
+      date: TtModel.dateLabelOf(iso), day: TtModel.weekdayOf(iso), time: '10:30',
+      teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구',
+      status: 'completed', passId: '', walletId: '', dateIso: iso,
+      amount: 0, paymentStatus: 'paid', memo: '첫 1:1 방문 평가 (데모 시드)'
+    };
   }
 
   function normalizeAccount(obj) {
@@ -8481,7 +8551,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       bl.innerHTML = '<div class="empty" style="box-shadow:none"><p>다가오는 방문이 없어요.</p><button class="btn btn-navy btn-sm" type="button" data-go="booking">예약하기</button></div>';
     } else {
       bl.innerHTML = account.bookings.map(function (b) {
-        var canceled = TtModel.reservationStatus(b.status) === 'canceled';
+        var st = TtModel.reservationStatus(b.status);
+        var canceled = st === 'canceled';
+        var past = (st === 'completed' || st === 'no_show');
         var t = teacherById(b.teacherId);
         var d = teacherDetails[b.teacherId] || {};
         return '<div class="booking-row list-item' + (canceled ? ' is-canceled' : '') + '" data-booking="' + esc(b.no) + '">' +
@@ -8490,12 +8562,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             '<span class="br-main"><b>' + esc(b.date) + ' (' + esc(b.day) + ') ' + esc(b.time) + '</b><span>' + esc(b.teacher) + ' · ' + esc(TtModel.reservationLabel(b.status)) + '</span><span>' + esc(b.region) + '</span></span>' +
             '<span class="chev" aria-hidden="true">' + icon('chev-r') + '</span>' +
           '</button>' +
-          (canceled ? '' : matchBlockHtml(b)) +
-          (TtModel.reservationStatus(b.status) === 'rescheduled'
+          (canceled || past ? '' : matchBlockHtml(b)) +
+          (st === 'rescheduled'
             ? '<button class="btn btn-teal" type="button" data-reconfirm="' + esc(b.no) + '" style="width:100%;margin-top:8px">일정 변경 확인 · 재확정</button>'
             : '') +
-          (canceled ? '' : '<button class="br-ics" type="button" data-ics="' + esc(b.no) + '">' + icon('calendar') + '캘린더 추가</button>') +
-          (canceled
+          (canceled || past ? '' : '<button class="br-ics" type="button" data-ics="' + esc(b.no) + '">' + icon('calendar') + '캘린더 추가</button>') +
+          (canceled || past
             ? '<div class="br-btns"><button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '">문의</button><button class="btn btn-ghost" type="button" data-manage="' + esc(b.no) + '">내역</button><span></span></div>'
             : '<div class="br-btns">' +
                 '<button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '">문의</button>' +
@@ -9191,7 +9263,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       docs: ['면허증 사본', '경력증명서', '범죄경력조회 동의', '신분증 사본'],
       submittedAt: '2026.10.15',
       approvedAt: '2026.10.18',
-      settlement: { visits: 14, gross: 1260000, fee: 280000, net: 980000, due: '2026.12.10', month: '11월' },
+      settlement: { visits: 14, gross: 1260000, fee: 280000, net: 980000, due: '2026.11.30', month: '11월' },
       requests: [
         { id: 'r1', patient: '김순자 어르신', symptom: '뇌졸중·편마비', region: '서울 강남구 대치동', date: '12/01 (월)', time: '10:30', pass: '12회 집중 재활', payout: 54444, ago: '12분 전' },
         { id: 'r2', patient: '이만복 어르신', symptom: '무릎·고관절 수술 후', region: '서울 서초구 반포동', date: '12/02 (화)', time: '15:00', pass: '4회 방문권', payout: 62222, ago: '38분 전' }
@@ -10071,7 +10143,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           '<div class="settle-cell"><b>22.2%</b><span>플랫폼 수수료</span></div>' +
         '</div>' +
         settleChartHtml() +
-        '<p class="settle-note">' + icon('info') + '수수료 ' + s.fee.toLocaleString('ko-KR') + '원 차감 · ' + esc(s.due) + ' 정산 예정</p>' +
+        '<p class="settle-note">' + icon('info') + '수수료 ' + s.fee.toLocaleString('ko-KR') + '원 차감 · ' + esc(s.due) + ' 지급 예정<br>' + esc(TtModel.settlementRuleText()) + '</p>' +
       '</div>';
   }
 
@@ -10292,6 +10364,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       el.innerHTML =
         '<div class="row"><span>플랫폼 수수료율</span><b>22.2% (2026-11-26 확정)</b></div>' +
         '<div class="row"><span>선생님 지급 단가</span><b>회당 70,000원 (보호자 90,000원의 78%)</b></div>' +
+        '<div class="row"><span>정산 일정</span><b>' + esc(TtModel.settlementRuleText()) + '</b></div>' +
         '<div class="row"><span>정산 상태</span><b style="color:#9A5B12">심사 승인 후 집계</b></div>' +
         '<div class="row"><span>정산 계좌</span><b>국민은행 ****-**-1234</b></div>';
       return;
@@ -10302,7 +10375,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       '<div class="row"><span>이번 달 환자 결제</span><b>' + s.gross.toLocaleString('ko-KR') + '원</b></div>' +
       '<div class="row"><span>플랫폼 수수료</span><b>-' + s.fee.toLocaleString('ko-KR') + '원</b></div>' +
       '<div class="row"><span>정산 예정액</span><b style="color:#0B7A6B">' + s.net.toLocaleString('ko-KR') + '원</b></div>' +
-      '<div class="row"><span>정산일</span><b>' + esc(s.due) + '</b></div>' +
+      '<div class="row"><span>정산 확정</span><b>회차 완료 D+3</b></div>' +
+      '<div class="row"><span>정산일</span><b>' + esc(s.due) + ' (15일·말일 지급)</b></div>' +
       '<div class="row"><span>정산 계좌</span><b>국민은행 ****-**-1234</b></div>';
   }
 
@@ -13157,13 +13231,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     notifStore.unshift(n);
     return n;
   }
+  /* v21 · 지급 예정일은 TtModel 한 곳에서 계산한다(회차 완료 D+3 확정 → 15일·말일 지급). */
   function nextPayoutDue(iso) {
-    var d = iso ? new Date(iso + 'T00:00:00Z') : new Date();
-    if (isNaN(d.getTime())) d = new Date();
-    var y = d.getUTCFullYear();
-    var m = d.getUTCMonth() + 2;
-    if (m > 12) { y += 1; m -= 12; }
-    return y + '-' + pad2(m) + '-10';
+    return TtModel.nextPayoutDue(iso);
   }
   /* 완료된 방문 → 회차별 정산 원장 pending 행(이미 있으면 건너뜀). */
   function enqueueSettlement(eff) {
@@ -13743,6 +13813,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       policyVersion: TtModel.policyVersion,
       policyMeta: TtModel.policyMeta,
       pricing: TtModel.pricing,
+      settlementRule: TtModel.settlementRule,
+      settlementRuleText: TtModel.settlementRuleText(),
+      nextPayoutDue: function (visitIso) { return TtModel.nextPayoutDue(visitIso); },
       refundRules: TtModel.refundRules,
       policyDocs: TtModel.policyDocs,
       passes: function () { return passes; },
