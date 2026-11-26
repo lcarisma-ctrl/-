@@ -7666,7 +7666,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       '</div>' +
       '<div class="sum-row"><span>활동 선생님</span><b>' + c.teacherCount + '명</b></div>' +
       '<div class="sum-row"><span>바로 가능 (3일 내)</span><b>' + c.readyCount + '명</b></div>' +
-      (c.specialties.length ? '<div class="t-tags">' + c.specialties.map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>' : '') +
+      (c.specialties.length ? '<p class="sheet-label" style="margin-top:10px">대표 전문분야</p>' +
+        '<div class="t-tags" style="margin:6px 0 10px">' + c.specialties.map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>' : '') +
       '<button class="btn btn-outline btn-sm" type="button" data-dong-pick="' + esc(c.key) + '" data-dong-name="' + esc(c.name) + '" data-dong-level="' + esc(c.level) + '" data-dong-district="' + esc(c.districtText) + '" data-dong-teachers="' + esc(ids) + '">이 동네 선생님 보기</button>' +
     '</article>';
   }
