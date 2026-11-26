@@ -9530,7 +9530,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       }).join('') + '</div>';
     }
     html += '<div class="rc-quote"><p class="rc-quote-top">' + icon('message') + '보호자님께</p><p>' +
-      esc(r.rounds ? '이번 주 ' + r.rounds + '회 방문했어요. 집에서도 ' + (r.nextFocus || '편한 동작') + '을(를) 가볍게 같이 해 주세요.' : '이번 주 방문 일지가 아직 없어요.') +
+      esc(r.rounds ? '이번 주 ' + r.rounds + '회 방문했어요. 집에서는 ‘' + (r.nextFocus || '편한 동작') + '’ 동작을 가볍게 같이 해 주세요.' : '이번 주 방문 일지가 아직 없어요.') +
       '</p></div>';
     html += '<div class="rc-foot"><span>똑똑쌤 · 주 1회 보호자 리포트</span><span>가족에게만 공유해 주세요</span></div></article>';
     return html;
