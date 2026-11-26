@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v25">
+<meta name="app-version" content="v26">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2995,6 +2995,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       </div>
     </section>
 
+    <!-- ================= 정산 명세서·월별 리포트 (선생님, v26) ================= -->
+    <section class="screen" id="screen-tp-settle" aria-label="정산 명세서">
+      <div class="page-head" style="padding:24px 2px 0">
+        <h1 style="font-size:23px;letter-spacing:-.05em">정산 명세서</h1>
+        <p style="font-size:12.5px;color:#7B8798;line-height:1.6;max-width:none;word-break:keep-all">회차별 정산 내역을 월 단위로 확인하세요. 회차 완료 D+3 확정 · 월 2회(15일·말일) 지급.</p>
+      </div>
+      <div id="tpsScreen"></div>
+      <p class="fine" style="text-align:center;margin:14px 0 6px">* 수수료 22.2%(보호자 결제액 기준) · 원천징수 3.3%는 참고 계산입니다. · 예시 데이터</p>
+    </section>
+
     <!-- ================= 내 정보 (선생님) ================= -->
     <section class="screen" id="screen-tp-mypage" aria-label="파트너 내 정보">
       <div class="page-head">
@@ -3395,7 +3405,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     </button>
   </nav>
 
-  <nav class="tabbar" data-mode="therapist" aria-label="선생님 메뉴">
+  <nav class="tabbar" data-mode="therapist" aria-label="선생님 메뉴" style="grid-template-columns:repeat(5,1fr)">
     <button class="tabbtn is-active" type="button" data-tab="tp-home" aria-selected="true" aria-label="파트너 홈">
       <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg></span>
       파트너 홈
@@ -3407,6 +3417,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     <button class="tabbtn" type="button" data-tab="tp-journal" aria-selected="false" aria-label="일지 작성">
       <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5h11a2 2 0 0 1 2 2V20a.5.5 0 0 1-.8.4L16 18.5l-2.2 1.9a.5.5 0 0 1-.7 0L11 18.5l-2.2 1.9a.5.5 0 0 1-.7 0L6 18.5V5.5a2 2 0 0 1 2-2z"/><path d="M9 8.5h7M9 12h5"/></svg></span>
       일지
+    </button>
+    <button class="tabbtn" type="button" data-tab="tp-settle" aria-selected="false" aria-label="정산">
+      <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6.5h15a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V8a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M3 11h18"/><path d="M7 14.5h3"/></svg></span>
+      정산
     </button>
     <button class="tabbtn" type="button" data-tab="tp-mypage" aria-selected="false" aria-label="파트너 내 정보">
       <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M4.8 20.2c.5-3.8 3.3-6 7.2-6s6.7 2.2 7.2 6"/></svg></span>
@@ -3658,6 +3672,26 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <button class="btn btn-ghost" type="button" data-weekly-close>닫기</button>
       </div>
       <p class="sheet-note" style="text-align:center">복사한 요약은 카카오톡에 그대로 붙여넣을 수 있어요.</p>
+    </div>
+  </div>
+</div>
+
+<!-- v26 · 정산 명세서 인쇄·미리보기 시트 (선생님) -->
+<div class="sheet-backdrop is-front" id="settlementPrintSheet" role="dialog" aria-modal="true" aria-labelledby="settlementPrintTitle">
+  <div class="sheet report-sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close sheet-close-top" type="button" data-stl-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="sheet-scroll">
+      <h2 class="sheet-title" id="settlementPrintTitle">정산서 미리보기</h2>
+      <p class="sheet-desc">인쇄하거나 PDF로 저장하고, 텍스트·JSON으로 내보낼 수 있어요.</p>
+      <div id="settlementPrintBody"></div>
+      <div class="rc-actions">
+        <button class="btn btn-navy" id="stlPrintBtn" type="button">인쇄 / PDF 저장</button>
+        <button class="btn btn-outline btn-sm" id="stlCopyBtn" type="button">텍스트 복사</button>
+        <button class="btn btn-outline btn-sm" id="stlJsonBtn" type="button">JSON 내보내기</button>
+        <button class="btn btn-ghost" type="button" data-stl-close>닫기</button>
+      </div>
+      <p class="sheet-note" id="stlPrintNote" role="status" aria-live="polite">인쇄 창이 열리지 않으면 브라우저 인쇄(⌘/Ctrl+P)를 이용해 주세요.</p>
     </div>
   </div>
 </div>
@@ -6825,6 +6859,264 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return '준비물 3가지 중 ' + n + '가지 확인했어요. 체크한 내용은 이 기기에만 저장돼요.';
     }
 
+    /* --- ⑤ 선생님 정산 명세서 · 월별 리포트(v26) ------------------------
+       회차별 정산 원장(ledger)·일지(journals)를 월 단위로 묶어 명세서 행을 만든다.
+       계산만 한다 — 저장·발송·DOM 접근 없음. 화면은 이 결과를 그리기만 한다.
+       정산 규칙은 v21 그대로: 회차 완료 D+3 확정 → 확정일 이후 첫 15일/말일 지급. */
+    var SETTLEMENT_STATEMENT_VERSION = 'v26';
+    var WITHHOLDING_RATE = 0.033;        /* 사업소득 3.3% — 참고 계산(실제 공제 여부는 세무 확인) */
+    var STATEMENT_MONTHS_BACK = 6;       /* 월 선택 칩에 보여줄 최대 개월 */
+    var STATEMENT_TYPE_LABEL = {
+      regular: '정규 방문', free_eval: '무료 평가', canceled: '취소', no_show: '노쇼', adjusted: '지급 조정'
+    };
+    var STATEMENT_STATUS_LABEL = {
+      paid: '지급완료', scheduled: '지급예정', pending: '정산대기', held: '지급 보류', excluded: '정산 제외'
+    };
+    var STATEMENT_NOTE = '3.3%는 사업소득 원천징수 참고 계산이에요. 실제 공제 여부·금액은 세무 확인이 필요합니다.';
+
+    /* '2026-11-25' → '2026-11' */
+    function statementMonthOf(iso) {
+      var s = String(iso == null ? '' : iso);
+      return /^\d{4}-\d{2}/.test(s) ? s.slice(0, 7) : '';
+    }
+    /* '2026-11' → '2026년 11월' */
+    function statementMonthLabel(key) {
+      var p = String(key == null ? '' : key).split('-');
+      if (p.length < 2 || !p[0] || !p[1]) return '';
+      return p[0] + '년 ' + Number(p[1]) + '월';
+    }
+    /* 월 이동: ('2026-01', -1) → '2025-12' */
+    function shiftMonthKey(key, delta) {
+      var p = String(key == null ? '' : key).split('-');
+      var y = Number(p[0]), m = Number(p[1]);
+      if (!isFinite(y) || !isFinite(m) || !y || !m) return '';
+      var idx = y * 12 + (m - 1) + num(delta, 0);
+      var ny = Math.floor(idx / 12), nm = (idx % 12 + 12) % 12 + 1;
+      return ny + '-' + pad(nm);
+    }
+    /* 방문일 + D+3 확정 → 확정일 이후 첫 15일/말일 지급. 없으면 빈 문자열. */
+    function statementPayoutDates(visitIso, storedStatus) {
+      var visit = String(visitIso == null ? '' : visitIso).slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) return { confirmDate: '', payoutDueDate: '' };
+      return { confirmDate: payoutConfirmIsoOf(visit), payoutDueDate: nextPayoutDue(visit) };
+    }
+    /* 지급 상태 — 지급 기록(paid·held)이 먼저, 없으면 확정일·지급일로 판정한다. */
+    function statementStatusOf(row, todayIso) {
+      var r = row || {};
+      if (r.excluded) return 'excluded';
+      var stored = String(r.storedStatus || '');
+      if (stored === 'paid') return 'paid';
+      if (stored === 'held') return 'held';
+      var today = String(todayIso || '').slice(0, 10);
+      var confirm = String(r.confirmDate || '').slice(0, 10);
+      if (!confirm || !today) return 'scheduled';
+      if (today < confirm) return 'pending';
+      return 'scheduled';
+    }
+    /* 회차 유형 — 저장된 type이 있으면 그대로, 없으면 금액으로 판단한다. */
+    function statementTypeOf(row) {
+      var r = row || {};
+      var t = String(r.storedType || '');
+      if (STATEMENT_TYPE_LABEL[t]) return t;
+      if (r.excluded) return 'canceled';
+      if (num(r.payoutAmount, 0) <= 0) return 'free_eval';
+      return 'regular';
+    }
+
+    function buildTeacherSettlementStatement(ctx, monthKey) {
+      var c = ctx || {};
+      var todayIso = String(c.todayIso || todayIsoKst()).slice(0, 10);
+      var ledger = Array.isArray(c.ledger) ? c.ledger : [];
+      var journals = Array.isArray(c.journals) ? c.journals : [];
+      var canceled = Array.isArray(c.canceled) ? c.canceled : [];
+      var resvNoById = {};
+      (Array.isArray(c.reservations) ? c.reservations : []).forEach(function (b) {
+        if (!b || typeof b !== 'object') return;
+        if (b.id) resvNoById[String(b.id)] = String(b.no || '');
+      });
+
+      var raw = [], seenJournal = {}, seenKey = {};
+      function keyOf(visit, patient, no) { return visit + '|' + patient + '|' + no; }
+      function push(row) {
+        var k = keyOf(row.visitDate, row.patient, row.reservationNo);
+        if (seenKey[k]) return;
+        seenKey[k] = true;
+        raw.push(row);
+      }
+
+      /* ① 정산 원장 — 완료 회차의 정산 기록(있으면 이게 우선) */
+      ledger.forEach(function (r) {
+        if (!r || typeof r !== 'object') return;
+        var visit = String(r.visitDate || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) visit = dateLabelToIso(r.visitDate);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) return;
+        if (r.journalId) seenJournal[String(r.journalId)] = true;
+        var payout = Math.max(0, Math.round(num(r.netAmount, payoutOf(num(r.grossAmount, 0)))));
+        push({
+          id: String(r.id || ('stl-' + visit + '-' + raw.length)),
+          reservationId: String(r.reservationId || ''),
+          reservationNo: String(r.reservationNo || resvNoById[String(r.reservationId || '')] || ''),
+          visitDate: visit,
+          visitTime: String(r.visitTime || ''),
+          patient: String(r.patient || ''),
+          storedType: String(r.type || ''),
+          storedStatus: String(r.status || ''),
+          consumerAmount: Math.max(0, Math.round(num(r.grossAmount, 0))),
+          platformFee: Math.max(0, Math.round(num(r.feeAmount, 0))),
+          payoutAmount: payout,
+          payoutDueDate: String(r.payoutDueDate || '').slice(0, 10),
+          memo: String(r.memo || '')
+        });
+      });
+
+      /* ② 원장에 없는 완료 일지 — 일지로 완료한 회차도 명세서에 나오게 한다 */
+      journals.forEach(function (j) {
+        if (!j || typeof j !== 'object' || j.status === 'archived' || j.status === 'draft') return;
+        if (j.id && seenJournal[String(j.id)]) return;
+        var visit = String(j.visitDate || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) visit = dateLabelToIso(j.date);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) return;
+        var gross = PRICING.regularSinglePrice;
+        push({
+          id: String(j.id || ('jnl-' + visit)),
+          reservationId: '', reservationNo: String(j.reservationNo || ''),
+          visitDate: visit, visitTime: '', patient: String(j.patient || ''),
+          storedType: '', storedStatus: 'scheduled',
+          consumerAmount: gross, platformFee: feeOf(gross), payoutAmount: payoutOf(gross),
+          payoutDueDate: '', memo: '방문 일지 기준'
+        });
+      });
+
+      /* ③ 취소·노쇼 — 정산 대상이 아니라는 걸 명세서에 남긴다(금액 0) */
+      canceled.forEach(function (x) {
+        if (!x || typeof x !== 'object') return;
+        var visit = String(x.visitDate || x.dateIso || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) visit = dateLabelToIso(x.date);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) return;
+        push({
+          id: String(x.id || ('cancel-' + visit)),
+          reservationId: String(x.id || ''), reservationNo: String(x.no || x.reservationNo || ''),
+          visitDate: visit, visitTime: String(x.time || ''), patient: String(x.patient || ''),
+          storedType: String(x.type || 'canceled'), storedStatus: 'excluded',
+          consumerAmount: 0, platformFee: 0, payoutAmount: 0, payoutDueDate: '',
+          excluded: true, memo: String(x.reason || '취소 — 정산 대상 아님')
+        });
+      });
+
+      /* 월 목록 — 데이터가 있는 달 + 이번 달, 최근 순 */
+      var monthSet = {};
+      raw.forEach(function (r) { var m = statementMonthOf(r.visitDate); if (m) monthSet[m] = true; });
+      monthSet[todayIso.slice(0, 7)] = true;
+      var months = Object.keys(monthSet).filter(function (m) { return /^\d{4}-\d{2}$/.test(m); }).sort().reverse().slice(0, STATEMENT_MONTHS_BACK);
+
+      var key = String(monthKey || '').slice(0, 7);
+      if (!/^\d{4}-\d{2}$/.test(key)) key = months[0] || todayIso.slice(0, 7);
+      if (months.indexOf(key) === -1) months.push(key);
+      months.sort().reverse();
+
+      var rows = raw.filter(function (r) { return statementMonthOf(r.visitDate) === key; })
+        .sort(function (a, b) {
+          if (a.visitDate !== b.visitDate) return a.visitDate < b.visitDate ? 1 : -1;
+          return String(a.visitTime || '') < String(b.visitTime || '') ? 1 : (String(a.visitTime || '') > String(b.visitTime || '') ? -1 : 0);
+        })
+        .map(function (r) {
+          var dates = statementPayoutDates(r.visitDate, r.storedStatus);
+          var type = statementTypeOf(r);
+          var st = statementStatusOf({ excluded: !!r.excluded, storedStatus: r.storedStatus, confirmDate: dates.confirmDate }, todayIso);
+          var payout = st === 'excluded' ? 0 : Math.max(0, Math.round(num(r.payoutAmount, 0)));
+          var withholding = st === 'excluded' ? 0 : Math.round(payout * WITHHOLDING_RATE);
+          return {
+            id: r.id,
+            reservationId: r.reservationId,
+            reservationNo: r.reservationNo,
+            patient: r.patient,
+            visitDate: r.visitDate,
+            visitDateLabel: dateLabelOf(r.visitDate) + (weekdayOf(r.visitDate) ? ' (' + weekdayOf(r.visitDate) + ')' : ''),
+            visitTime: r.visitTime,
+            type: type,
+            typeLabel: STATEMENT_TYPE_LABEL[type] || '정규 방문',
+            confirmDate: dates.confirmDate,
+            confirmDateLabel: dates.confirmDate ? dates.confirmDate.replace(/-/g, '.') : '-',
+            payoutDueDate: r.payoutDueDate || dates.payoutDueDate,
+            payoutDueDateLabel: (r.payoutDueDate || dates.payoutDueDate || '').replace(/-/g, '.') || '-',
+            status: st,
+            statusLabel: STATEMENT_STATUS_LABEL[st] || '정산대기',
+            excluded: st === 'excluded',
+            consumerAmount: st === 'excluded' ? 0 : r.consumerAmount,
+            platformFee: st === 'excluded' ? 0 : r.platformFee,
+            payoutAmount: payout,
+            withholdingRate: WITHHOLDING_RATE,
+            withholdingAmount: withholding,
+            netExpected: payout - withholding,
+            memo: r.memo
+          };
+        });
+
+      var totals = { consumer: 0, fee: 0, payout: 0, withholding: 0, netExpected: 0 };
+      var byStatus = {
+        paid: { count: 0, amount: 0 }, scheduled: { count: 0, amount: 0 },
+        pending: { count: 0, amount: 0 }, held: { count: 0, amount: 0 }, excluded: { count: 0, amount: 0 }
+      };
+      rows.forEach(function (r) {
+        var b = byStatus[r.status] || byStatus.scheduled;
+        b.count += 1;
+        b.amount += r.payoutAmount;
+        if (r.excluded) return;
+        totals.consumer += r.consumerAmount;
+        totals.fee += r.platformFee;
+        totals.payout += r.payoutAmount;
+        totals.withholding += r.withholdingAmount;
+        totals.netExpected += r.netExpected;
+      });
+      var completed = rows.filter(function (r) { return !r.excluded; }).length;
+
+      var stmt = {
+        version: SETTLEMENT_STATEMENT_VERSION,
+        todayIso: todayIso,
+        monthKey: key,
+        monthLabel: statementMonthLabel(key),
+        teacherId: String(c.teacherId || ''),
+        teacherName: String(c.teacherName || ''),
+        rule: { confirmDays: SETTLEMENT_RULE.confirmDays, payDays: SETTLEMENT_RULE.payDays.slice(), label: SETTLEMENT_RULE.label, shortLabel: SETTLEMENT_RULE.shortLabel },
+        feeRate: PRICING.platformFeeRate,
+        withholdingRate: WITHHOLDING_RATE,
+        months: months,
+        rows: rows,
+        counts: { total: rows.length, completed: completed, paid: byStatus.paid.count, scheduled: byStatus.scheduled.count, pending: byStatus.pending.count, held: byStatus.held.count, excluded: byStatus.excluded.count },
+        byStatus: byStatus,
+        totals: totals,
+        note: STATEMENT_NOTE
+      };
+      stmt.text = settlementStatementText(stmt);
+      return stmt;
+    }
+
+    /* 명세서 텍스트 — 복사·붙여넣기용(카카오톡·문자·메일) */
+    function settlementStatementText(stmt) {
+      var s = stmt || {};
+      var t = s.totals || { payout: 0, withholding: 0, netExpected: 0 };
+      var lines = [];
+      lines.push('똑똑쌤 정산 명세서');
+      lines.push((s.teacherName ? s.teacherName + ' 선생님' : '선생님') + ' · ' + (s.monthLabel || ''));
+      lines.push('정산 규칙: ' + ((s.rule && s.rule.label) || SETTLEMENT_RULE.label));
+      lines.push('');
+      lines.push('완료 ' + num((s.counts && s.counts.completed), 0) + '회 · 지급완료 ' + num((s.counts && s.counts.paid), 0) + '건 ' + wonText((s.byStatus && s.byStatus.paid.amount) || 0) +
+        ' · 지급예정 ' + num((s.counts && s.counts.scheduled), 0) + '건 ' + wonText((s.byStatus && s.byStatus.scheduled.amount) || 0) +
+        ' · 정산대기 ' + num((s.counts && s.counts.pending), 0) + '건 ' + wonText((s.byStatus && s.byStatus.pending.amount) || 0));
+      lines.push('세전 지급 합계 ' + wonText(t.payout) + ' · 원천징수 3.3% 참고 ' + wonText(t.withholding) + ' · 실수령 예상 ' + wonText(t.netExpected));
+      lines.push('');
+      (s.rows || []).forEach(function (r, i) {
+        lines.push((i + 1) + '. ' + r.visitDateLabel + (r.visitTime ? ' ' + r.visitTime : '') +
+          (r.reservationNo ? ' · ' + r.reservationNo : '') + ' · ' + r.typeLabel + ' · ' + r.statusLabel +
+          ' · 지급일 ' + r.payoutDueDateLabel + ' · ' + wonText(r.payoutAmount));
+      });
+      if (!(s.rows || []).length) lines.push('(이 달에는 정산 내역이 없습니다)');
+      lines.push('');
+      lines.push('* ' + STATEMENT_NOTE);
+      lines.push('* 로컬 데모 데이터입니다. 서버·정산 시스템과 연결되어 있지 않습니다.');
+      return lines.join('\n');
+    }
+
     /* --- ④ 신뢰·안전 장치 --------------------------------------------- */
     /* 방문 시작/종료 시각. 시작 없이 종료할 수 없고, 두 번 종료할 수 없다. */
     function startVisit(resv, meta) {
@@ -7465,6 +7757,18 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       buildReevalAlerts: buildReevalAlerts,
       /* v25 · 보호자 홈 통합 요약·첫 방문 온보딩 */
       guardianSummaryVersion: GUARDIAN_SUMMARY_VERSION,
+      settlementStatementVersion: SETTLEMENT_STATEMENT_VERSION,
+      statementMonthsBack: STATEMENT_MONTHS_BACK,
+      withholdingRate: WITHHOLDING_RATE,
+      statementTypeLabel: STATEMENT_TYPE_LABEL,
+      statementStatusLabel: STATEMENT_STATUS_LABEL,
+      statementMonthOf: statementMonthOf,
+      statementMonthLabel: statementMonthLabel,
+      shiftMonthKey: shiftMonthKey,
+      statementPayoutDates: statementPayoutDates,
+      statementStatusOf: statementStatusOf,
+      buildTeacherSettlementStatement: buildTeacherSettlementStatement,
+      settlementStatementText: settlementStatementText,
       guardianReportDays: GUARDIAN_REPORT_DAYS,
       passGuide: GUARDIAN_PASS_GUIDE.slice(),
       onboardingPrep: ONBOARDING_PREP.map(function (p) { return { code: p.code, label: p.label, desc: p.desc }; }),
@@ -7709,6 +8013,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     'tp-home': $('#screen-tp-home'),
     'tp-schedule': $('#screen-tp-schedule'),
     'tp-journal': $('#screen-tp-journal'),
+    'tp-settle': $('#screen-tp-settle'),
     'tp-mypage': $('#screen-tp-mypage'),
     partner: $('#screen-partner'),
     admin: $('#screen-admin')
@@ -7736,7 +8041,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (name === 'journal') { renderChart(currentMetric); renderJournalTimeline(); renderDday(); try { renderJournalV20(); } catch (e) {} }
     if (name === 'teachers') renderTeachers();
     if (name === 'admin') renderAdmin();
-    if (name === 'tp-home' || name === 'tp-schedule' || name === 'tp-journal' || name === 'tp-mypage') renderPartner();
+    if (name === 'tp-home' || name === 'tp-schedule' || name === 'tp-journal' || name === 'tp-settle' || name === 'tp-mypage') renderPartner();
     if (scroll !== false) {
       try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
       catch (e) { window.scrollTo(0, 0); }
@@ -10386,6 +10691,73 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   /* ================= 선생님(파트너) 데이터 ================= */
   var P_KEY = 'ttokttok_partner_v1';
 
+  /* v26 · 정산 명세서 시드 — 11월 14회(980,000원) + 10월 13회(무료 평가 1회 포함).
+     partner.settlement(11월 14회·1,260,000원 결제·980,000원 지급)와 같은 숫자로 맞춘다.
+     모든 행에 reservationId가 있어 rebuildLedger가 지우지 않고, 일지 2건은 journalId로 연결된다. */
+  function seedPartnerLedger() {
+    var rows = [];
+    var nl = function (n) { return n < 10 ? '0' + n : '' + n; };
+    function add(o) {
+      var iso = '2026-' + nl(o.m) + '-' + nl(o.d);
+      var payout = Number(o.payout || 0);
+      var gross = Number(o.gross || 0);
+      rows.push({
+        id: 'stl-seed-' + o.m + o.d + '-' + (rows.length + 1),
+        reservationId: o.reservationId || ('res-seed-' + o.m + o.d + '-' + (rows.length + 1)),
+        reservationNo: o.no || '',
+        journalId: o.journalId || null,
+        teacherId: 'park',
+        visitDate: iso,
+        visitTime: o.time || '',
+        patient: o.patient || '',
+        type: o.type || (payout > 0 ? 'regular' : 'free_eval'),
+        grossAmount: gross,
+        feeRate: 0.2222,
+        feeAmount: Math.max(0, gross - payout),
+        netAmount: payout,
+        status: o.status || 'scheduled',
+        payoutDueDate: o.due || '',
+        memo: o.memo || '',
+        createdAt: iso + 'T10:00:00.000Z',
+        updatedAt: iso + 'T10:00:00.000Z'
+      });
+    }
+    var REG = 90000, PAY = 70000;
+    /* 10월 — 전부 지급완료(10.15 / 10.31 지급) */
+    add({ m: 10, d: 2, time: '10:00', no: 'TT-261002-1001', patient: '오명희 어르신', type: 'free_eval', gross: 0, payout: 0, status: 'paid', due: '2026-10-15', memo: '첫 방문 무료 평가' });
+    [['06', 10, 'TT-261006-1002', '김순자 어르신', '10:00', '2026-10-15'],
+      ['07', 7, 'TT-261007-1003', '박정호 어르신', '14:00', '2026-10-15'],
+      ['08', 8, 'TT-261008-1004', '최은자 어르신', '10:30', '2026-10-15'],
+      ['13', 13, 'TT-261013-1005', '정말순 어르신', '15:00', '2026-10-15'],
+      ['14', 14, 'TT-261014-1006', '김순자 어르신', '10:00', '2026-10-15'],
+      ['15', 15, 'TT-261015-1007', '한상우 어르신', '11:00', '2026-10-31'],
+      ['20', 20, 'TT-261020-1008', '박정호 어르신', '14:30', '2026-10-31'],
+      ['22', 22, 'TT-261022-1009', '최은자 어르신', '10:00', '2026-10-31'],
+      ['27', 27, 'TT-261027-1010', '정말순 어르신', '16:00', '2026-10-31'],
+      ['28', 28, 'TT-261028-1011', '한상우 어르신', '10:30', '2026-10-31'],
+      ['29', 29, 'TT-261029-1012', '김순자 어르신', '14:00', '2026-10-31']].forEach(function (x) {
+      add({ m: 10, d: x[1], time: x[4], no: x[2], patient: x[3], gross: REG, payout: PAY, status: 'paid', due: x[5] });
+    });
+    /* 11월 — 지급완료 7건(11.15) · 지급예정 6건(11.30) · 정산대기 1건(11.25 방문, 11.28 확정) */
+    [['03', 3, 'TT-261103-1041', '한상우 어르신', '10:00', 'paid', '2026-11-15', ''],
+      ['04', 4, 'TT-261104-1042', '최은자 어르신', '14:00', 'paid', '2026-11-15', ''],
+      ['05', 5, 'TT-261105-1043', '김순자 어르신', '10:30', 'paid', '2026-11-15', ''],
+      ['06', 6, 'TT-261106-1044', '박정호 어르신', '15:00', 'paid', '2026-11-15', ''],
+      ['10', 10, 'TT-261110-1045', '정말순 어르신', '10:00', 'paid', '2026-11-15', ''],
+      ['11', 11, 'TT-261111-1046', '오명희 어르신', '14:30', 'paid', '2026-11-15', ''],
+      ['12', 12, 'TT-261112-1047', '한상우 어르신', '10:00', 'paid', '2026-11-15', ''],
+      ['13', 13, 'TT-261113-1048', '김순자 어르신', '16:00', 'scheduled', '2026-11-30', ''],
+      ['17', 17, 'TT-261117-1049', '최은자 어르신', '10:30', 'scheduled', '2026-11-30', ''],
+      ['18', 18, 'TT-261118-1050', '박정호 어르신', '14:00', 'scheduled', '2026-11-30', ''],
+      ['19', 19, 'TT-261119-1051', '정말순 어르신', '10:00', 'scheduled', '2026-11-30', ''],
+      ['20', 20, 'TT-261120-1052', '오명희 어르신', '15:30', 'scheduled', '2026-11-30', '']].forEach(function (x) {
+      add({ m: 11, d: x[1], time: x[4], no: x[2], patient: x[3], gross: REG, payout: PAY, status: x[5], due: x[6] });
+    });
+    add({ m: 11, d: 22, time: '10:00', no: 'TT-261122-1053', patient: '박정호 어르신', gross: REG, payout: PAY, status: 'scheduled', due: '2026-11-30', journalId: 'jnl-2026-11-22-2' });
+    add({ m: 11, d: 25, time: '09:30', no: 'TT-261125-1054', patient: '김순자 어르신', gross: REG, payout: PAY, status: 'pending', due: '2026-11-30', journalId: 'jnl-2026-11-25-1' });
+    return rows;
+  }
+
   function seedPartner() {
     return {
       id: 'app-me',
@@ -10430,7 +10802,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       journals: [
         { id: 'jnl-2026-11-25-1', date: '2026.11.25', patient: '김순자 어르신', gait: '0.66', rom: '118', pain: 3, memo: '무릎 안쪽 붕괴 패턴 감소. 다음 회차 계단 훈련 추가.' },
         { id: 'jnl-2026-11-22-2', date: '2026.11.22', patient: '박정호 어르신', gait: '0.84', rom: '112', pain: 4, memo: '계단 오르내리기 3회 반복 수행. 좌측 무릎 부종 관찰.' }
-      ]
+      ],
+      /* v26 · 정산 명세서용 회차별 원장(10월·11월). 일지 2건은 journalId로 연결된다. */
+      ledger: seedPartnerLedger()
     };
   }
 
@@ -10493,6 +10867,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderTpHero();
     renderTpStatus();
     renderTpSettle();
+    renderTpSettleScreen();
     renderTpNotifs();
     renderTpRequests();
     renderTpSchedule();
@@ -11404,6 +11779,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           '<div class="settle-cell"><b>22.2%</b><span>플랫폼 수수료</span></div>' +
         '</div>' +
         settleChartHtml() +
+        '<button class="btn btn-outline btn-sm" type="button" data-tab="tp-settle" style="margin-top:10px;width:100%">정산 명세서 보기</button>' +
         '<p class="settle-note">' + icon('info') + '수수료 ' + s.fee.toLocaleString('ko-KR') + '원 차감 · ' + esc(s.due) + ' 지급 예정<br>' + esc(TtModel.settlementRuleText()) + '</p>' +
       '</div>';
   }
@@ -11640,7 +12016,277 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       '<div class="row"><span>정산 예정액</span><b style="color:#0B7A6B">' + s.net.toLocaleString('ko-KR') + '원</b></div>' +
       '<div class="row"><span>정산 확정</span><b>회차 완료 D+3</b></div>' +
       '<div class="row"><span>정산일</span><b>' + esc(s.due) + ' (15일·말일 지급)</b></div>' +
-      '<div class="row"><span>정산 계좌</span><b>국민은행 ****-**-1234</b></div>';
+      '<div class="row"><span>정산 계좌</span><b>국민은행 ****-**-1234</b></div>' +
+      '<button class="btn btn-outline btn-sm" type="button" data-tab="tp-settle" style="margin-top:10px;width:100%">월별 정산 명세서 보기</button>';
+  }
+
+  /* ===================================================================
+     v26 · 선생님 정산 명세서 · 월별 리포트 화면
+     ─ 계산은 TtModel.buildTeacherSettlementStatement 한 곳에서만 한다.
+     ─ 화면은 그 결과를 그리기만 하고, 저장·발송은 하지 않는다.
+     =================================================================== */
+  var STATEMENT_MONTH_KEY = 'ttokttok_statement_month_v1';
+  var statementMonth = (function () {
+    try {
+      var v = String(SafeStorage.getItem(STATEMENT_MONTH_KEY) || '');
+      return /^\d{4}-\d{2}$/.test(v) ? v : '';
+    } catch (e) { return ''; }
+  })();
+
+  function settleWon(n) { return Number(n || 0).toLocaleString('ko-KR') + '원'; }
+  function settleNum(n) { return Number(n || 0).toLocaleString('ko-KR'); }
+
+  /* 화면이 넘기는 입력 — 원장·일지·취소된 일정. 개인 주소·연락처는 넣지 않는다. */
+  function statementCtx() {
+    var resv = [];
+    try { resv = (account && account.bookings) ? account.bookings : []; } catch (e) { resv = []; }
+    var canceled = (partner.schedule || []).filter(function (s) {
+      return s && (s.status === 'canceled' || s.status === 'no_show');
+    }).map(function (s) {
+      var bad = s.status === 'no_show';
+      return {
+        id: s.id, no: s.no || '', dateIso: s.dateIso || TtModel.dateLabelToIso(s.date),
+        time: s.time || '', patient: s.patient || '',
+        type: bad ? 'no_show' : 'canceled',
+        reason: bad ? '노쇼 — 정산 대상 아님' : '취소 — 정산 대상 아님'
+      };
+    });
+    return {
+      todayIso: TtModel.todayIsoKst(),
+      teacherId: partner.teacherId || '',
+      teacherName: partner.name || '',
+      ledger: partner.ledger || [],
+      journals: partner.journals || [],
+      reservations: resv,
+      canceled: canceled
+    };
+  }
+  function currentStatement(monthKey) {
+    return TtModel.buildTeacherSettlementStatement(statementCtx(), monthKey || statementMonth);
+  }
+  function setSettlementMonth(key) {
+    var k = String(key || '').slice(0, 7);
+    if (!/^\d{4}-\d{2}$/.test(k)) return false;
+    statementMonth = k;
+    try { SafeStorage.setItem(STATEMENT_MONTH_KEY, k); } catch (e) {}
+    renderTpSettleScreen();
+    return true;
+  }
+  function statementBadgeClass(st) {
+    if (st === 'paid') return 'status-badge is-on';
+    if (st === 'pending') return 'status-badge is-wait';
+    if (st === 'held' || st === 'excluded') return 'status-badge is-warn';
+    return 'status-badge';
+  }
+
+  function statementRowHtml(r) {
+    return '<div class="admin-card" data-stl-row="' + esc(r.id) + '" style="padding:13px;margin-bottom:8px">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">' +
+        '<b style="font-size:13px;letter-spacing:-.02em">' + esc(r.visitDateLabel) + (r.visitTime ? ' ' + esc(r.visitTime) : '') + '</b>' +
+        '<span class="' + statementBadgeClass(r.status) + '">' + esc(r.statusLabel) + '</span>' +
+      '</div>' +
+      '<p class="fine" style="margin:5px 0 0">' + (r.reservationNo ? esc(r.reservationNo) + ' · ' : '') + esc(r.typeLabel) + (r.patient ? ' · ' + esc(r.patient) : '') + '</p>' +
+      '<p class="fine" style="margin:2px 0 0">' + (r.excluded ? esc(r.memo || '정산 대상 아님') : '지급일 ' + esc(r.payoutDueDateLabel) + ' · 확정 ' + esc(r.confirmDateLabel)) + '</p>' +
+      '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-top:6px">' +
+        '<span style="font-size:11px;color:var(--muted);min-width:0">' + (r.excluded ? '세전 0원' : '세전 ' + settleWon(r.payoutAmount) + ' · 원천징수 ' + settleWon(r.withholdingAmount)) + '</span>' +
+        '<b style="color:' + (r.excluded ? 'var(--muted)' : '#0B7A6B') + ';white-space:nowrap;font-size:13px">' + (r.excluded ? '0원' : settleWon(r.netExpected)) + '</b>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderTpSettleScreen() {
+    var el = $('#tpsScreen');
+    if (!el) return;
+    if (!isApproved()) {
+      el.innerHTML = '<div class="locked" style="margin-top:14px"><div class="lk-ico" aria-hidden="true">' + icon('lock') + '</div>' +
+        '<p>정산 명세서는 심사 승인 후부터 볼 수 있어요.<br>승인되면 회차별 정산 내역과 월별 리포트가 열립니다.</p></div>';
+      return;
+    }
+    var s = currentStatement();
+    var html = '';
+
+    /* ① 월 선택 칩 */
+    html += '<div class="chips" id="tpsMonths" role="group" aria-label="정산 월 선택">';
+    s.months.forEach(function (m) {
+      var on = m === s.monthKey;
+      html += '<button class="chip' + (on ? ' is-on' : '') + '" type="button" data-stl-month="' + esc(m) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(TtModel.statementMonthLabel(m)) + '</button>';
+    });
+    html += '</div>';
+
+    /* ② 월 요약 */
+    html += '<div class="settle" style="margin-top:12px" id="tpsSummary">' +
+      '<div class="settle-top"><span>' + esc(s.monthLabel) + ' 세전 지급 합계</span><span class="status-badge is-on">완료 ' + s.counts.completed + '회</span></div>' +
+      '<p class="settle-amt">' + settleNum(s.totals.payout) + '<small>원</small></p>' +
+      '<div class="settle-grid">' +
+        '<div class="settle-cell"><b>' + settleNum(s.byStatus.paid.amount) + '</b><span>지급완료 ' + s.byStatus.paid.count + '건</span></div>' +
+        '<div class="settle-cell"><b>' + settleNum(s.byStatus.scheduled.amount) + '</b><span>지급예정 ' + s.byStatus.scheduled.count + '건</span></div>' +
+        '<div class="settle-cell"><b>' + settleNum(s.byStatus.pending.amount) + '</b><span>정산대기 ' + s.byStatus.pending.count + '건</span></div>' +
+      '</div>' +
+      '<div style="margin-top:12px" id="tpsTotals">' +
+        '<div class="sum-row"><span>보호자 결제 합계</span><b>' + settleWon(s.totals.consumer) + '</b></div>' +
+        '<div class="sum-row"><span>플랫폼 수수료 22.2%</span><b>-' + settleWon(s.totals.fee) + '</b></div>' +
+        '<div class="sum-row"><span>세전 지급 합계</span><b>' + settleWon(s.totals.payout) + '</b></div>' +
+        '<div class="sum-row"><span>원천징수 3.3% 참고</span><b>-' + settleWon(s.totals.withholding) + '</b></div>' +
+        '<div class="sum-row"><span>실수령 예상</span><b style="color:#0B7A6B">' + settleWon(s.totals.netExpected) + '</b></div>' +
+      '</div>' +
+      '<p class="settle-note">' + icon('info') + esc(s.rule.label) + '</p>' +
+      '<p class="settle-note">' + icon('info') + esc(s.note) + '</p>' +
+    '</div>';
+
+    /* ③ 내보내기 */
+    html += '<div style="display:flex;gap:7px;margin-top:12px">' +
+      '<button class="btn btn-teal" type="button" data-stl-preview style="flex:1">정산서 미리보기</button>' +
+    '</div>' +
+    '<div style="display:flex;gap:7px;margin-top:7px">' +
+      '<button class="btn btn-outline btn-sm" type="button" data-stl-copy style="flex:1;white-space:nowrap">텍스트 복사</button>' +
+      '<button class="btn btn-outline btn-sm" type="button" data-stl-json aria-label="정산 명세서 JSON 내보내기" style="flex:1;white-space:nowrap">JSON 내보내기</button>' +
+    '</div>';
+
+    /* ④ 회차별 상세 */
+    html += '<section class="sec" style="margin-top:20px" aria-label="회차별 정산 내역">' +
+      '<div class="sec-head" style="margin-bottom:8px"><h2 class="sec-title" style="font-size:15px">회차별 내역 <span id="tpsRowCount" style="font-size:11px;font-weight:700;color:var(--blue)">' + s.rows.length + '건</span></h2></div>';
+    if (s.rows.length) {
+      html += '<div id="tpsRows">' + s.rows.map(statementRowHtml).join('') + '</div>';
+    } else {
+      html += '<div class="locked" id="tpsRows"><div class="lk-ico" aria-hidden="true">' + icon('inbox') + '</div><p>이 달에는 정산 내역이 없어요.<br>방문 일지를 저장하면 회차가 자동으로 쌓여요.</p></div>';
+    }
+    html += '</section>';
+    el.innerHTML = html;
+  }
+
+  /* 인쇄·미리보기 시트 본문 */
+  function statementPrintHtml(s) {
+    var head = '<div class="admin-card" style="padding:15px">' +
+      '<p style="font-size:11px;font-weight:800;color:#0B7A6B;letter-spacing:.02em">똑똑쌤 정산 명세서</p>' +
+      '<p style="font-size:16px;font-weight:800;letter-spacing:-.03em;margin:3px 0 0">' + esc(s.monthLabel) + ' · ' + esc(s.teacherName || '선생님') + ' 선생님</p>' +
+      '<p class="fine" style="margin:5px 0 0">발급 ' + esc(String(s.todayIso || '').replace(/-/g, '.')) + ' · 수수료 22.2% · ' + esc(s.rule.label) + '</p>' +
+    '</div>';
+    var summary = '<div class="admin-card" style="padding:8px 15px;margin-top:8px">' +
+      '<div class="sum-row"><span>완료 회차</span><b>' + s.counts.completed + '회</b></div>' +
+      '<div class="sum-row"><span>지급완료 (' + s.byStatus.paid.count + '건)</span><b>' + settleWon(s.byStatus.paid.amount) + '</b></div>' +
+      '<div class="sum-row"><span>지급예정 (' + s.byStatus.scheduled.count + '건)</span><b>' + settleWon(s.byStatus.scheduled.amount) + '</b></div>' +
+      '<div class="sum-row"><span>정산대기 (' + s.byStatus.pending.count + '건)</span><b>' + settleWon(s.byStatus.pending.amount) + '</b></div>' +
+      '<div class="sum-row"><span>세전 지급 합계</span><b>' + settleWon(s.totals.payout) + '</b></div>' +
+      '<div class="sum-row"><span>원천징수 3.3% 참고</span><b>-' + settleWon(s.totals.withholding) + '</b></div>' +
+      '<div class="sum-row"><span>실수령 예상</span><b style="color:#0B7A6B">' + settleWon(s.totals.netExpected) + '</b></div>' +
+    '</div>';
+    var body = s.rows.map(function (r) {
+      return '<div style="border-top:1px solid #EDF1F7;padding:7px 0">' +
+        '<div style="display:flex;justify-content:space-between;gap:8px">' +
+          '<b style="font-size:11px">' + esc(r.visitDateLabel) + (r.visitTime ? ' ' + esc(r.visitTime) : '') + '</b>' +
+          '<b style="font-size:11px;color:' + (r.excluded ? 'var(--muted)' : '#0B7A6B') + '">' + settleWon(r.netExpected) + '</b>' +
+        '</div>' +
+        '<p class="fine" style="margin:2px 0 0">' + (r.reservationNo ? esc(r.reservationNo) + ' · ' : '') + esc(r.typeLabel) + ' · ' + esc(r.statusLabel) +
+          (r.excluded ? '' : ' · 지급일 ' + esc(r.payoutDueDateLabel)) + '</p>' +
+      '</div>';
+    }).join('');
+    if (!s.rows.length) body = '<p class="fine" style="padding:10px 0">이 달에는 정산 내역이 없습니다.</p>';
+    var foot = '<p class="sheet-note">* ' + esc(s.note) + '</p>' +
+      '<p class="sheet-note">* 상호 똑똑쌤 · 대표 임현수 · 문의 031-919-8577 · 로컬 데모 데이터입니다.</p>';
+    return head + summary + '<div style="margin-top:12px">' + body + '</div>' + foot;
+  }
+
+  function openSettlementPrint() {
+    var s = currentStatement();
+    var body = $('#settlementPrintBody');
+    if (body) body.innerHTML = statementPrintHtml(s);
+    var note = $('#stlPrintNote');
+    if (note) note.textContent = '인쇄 창이 열리지 않으면 브라우저 인쇄(⌘/Ctrl+P)를 이용해 주세요. · 발급 ' + String(s.todayIso || '').replace(/-/g, '.');
+    openSheetEl('#settlementPrintSheet');
+    return s;
+  }
+
+  function copySettlementText() {
+    var s = currentStatement();
+    var ok = false;
+    try { ok = copyToClipboard(s.text); } catch (e) { ok = false; }
+    var note = $('#stlPrintNote');
+    if (note) note.textContent = ok ? '정산 명세서 텍스트를 복사했어요.' : '복사가 안 됐어요. 미리보기에서 직접 선택해 주세요.';
+    toast(ok ? '정산 명세서 텍스트를 복사했어요.' : '복사하지 못했어요.');
+    try { window.__ttokttokStatement = { monthKey: s.monthKey, copied: s.text, copiedOk: ok }; } catch (e) {}
+    return ok;
+  }
+
+  function downloadSettlementJson() {
+    var s = currentStatement();
+    var payload = { schemaVersion: 'ttokttok.statement.v26', exportedAt: TtModel.nowIso(), statement: s };
+    var text = JSON.stringify(payload, null, 2);
+    var name = 'ttokttok-statement-' + s.monthKey + '.json';
+    var url = '';
+    try {
+      if (window.Blob && window.URL && window.URL.createObjectURL) {
+        url = window.URL.createObjectURL(new window.Blob([text], { type: 'application/json' }));
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.rel = 'noopener';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+          try { a.parentNode && a.parentNode.removeChild(a); } catch (e) {}
+          try { window.URL.revokeObjectURL(url); } catch (e) {}
+        }, 1500);
+      }
+    } catch (e) { url = ''; }
+    try { window.__ttokttokStatement = { monthKey: s.monthKey, json: text, name: name, chars: text.length, url: url }; } catch (e) {}
+    toast('정산 명세서 JSON을 내려받았어요.');
+    return payload;
+  }
+
+  /* 인쇄용 문서(새 창) — 앱 화면이 아니라 종이에 맞는 문서 한 장을 만든다. */
+  function settlementPrintDocument(s) {
+    var rowsHtml = s.rows.map(function (r) {
+      return '<tr><td>' + esc(r.visitDateLabel) + (r.visitTime ? '<br><span class="k">' + esc(r.visitTime) + '</span>' : '') + '</td>' +
+        '<td>' + (r.reservationNo ? esc(r.reservationNo) : '-') + '</td>' +
+        '<td>' + esc(r.typeLabel) + '<br><span class="k">' + esc(r.statusLabel) + '</span></td>' +
+        '<td>' + (r.excluded ? '-' : esc(r.payoutDueDateLabel)) + '</td>' +
+        '<td class="r">' + settleWon(r.payoutAmount) + '</td>' +
+        '<td class="r">' + settleWon(r.withholdingAmount) + '</td>' +
+        '<td class="r tot">' + settleWon(r.netExpected) + '</td></tr>';
+    }).join('');
+    return '<!doctype html><html lang="ko"><head><meta charset="utf-8">' +
+      '<title>똑똑쌤 정산 명세서 ' + esc(s.monthLabel) + '</title>' +
+      '<style>@page{margin:14mm}body{font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;color:#111827;margin:0;padding:18px;font-size:12px;line-height:1.5}' +
+      'h1{font-size:19px;margin:0 0 4px}.sub{color:#6B7280;font-size:11px;margin:0 0 2px}' +
+      'table{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:12px}' +
+      'th,td{border-bottom:1px solid #E5E7EB;padding:6px 4px;text-align:left;vertical-align:top}' +
+      'th{color:#6B7280;font-weight:600}td.r,th.r{text-align:right}.k{color:#6B7280;font-size:9.5px}' +
+      '.tot{font-weight:700}.sum{border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-top:12px;font-size:11px}' +
+      '.sum b{float:right}.note{color:#6B7280;font-size:10px;margin-top:12px}clear{display:block;clear:both}</style></head><body>' +
+      '<h1>똑똑쌤 정산 명세서</h1>' +
+      '<p class="sub">' + esc(s.teacherName || '선생님') + ' 선생님 · ' + esc(s.monthLabel) + ' · 발급 ' + esc(String(s.todayIso || '').replace(/-/g, '.')) + '</p>' +
+      '<p class="sub">' + esc(s.rule.label) + ' · 플랫폼 수수료 22.2%</p>' +
+      '<div class="sum">완료 <b>' + s.counts.completed + '회</b><clear></clear>' +
+        '지급완료 (' + s.byStatus.paid.count + '건) <b>' + settleWon(s.byStatus.paid.amount) + '</b><clear></clear>' +
+        '지급예정 (' + s.byStatus.scheduled.count + '건) <b>' + settleWon(s.byStatus.scheduled.amount) + '</b><clear></clear>' +
+        '정산대기 (' + s.byStatus.pending.count + '건) <b>' + settleWon(s.byStatus.pending.amount) + '</b><clear></clear>' +
+        '세전 지급 합계 <b>' + settleWon(s.totals.payout) + '</b><clear></clear>' +
+        '원천징수 3.3% 참고 <b>-' + settleWon(s.totals.withholding) + '</b><clear></clear>' +
+        '실수령 예상 <b>' + settleWon(s.totals.netExpected) + '</b><clear></clear></div>' +
+      '<table><thead><tr><th>방문일</th><th>예약번호</th><th>유형·상태</th><th>지급일</th><th class="r">세전</th><th class="r">원천징수</th><th class="r">실수령</th></tr></thead>' +
+      '<tbody>' + (rowsHtml || '<tr><td colspan="7">이 달에는 정산 내역이 없습니다.</td></tr>') + '</tbody></table>' +
+      '<p class="note">* ' + esc(s.note) + '<br>* 상호 똑똑쌤 · 대표 임현수 · 문의 031-919-8577 · 로컬 데모 데이터이며 서버·정산 시스템과 연결되어 있지 않습니다.</p>' +
+      '</body></html>';
+  }
+
+  function printSettlement() {
+    var s = currentStatement();
+    var html = settlementPrintDocument(s);
+    var w = null;
+    try { w = window.open('', '_blank'); } catch (e) { w = null; }
+    if (w && w.document) {
+      try {
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+        try { w.focus(); } catch (e) {}
+        try { w.print(); } catch (e) {}
+        return true;
+      } catch (e) {}
+    }
+    try { if (window.print) { window.print(); return true; } } catch (e) {}
+    return false;
   }
 
   /* ================= 파트너 지원 ================= */
@@ -13132,7 +13778,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   /* v24 · 모든 시트·모달을 Escape로 닫는다(맨 위 레이어부터 하나씩) */
   var DIALOG_ORDER = ['#receiptModal', '#chatSheet', '#rejectSheet', '#appSheet', '#reviewSheet', '#manageSheet',
-    '#weeklySheet', '#reportSheet', '#safetySheet', '#faqSheet', '#paySheet', '#notifSheet', '#couponSheet',
+    '#settlementPrintSheet', '#weeklySheet', '#reportSheet', '#safetySheet', '#faqSheet', '#paySheet', '#notifSheet', '#couponSheet',
     '#accountSheet', '#roleSheet', '#guideSheet', '#teacherSheet', '#gateSheet', '#regionSheet'];
   function topOpenDialog() {
     for (var i = 0; i < DIALOG_ORDER.length; i++) {
@@ -13903,6 +14549,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (e.target.closest('[data-safety-open]')) { openSafetySheet(); return; }
     if (e.target.closest('[data-safety-close]') || e.target.id === 'safetySheet') { closeSheetEl('#safetySheet'); return; }
 
+    /* v26 · 정산 명세서(월 선택·미리보기·복사·JSON·인쇄) */
+    var stlMonth = e.target.closest('[data-stl-month]');
+    if (stlMonth) { setSettlementMonth(stlMonth.getAttribute('data-stl-month')); return; }
+    if (e.target.closest('[data-stl-preview]')) { openSettlementPrint(); return; }
+    if (e.target.closest('[data-stl-copy]') || e.target.closest('#stlCopyBtn')) { copySettlementText(); return; }
+    if (e.target.closest('[data-stl-json]') || e.target.closest('#stlJsonBtn')) { downloadSettlementJson(); return; }
+    if (e.target.closest('#stlPrintBtn')) { printSettlement(); return; }
+    if (e.target.closest('[data-stl-close]') || e.target.id === 'settlementPrintSheet') { closeSheetEl('#settlementPrintSheet'); return; }
+
     var pick = e.target.closest('[data-pick]');
     if (pick) {
       var id = pick.getAttribute('data-pick');
@@ -14075,11 +14730,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     });
   }
 
-  /* 일지 기반 정산 행은 매번 다시 만들고, 예약에서 만들어진 행(reservationId)은 보존한다. */
+  /* 일지 기반 정산 행은 매번 다시 만들고, 예약에서 만들어진 행(reservationId)은 보존한다.
+     v26: 이미 원장에 같은 일지(journalId) 행이 있으면 다시 만들지 않는다(중복·금액 왜곡 방지). */
   function rebuildLedger() {
-    var derived = TtModel.settlementRows(partner);
+    var existing = (partner.ledger || []).filter(function (r) { return r && r.journalId; });
+    var seen = {};
+    existing.forEach(function (r) { seen[String(r.journalId)] = true; });
+    var source = {
+      teacherId: partner.teacherId,
+      settlement: partner.settlement,
+      journals: (partner.journals || []).filter(function (j) { return !(j && j.id && seen[String(j.id)]); })
+    };
+    var derived = TtModel.settlementRows(source);
     var keep = (partner.ledger || []).filter(function (r) { return r && r.reservationId; });
-    partner.ledger = derived.concat(keep);
+    var keepJournal = existing.filter(function (r) { return !r.reservationId; });
+    partner.ledger = derived.concat(keep, keepJournal);
   }
 
   /* 일지 저장 = 방문 완료. 같은 환자명의 확정 방문을 completed로 전이한다(없으면 넘어간다). */
@@ -14796,6 +15461,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var exists = partner.ledger.some(function (r) { return r && r.reservationId && r.reservationId === b.id; });
     if (exists) return null;
     var gross = Number(b.amount) || 0;
+    /* v26 · 결제 금액이 없는 회차는 정산 원장에 만들지 않는다(명세서에 0원 행이 섞이지 않게). */
+    if (gross <= 0) return null;
     var fee = TtModel.feeOf(gross);
     var row = TtModel.normalizeLedgerRow({
       id: TtModel.newId('settlement'),
@@ -15792,9 +16459,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       storageRead: function (key) { return TtStorage.get(key, null); },
       storageWrite: function (key, value) { return TtStorage.set(key, value); },
       /* v24 · 모바일·접근성·성능 QA */
-      qaVersion: 'v25',
+      qaVersion: 'v26',
       a11y: {
-        version: 'v25',
+        version: 'v26',
         dialogOrder: DIALOG_ORDER.slice(),
         openDialog: function () { return topOpenDialog(); },
         focusInside: function (sel) {
@@ -15910,7 +16577,45 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         renderFaq();
         return window.__ttokttokModel.faqState();
       },
-      resetFaq: function () { resetFaqFilter(); return window.__ttokttokModel.faqState(); }
+      resetFaq: function () { resetFaqFilter(); return window.__ttokttokModel.faqState(); },
+      /* v26 · 선생님 정산 명세서·월별 리포트 */
+      statementVersion: TtModel.settlementStatementVersion,
+      statementMonthsBack: TtModel.statementMonthsBack,
+      withholdingRate: TtModel.withholdingRate,
+      statementMonth: function () { return statementMonth || currentStatement().monthKey; },
+      setStatementMonth: function (key) { return setSettlementMonth(key); },
+      buildTeacherSettlementStatement: function (ctx, monthKey) { return TtModel.buildTeacherSettlementStatement(ctx || {}, monthKey); },
+      settlementStatement: function (monthKey) { return currentStatement(monthKey); },
+      settlementStatementText: function (monthKey) { return currentStatement(monthKey).text; },
+      statementScreenState: function () {
+        var s = currentStatement();
+        var chips = [].slice.call(document.querySelectorAll('#tpsMonths [data-stl-month]')).map(function (b) {
+          return { month: b.getAttribute('data-stl-month'), on: b.classList.contains('is-on'), text: String(b.textContent || '').trim() };
+        });
+        var summary = $('#tpsSummary');
+        return {
+          monthKey: s.monthKey, monthLabel: s.monthLabel, months: s.months.slice(), chips: chips,
+          rows: s.rows.length, completed: s.counts.completed,
+          paid: s.byStatus.paid, scheduled: s.byStatus.scheduled, pending: s.byStatus.pending,
+          totals: s.totals, summaryText: summary ? String(summary.textContent || '').replace(/\s+/g, ' ').trim() : '',
+          rowsText: $('#tpsRows') ? String($('#tpsRows').textContent || '').replace(/\s+/g, ' ').trim() : '',
+          emptyVisible: !!$('#tpsRows') && $('#tpsRows').classList.contains('locked')
+        };
+      },
+      openStatementPreview: function () { return openSettlementPrint(); },
+      statementPreviewOpen: function () {
+        var el = $('#settlementPrintSheet');
+        return !!(el && el.classList.contains('is-open'));
+      },
+      statementPreviewText: function () {
+        var el = $('#settlementPrintBody');
+        return el ? String(el.textContent || '').replace(/\s+/g, ' ').trim() : '';
+      },
+      copyStatementText: function () { return copySettlementText(); },
+      exportStatementJson: function () { return downloadSettlementJson(); },
+      lastStatementExport: function () { return window.__ttokttokStatement || null; },
+      statementPrintHtml: function (monthKey) { return settlementPrintDocument(currentStatement(monthKey)); },
+      printStatement: function () { return printSettlement(); }
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
