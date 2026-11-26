@@ -7517,7 +7517,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     bar.classList.add('is-on');
     var chips = '';
     if (dongFilter) {
-      chips += '<span class="q-chip" data-dong-chip="' + esc(dongFilter.key) + '">' + icon('map-pin') + esc(dongFilter.name) + ' ' + filteredTeachers().length + '명<button type="button" data-dong-clear aria-label="동네 필터 지우기">' + icon('x') + '</button></span>';
+      chips += '<span class="q-chip" data-dong-chip="' + esc(dongFilter.key) + '">' + icon('map-pin') + esc(dongFilter.name) + ' ' + dongFilter.teacherIds.length + '명<button type="button" data-dong-clear aria-label="동네 필터 지우기">' + icon('x') + '</button></span>';
     }
     if (teacherQuery) {
       chips += '<span class="q-chip">“' + esc(teacherQuery) + '” ' + filteredTeachers().length + '명<button type="button" data-query-clear aria-label="검색어 지우기">' + icon('x') + '</button></span>';
