@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v27">
+<meta name="app-version" content="v28">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3302,6 +3302,37 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <p>제출 서류 4종을 확인한 뒤 승인 또는 보완 요청을 처리합니다. 처리 결과는 선생님 모드에 즉시 반영됩니다.</p>
         <div class="admin-stats" id="adminStats"></div>
       </div>
+
+      <!-- v28 · 운영 지표 대시보드 (로컬 데모 계산) -->
+      <section class="sec" style="margin-top:20px" id="adminMetricsSec" aria-label="운영 지표 대시보드">
+        <div class="sec-head" style="margin-bottom:10px">
+          <div>
+            <h2 class="sec-title">운영 지표</h2>
+            <p class="sec-sub" id="adminMetricsSub">예약 퍼널·매출/마진·지역 수요 공급 갭·매칭 대기 시간을 한 번에 봅니다.</p>
+          </div>
+          <span class="tag-example">DEMO</span>
+        </div>
+        <div class="chips" id="adminMetricsPeriods" role="tablist" aria-label="지표 기간 필터" style="flex-wrap:wrap;overflow:visible;padding-top:4px"></div>
+        <div class="settle" id="adminMetricsKpiCard" style="margin-top:10px">
+          <div class="settle-top"><span>핵심 지표</span><b id="adminMetricsKpiCaption">-</b></div>
+          <div class="settle-grid" id="adminMetricsKpis"></div>
+        </div>
+        <div class="admin-card" id="adminMetricsFunnel" style="margin-top:10px" aria-label="예약 퍼널">
+          <p class="admin-name" style="display:block">예약 퍼널 <span class="status-badge is-on" id="adminMetricsFunnelBasis">접수일 기준</span></p>
+          <div id="adminMetricsFunnelRows"></div>
+        </div>
+        <div class="admin-card" id="adminMetricsRevenue" style="margin-top:10px" aria-label="매출·마진">
+          <p class="admin-name" style="display:block">매출·마진 <span class="status-badge is-on" id="adminMetricsRevenueBasis">방문일 기준</span></p>
+          <div id="adminMetricsRevenueRows"></div>
+        </div>
+        <div class="admin-queue" id="adminMetricsRegions" style="margin-top:10px" aria-label="지역 수요·공급 갭"></div>
+        <div class="admin-queue" id="adminMetricsSla" style="margin-top:10px" aria-label="매칭 대기 시간"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+          <button class="btn btn-outline btn-sm" type="button" id="adminMetricsCopyText">지표 요약 텍스트 복사</button>
+          <button class="btn btn-outline btn-sm" type="button" id="adminMetricsCopyCsv">지역 표 CSV 복사</button>
+        </div>
+        <p class="fine" id="adminMetricsNote" role="status" aria-live="polite" style="margin:10px 0 0">로컬 데모 계산입니다. 서버·DB·외부 발송 없이 이 기기 데이터로만 집계합니다.</p>
+      </section>
 
       <!-- v19 · 매칭 대기열 & 운영 예외 요약 보드 (로컬 데모) -->
       <section class="sec" style="margin-top:20px" id="adminOpsSec" aria-label="오늘 처리할 일">
@@ -8057,6 +8088,444 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return lines.join('\n');
     }
 
+    /* =================================================================
+       v28 · 관리자 운영 지표 대시보드
+       ─────────────────────────────────────────────────────────────────
+       예약·선생님·지역·일지·정산 원장을 읽어 운영 핵심 지표를 계산만 한다.
+         · buildAdminMetrics(ctx, todayIso) : 순수 함수 — 저장·발송·DOM 접근 없음
+         · adminMetricsText / adminMetricsCsv : 복사용 요약·표
+       기간 필터(전체 · 최근 7일 · 최근 30일)
+         · 퍼널·지역 수요·공급은 예약 접수일(createdAt) 기준
+         · 매출·마진·일지 기록률은 방문일(visitDate/dateIso) 기준
+         · 매칭 SLA는 기간과 무관한 "지금 대기 중" 건 기준(운영자 백로그)
+       단가·수수료는 v16 PRICING 한 곳만 쓴다(90,000 / 70,000원 · 22.2%).
+       ================================================================= */
+    var ADMIN_METRICS_VERSION = 'v28';
+    var METRICS_PERIODS = [
+      { key: 'all', label: '전체', days: 0 },
+      { key: '7d', label: '최근 7일', days: 7 },
+      { key: '30d', label: '최근 30일', days: 30 }
+    ];
+    /* 퍼널 누적 단계: 신청(1) → 배정(2) → 확정(3) → 완료(4). 취소·노쇼는 도달 단계까지만 센다. */
+    var METRICS_STAGE_ORDER = { received: 1, assigned: 2, confirmed: 3, rescheduled: 3, completed: 4 };
+    var METRICS_OPEN_STATUSES = ['received', 'assigned', 'confirmed', 'rescheduled'];
+    /* 기간 내 선생님 1명이 감당하는 예약 수(가정치). 모집 필요 판정에만 쓴다. */
+    var METRICS_VISITS_PER_TEACHER = 3;
+    var METRICS_SLA_HOURS = 24;
+    var METRICS_LOCAL_NOTE = '로컬 데모 계산입니다. 서버·DB·외부 발송 없이 이 기기 데이터로만 집계합니다.';
+    var METRICS_REGION_BADGES = {
+      shortage: { key: 'shortage', label: '모집 필요' },
+      balanced: { key: 'balanced', label: '균형' },
+      surplus: { key: 'surplus', label: '여유' }
+    };
+    function metricsPeriods() {
+      return METRICS_PERIODS.map(function (p) { return { key: p.key, label: p.label, days: p.days }; });
+    }
+    function metricsPeriodOf(key) {
+      var k = String(key == null ? '' : key);
+      for (var i = 0; i < METRICS_PERIODS.length; i++) {
+        if (METRICS_PERIODS[i].key === k) return METRICS_PERIODS[i];
+      }
+      return METRICS_PERIODS[0];
+    }
+    function metricsRatePct(part, whole) {
+      var w = num(whole, 0), p = num(part, 0);
+      if (w <= 0) return 0;
+      return Math.round((p / w) * 1000) / 10;
+    }
+    /* 예약이 도달한 퍼널 단계(이력 포함 최댓값). 취소·노쇼는 0. */
+    function metricsStageOf(b) {
+      var r = (b && typeof b === 'object') ? b : {};
+      var best = METRICS_STAGE_ORDER[reservationCode(r.status)] || 0;
+      var hist = Array.isArray(r.statusHistory) ? r.statusHistory : [];
+      hist.forEach(function (h) {
+        var o = METRICS_STAGE_ORDER[reservationCode(h && h.status)] || 0;
+        if (o > best) best = o;
+      });
+      return best;
+    }
+    /* 접수일(YYYY-MM-DD) — createdAt → 첫 이력 at → 방문일 순으로 찾는다. */
+    function metricsReceivedIso(b) {
+      var r = (b && typeof b === 'object') ? b : {};
+      var iso = String(r.createdAt || '').slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+      var hist = Array.isArray(r.statusHistory) ? r.statusHistory : [];
+      for (var i = 0; i < hist.length; i++) {
+        iso = String((hist[i] && hist[i].at) || '').slice(0, 10);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+      }
+      return metricsVisitIso(r);
+    }
+    /* 방문일(YYYY-MM-DD). */
+    function metricsVisitIso(b) {
+      var r = (b && typeof b === 'object') ? b : {};
+      var iso = String(r.dateIso || r.visitDate || '').slice(0, 10);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
+      return dateLabelToIso(r.date) || '';
+    }
+    /* 시·군·구 단위 수요·공급 묶음 키. 지역을 모르면 null. */
+    function metricsDistrictOf(regionId, fallbackText) {
+      var id = String(regionId == null ? '' : regionId);
+      var p = id ? regionPath(id) : null;
+      if (p && p.province && p.district) {
+        return { key: 'd|' + p.province + ' ' + p.district, label: p.province + ' ' + p.district, province: p.province, district: p.district, regionId: id };
+      }
+      var w = String(fallbackText == null ? '' : fallbackText).trim().split(/\s+/).filter(Boolean);
+      if (w.length >= 2) {
+        return { key: 't|' + w[0] + ' ' + w[1], label: w[0] + ' ' + w[1], province: w[0], district: w[1], regionId: '' };
+      }
+      return null;
+    }
+    /* 운영 지표 계산 — 계산만 한다(저장·발송·DOM 접근 없음).
+       ctx: { bookings, teachers, journals, ledger, period, todayIso, nowIso } */
+    function buildAdminMetrics(ctx, todayIso) {
+      var c = (ctx && typeof ctx === 'object') ? ctx : {};
+      var today = String(todayIso || c.todayIso || todayIsoKst()).slice(0, 10);
+      var period = metricsPeriodOf(c.period);
+      var days = period.days;
+      var todayDate = dateObjOf(today);
+      var fromIso = (days && todayDate) ? isoDateOf(new Date(todayDate.getTime() - (days - 1) * 86400000)) : '';
+      var bookings = Array.isArray(c.bookings) ? c.bookings : [];
+      var teaches = Array.isArray(c.teachers) ? c.teachers : [];
+      var journals = Array.isArray(c.journals) ? c.journals : [];
+      var ledger = Array.isArray(c.ledger) ? c.ledger : [];
+      var nowMs = Date.parse(String(c.nowIso || ''));
+      if (!isFinite(nowMs)) nowMs = Date.parse(nowIso());
+      if (!isFinite(nowMs)) nowMs = Date.now();
+      function inWindow(iso) { return !fromIso || (!!iso && iso >= fromIso); }
+      function isOpenStatus(st) { return METRICS_OPEN_STATUSES.indexOf(st) !== -1; }
+
+      /* ── ① 예약 퍼널 (접수일 기준) ─────────────────────────────── */
+      var scoped = [];
+      bookings.forEach(function (b) {
+        if (!b || typeof b !== 'object') return;
+        var rec = metricsReceivedIso(b);
+        if (!inWindow(rec)) return;
+        scoped.push(b);
+      });
+      var fn = { applied: 0, assigned: 0, confirmed: 0, completed: 0, canceled: 0, noShow: 0, open: 0 };
+      scoped.forEach(function (b) {
+        var st = reservationCode(b.status) || 'received';
+        var stage = metricsStageOf(b);
+        fn.applied += 1;
+        if (stage >= 2) fn.assigned += 1;
+        if (stage >= 3) fn.confirmed += 1;
+        if (stage >= 4) fn.completed += 1;
+        if (st === 'canceled') fn.canceled += 1;
+        else if (st === 'no_show') fn.noShow += 1;
+        if (isOpenStatus(st)) fn.open += 1;
+      });
+      fn.cancelNoShow = fn.canceled + fn.noShow;
+      fn.assignRate = metricsRatePct(fn.assigned, fn.applied);
+      fn.confirmRate = metricsRatePct(fn.confirmed, fn.applied);
+      fn.completionRate = metricsRatePct(fn.completed, fn.applied);
+      fn.cancelRate = metricsRatePct(fn.canceled, fn.applied);
+      fn.noShowRate = metricsRatePct(fn.noShow, fn.applied);
+      fn.cancelNoShowRate = metricsRatePct(fn.cancelNoShow, fn.applied);
+      var funnel = {
+        applied: fn.applied, assigned: fn.assigned, confirmed: fn.confirmed, completed: fn.completed,
+        canceled: fn.canceled, noShow: fn.noShow, cancelNoShow: fn.cancelNoShow, open: fn.open,
+        assignRate: fn.assignRate, confirmRate: fn.confirmRate, completionRate: fn.completionRate,
+        cancelRate: fn.cancelRate, noShowRate: fn.noShowRate, cancelNoShowRate: fn.cancelNoShowRate,
+        steps: [
+          { key: 'applied', label: '전체 신청', count: fn.applied, rate: fn.applied ? 100 : 0 },
+          { key: 'assigned', label: '배정 완료', count: fn.assigned, rate: fn.assignRate },
+          { key: 'confirmed', label: '방문 확정', count: fn.confirmed, rate: fn.confirmRate },
+          { key: 'completed', label: '방문 완료', count: fn.completed, rate: fn.completionRate }
+        ],
+        closed: [
+          { key: 'canceled', label: '취소', count: fn.canceled, rate: fn.cancelRate },
+          { key: 'no_show', label: '노쇼', count: fn.noShow, rate: fn.noShowRate }
+        ]
+      };
+
+      /* ── ② 매출·마진·일지 (방문일 기준) ─────────────────────────── */
+      var jIds = {}, jDates = {};
+      journals.forEach(function (j) {
+        if (!j || typeof j !== 'object') return;
+        if (String(j.status || '') === 'archived') return;
+        if (j.id) jIds[String(j.id)] = true;
+        var iso = journalIsoOf(j);
+        if (!iso) return;
+        if (!jDates[iso]) jDates[iso] = {};
+        var who = String(j.patient || j.memberName || '').trim();
+        if (who) jDates[iso][who] = true;
+        jDates[iso]['*'] = true;
+      });
+      function hasJournalFor(row, iso, patient) {
+        if (row && row.journalId && jIds[String(row.journalId)]) return true;
+        var d = jDates[iso];
+        if (!d) return false;
+        var who = String(patient || '').trim();
+        return who ? !!d[who] : !!d['*'];
+      }
+      var rev = {
+        sessions: 0, completedSessions: 0, confirmedSessions: 0, freeSessions: 0,
+        guardianTotal: 0, teacherTotal: 0, platformMargin: 0, marginRate: 0, avgPerSession: 0,
+        consumerPrice: PRICING.consumerPrice, teacherPayout: PRICING.teacherPayout
+      };
+      var journalStat = { completed: 0, withJournal: 0, rate: 0 };
+      var usedNos = {};
+      ledger.forEach(function (r) {
+        if (!r || typeof r !== 'object') return;
+        var status = String(r.status || '');
+        if (status === 'held' || status === 'canceled') return;
+        var visit = String(r.visitDate || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) visit = dateLabelToIso(r.visitDate);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) return;
+        if (fromIso && visit < fromIso) return;
+        var gross = Math.max(0, Math.round(num(r.grossAmount, 0)));
+        var net = Math.max(0, Math.round(num(r.netAmount, payoutOf(gross))));
+        var no = String(r.reservationNo || '');
+        if (no) usedNos[no] = true;
+        if (gross <= 0) { rev.freeSessions += 1; return; }
+        rev.sessions += 1;
+        rev.completedSessions += 1;
+        rev.guardianTotal += gross;
+        rev.teacherTotal += net;
+        journalStat.completed += 1;
+        if (hasJournalFor(r, visit, r.patient)) journalStat.withJournal += 1;
+      });
+      /* 앞으로의 확정 회차는 단가(90,000 / 70,000원) 기준 예상치로 더한다. */
+      scoped.forEach(function (b) {
+        var st = reservationCode(b.status);
+        if (st !== 'confirmed') return;
+        var no = String(b.no || '');
+        if (no && usedNos[no]) return;
+        if (num(b.amount, 0) <= 0) { rev.freeSessions += 1; return; }
+        rev.sessions += 1;
+        rev.confirmedSessions += 1;
+        rev.guardianTotal += PRICING.consumerPrice;
+        rev.teacherTotal += PRICING.teacherPayout;
+      });
+      /* 완료 회차는 정산 원장이 있을 때만 세고, 원장에 없는 완료 예약도 일지 기록률에 넣는다. */
+      if (!ledger.length) {
+        scoped.forEach(function (b) {
+          if (reservationCode(b.status) !== 'completed') return;
+          var iso = metricsVisitIso(b);
+          if (fromIso && iso && iso < fromIso) return;
+          journalStat.completed += 1;
+          if (hasJournalFor(b, iso, b.patient || b.memberName)) journalStat.withJournal += 1;
+        });
+      }
+      rev.platformMargin = Math.max(0, rev.guardianTotal - rev.teacherTotal);
+      rev.marginRate = metricsRatePct(rev.platformMargin, rev.guardianTotal);
+      rev.avgPerSession = rev.sessions ? Math.round(rev.guardianTotal / rev.sessions) : 0;
+      journalStat.rate = metricsRatePct(journalStat.withJournal, journalStat.completed);
+
+      /* ── ③ 지역별 수요 vs 선생님 공급 갭 ─────────────────────────── */
+      var dRows = {}, dList = [];
+      function ensureDistrict(info) {
+        var row = dRows[info.key];
+        if (!row) {
+          row = dRows[info.key] = {
+            key: info.key, label: info.label, province: info.province, district: info.district, regionId: info.regionId,
+            demand: 0, open: 0, completed: 0, canceled: 0, supply: 0, teachers: []
+          };
+          dList.push(row);
+        }
+        return row;
+      }
+      scoped.forEach(function (b) {
+        var info = metricsDistrictOf(b.regionId, b.region);
+        if (!info) return;
+        var row = ensureDistrict(info);
+        var st = reservationCode(b.status);
+        if (st === 'canceled') { row.canceled += 1; return; }
+        row.demand += 1;
+        if (isOpenStatus(st)) row.open += 1;
+        if (st === 'completed') row.completed += 1;
+      });
+      var supplyTeacherIds = {};
+      teaches.forEach(function (t) {
+        if (!t || typeof t !== 'object') return;
+        var ids = teacherRegionIds(t);
+        ids.forEach(function (id) {
+          var info = metricsDistrictOf(id, '') || (regionPath(id) ? { key: 'd|' + regionPath(id).province + ' ' + regionPath(id).district, label: regionPath(id).province + ' ' + regionPath(id).district, province: regionPath(id).province, district: regionPath(id).district, regionId: id } : null);
+          if (!info) return;
+          var row = ensureDistrict(info);
+          row.supply += 1;
+          var nm = String(t.name || t.id || '선생님');
+          if (row.teachers.indexOf(nm) === -1) row.teachers.push(nm);
+          if (t.id) supplyTeacherIds[String(t.id)] = true;
+        });
+      });
+      dList.forEach(function (row) {
+        row.need = Math.ceil(row.demand / METRICS_VISITS_PER_TEACHER);
+        row.gap = row.supply - row.need;
+        var badge = METRICS_REGION_BADGES.surplus;
+        if (row.demand > 0 && row.gap < 0) badge = METRICS_REGION_BADGES.shortage;
+        else if (row.demand > 0 && row.gap === 0) badge = METRICS_REGION_BADGES.balanced;
+        else if (row.demand === 0) badge = row.supply > 0 ? METRICS_REGION_BADGES.surplus : METRICS_REGION_BADGES.balanced;
+        row.badge = badge.label;
+        row.badgeKey = badge.key;
+        row.note = row.demand === 0
+          ? '이번 기간 수요 0건 · 선생님 ' + row.supply + '명 등록'
+          : '수요 ' + row.demand + '건 · 필요 선생님 ' + row.need + '명 · 등록 ' + row.supply + '명';
+      });
+      var demandRows = dList.filter(function (r) { return r.demand > 0; });
+      demandRows.sort(function (a, b) {
+        if (a.gap !== b.gap) return a.gap - b.gap;
+        if (a.demand !== b.demand) return b.demand - a.demand;
+        return String(a.label) < String(b.label) ? -1 : 1;
+      });
+      var supplyRows = dList.filter(function (r) { return r.supply > 0; });
+      var regions = {
+        rows: demandRows,
+        summary: {
+          demandRegions: demandRows.length,
+          shortage: demandRows.filter(function (r) { return r.badgeKey === 'shortage'; }).length,
+          balanced: demandRows.filter(function (r) { return r.badgeKey === 'balanced'; }).length,
+          surplus: demandRows.filter(function (r) { return r.badgeKey === 'surplus'; }).length,
+          demand: demandRows.reduce(function (s, r) { return s + r.demand; }, 0),
+          supplyDistricts: supplyRows.length,
+          teachers: Object.keys(supplyTeacherIds).length,
+          idleDistricts: supplyRows.filter(function (r) { return r.demand === 0; }).length,
+          noSupply: demandRows.filter(function (r) { return r.supply === 0; }).map(function (r) { return r.label; })
+        }
+      };
+
+      /* ── ④ 매칭 SLA (지금 대기 중 — 기간 무관) ───────────────────── */
+      var sla = { pending: 0, awaitingAssign: 0, awaitingConfirm: 0, reconfirm: 0, over24: 0, over48: 0, oldestHours: 0, items: [] };
+      bookings.forEach(function (b) {
+        if (!b || typeof b !== 'object') return;
+        var st = reservationCode(b.status);
+        if (!isOpenStatus(st)) return;
+        sla.pending += 1;
+        var recIso = metricsReceivedIso(b);
+        var recMs = Date.parse(String(b.createdAt || ''));
+        if (!isFinite(recMs)) recMs = Date.parse(recIso ? recIso + 'T00:00:00+09:00' : '');
+        var hours = isFinite(recMs) ? Math.max(0, Math.round((nowMs - recMs) / 3600000)) : null;
+        if (st === 'received') sla.awaitingAssign += 1;
+        if (st === 'assigned') sla.awaitingConfirm += 1;
+        if (st === 'rescheduled') sla.reconfirm += 1;
+        if (st === 'received') {
+          if (hours != null) {
+            if (hours > sla.oldestHours) sla.oldestHours = hours;
+            if (hours >= 48) sla.over48 += 1;
+            if (hours >= METRICS_SLA_HOURS) sla.over24 += 1;
+          }
+          if (hours != null && hours >= METRICS_SLA_HOURS) {
+            sla.items.push({
+              no: String(b.no || b.id || ''), region: regionTextOf(b.regionId, b.region) || String(b.region || ''),
+              status: st, statusLabel: '배정 대기', hours: hours,
+              badge: hours >= 48 ? '48시간 초과' : '24시간 초과',
+              visitLabel: dateLabelOf(metricsVisitIso(b)) || metricsVisitIso(b) || ''
+            });
+          }
+        }
+      });
+      sla.items.sort(function (a, b) { return b.hours - a.hours; });
+      sla.note = sla.pending
+        ? '지금 대기 ' + sla.pending + '건 · 24시간 넘은 미배정 ' + sla.over24 + '건'
+        : '지금 대기 중인 예약이 없어요.';
+
+      /* ── ⑤ KPI 카드 ──────────────────────────────────────────────── */
+      var kpis = [
+        { key: 'completion', label: '완료 전환율', value: funnel.completionRate, unit: '%', note: '신청 ' + funnel.applied + '건 → 완료 ' + funnel.completed + '건', tone: funnel.completionRate >= 50 ? 'good' : 'watch' },
+        { key: 'cancelNoshow', label: '취소·노쇼율', value: funnel.cancelNoShowRate, unit: '%', note: '취소 ' + funnel.canceled + ' · 노쇼 ' + funnel.noShow, tone: funnel.cancelNoShow > 0 ? 'warn' : 'good' },
+        { key: 'delay', label: '24시간 초과 미배정', value: sla.over24, unit: '건', note: '현재 대기 ' + sla.pending + '건', tone: sla.over24 > 0 ? 'warn' : 'good' },
+        { key: 'margin', label: '예상 플랫폼 마진', value: rev.platformMargin, unit: '원', note: '완료 ' + rev.completedSessions + '회 · 확정 ' + rev.confirmedSessions + '회', tone: 'plain' },
+        { key: 'shortage', label: '모집 필요 지역', value: regions.summary.shortage, unit: '곳', note: '수요 있는 지역 ' + regions.summary.demandRegions + '곳', tone: regions.summary.shortage > 0 ? 'warn' : 'good' },
+        { key: 'journal', label: '일지 기록률', value: journalStat.rate, unit: '%', note: '완료 ' + journalStat.completed + '회 중 ' + journalStat.withJournal + '회', tone: 'plain' }
+      ];
+
+      var out = {
+        version: ADMIN_METRICS_VERSION,
+        todayIso: today,
+        period: period.key, periodLabel: period.label, days: days,
+        fromIso: fromIso,
+        periods: metricsPeriods(),
+        basis: {
+          funnel: fromIso ? '예약 접수일 ' + fromIso + ' ~ ' + today : '예약 접수일 전체',
+          revenue: fromIso ? '방문일 ' + fromIso + ' ~ ' + today + ' + 확정 회차' : '방문일 전체 + 확정 회차',
+          sla: '지금 대기 중인 예약(기간 무관)'
+        },
+        funnel: funnel,
+        revenue: rev,
+        journal: journalStat,
+        regions: regions,
+        sla: sla,
+        kpis: kpis,
+        pricing: { consumerPrice: PRICING.consumerPrice, teacherPayout: PRICING.teacherPayout, feeRate: PRICING.platformFeeRate },
+        visitsPerTeacher: METRICS_VISITS_PER_TEACHER,
+        slaHours: METRICS_SLA_HOURS,
+        note: METRICS_LOCAL_NOTE
+      };
+      out.text = adminMetricsText(out);
+      out.csv = adminMetricsCsv(out);
+      return out;
+    }
+    /* 운영 지표 복사용 텍스트 */
+    function adminMetricsText(m) {
+      var x = (m && typeof m === 'object') ? m : {};
+      var f = x.funnel || {};
+      var r = x.revenue || {};
+      var g = (x.regions && x.regions.rows) ? x.regions.rows : [];
+      var s = x.sla || {};
+      var j = x.journal || {};
+      function pct(v) { return (Math.round(num(v, 0) * 10) / 10) + '%'; }
+      var lines = [];
+      lines.push('[똑똑쌤 운영 지표] ' + String(x.todayIso || todayIsoKst()) + ' · 기간 ' + String(x.periodLabel || '전체'));
+      lines.push('* ' + METRICS_LOCAL_NOTE);
+      lines.push('');
+      lines.push('■ 예약 퍼널 (' + String((x.basis && x.basis.funnel) || '접수일 기준') + ')');
+      lines.push('전체 신청 ' + num(f.applied, 0) + '건 → 배정 완료 ' + num(f.assigned, 0) + '건(' + pct(f.assignRate) + ') → ' +
+        '방문 확정 ' + num(f.confirmed, 0) + '건(' + pct(f.confirmRate) + ') → 방문 완료 ' + num(f.completed, 0) + '건(' + pct(f.completionRate) + ')');
+      lines.push('취소 ' + num(f.canceled, 0) + '건 · 노쇼 ' + num(f.noShow, 0) + '건 · 취소·노쇼율 ' + pct(f.cancelNoShowRate));
+      lines.push('');
+      lines.push('■ 매출·마진 (' + String((x.basis && x.basis.revenue) || '방문일 기준') + ')');
+      lines.push('회차 ' + num(r.sessions, 0) + '회(완료 ' + num(r.completedSessions, 0) + ' · 확정 ' + num(r.confirmedSessions, 0) + ')' +
+        ' · 무료 평가 ' + num(r.freeSessions, 0) + '회');
+      lines.push('보호자 결제 ' + wonText(r.guardianTotal) + ' · 선생님 정산 ' + wonText(r.teacherTotal) +
+        ' · 플랫폼 마진 ' + wonText(r.platformMargin) + ' (' + pct(r.marginRate) + ')');
+      lines.push('일지 기록률 ' + pct(j.rate) + ' (완료 ' + num(j.completed, 0) + '회 중 ' + num(j.withJournal, 0) + '회)');
+      lines.push('');
+      lines.push('■ 지역 수요·공급 (선생님 1명당 ' + METRICS_VISITS_PER_TEACHER + '건 기준)');
+      if (!g.length) lines.push('이번 기간 수요가 있는 지역이 없어요.');
+      g.forEach(function (row) {
+        lines.push(row.label + ': 수요 ' + row.demand + '건 · 선생님 ' + row.supply + '명 → ' + row.badge);
+      });
+      lines.push('');
+      lines.push('■ 매칭 SLA (' + String((x.basis && x.basis.sla) || '지금 대기 기준') + ')');
+      lines.push('대기 ' + num(s.pending, 0) + '건 · 미배정 ' + num(s.awaitingAssign, 0) + ' · 확정 대기 ' + num(s.awaitingConfirm, 0) +
+        ' · 재확정 ' + num(s.reconfirm, 0) + ' · 24시간 초과 ' + num(s.over24, 0) + '건');
+      (s.items || []).forEach(function (it) {
+        lines.push('- ' + it.no + ' · ' + (it.region || '지역 미기재') + ' · ' + it.statusLabel + ' ' + it.hours + '시간 (' + it.badge + ')');
+      });
+      return lines.join('\n');
+    }
+    /* 운영 지표 CSV — 지역 수요·공급 표 중심 */
+    function adminMetricsCsv(m) {
+      var x = (m && typeof m === 'object') ? m : {};
+      var g = (x.regions && x.regions.rows) ? x.regions.rows : [];
+      function cell(v) {
+        var s = String(v == null ? '' : v);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      }
+      var lines = [];
+      lines.push('지표,값');
+      lines.push(['기준일', x.todayIso].map(cell).join(','));
+      lines.push(['기간', x.periodLabel].map(cell).join(','));
+      lines.push(['전체 신청', num((x.funnel || {}).applied, 0)].map(cell).join(','));
+      lines.push(['배정 완료', num((x.funnel || {}).assigned, 0)].map(cell).join(','));
+      lines.push(['방문 확정', num((x.funnel || {}).confirmed, 0)].map(cell).join(','));
+      lines.push(['방문 완료', num((x.funnel || {}).completed, 0)].map(cell).join(','));
+      lines.push(['취소', num((x.funnel || {}).canceled, 0)].map(cell).join(','));
+      lines.push(['노쇼', num((x.funnel || {}).noShow, 0)].map(cell).join(','));
+      lines.push(['취소·노쇼율(%)', num((x.funnel || {}).cancelNoShowRate, 0)].map(cell).join(','));
+      lines.push(['보호자 결제(원)', num((x.revenue || {}).guardianTotal, 0)].map(cell).join(','));
+      lines.push(['선생님 정산(원)', num((x.revenue || {}).teacherTotal, 0)].map(cell).join(','));
+      lines.push(['플랫폼 마진(원)', num((x.revenue || {}).platformMargin, 0)].map(cell).join(','));
+      lines.push(['24시간 초과 미배정(건)', num((x.sla || {}).over24, 0)].map(cell).join(','));
+      lines.push('');
+      lines.push('지역,수요(건),진행중(건),완료(건),선생님(명),필요(명),차이,판정');
+      g.forEach(function (row) {
+        lines.push([row.label, row.demand, row.open, row.completed, row.supply, row.need, row.gap, row.badge].map(cell).join(','));
+      });
+      return lines.join('\n');
+    }
+
     return {
       SCHEMA_VERSION: SCHEMA_VERSION,
       STATUS: STATUS,
@@ -8196,6 +8665,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       notificationCategoryOf: notificationCategoryOf,
       summarizeNotifCategories: summarizeNotifCategories,
       notificationPreview: notificationPreview,
+      /* v28 · 관리자 운영 지표 대시보드 */
+      adminMetricsVersion: ADMIN_METRICS_VERSION,
+      metricsPeriods: metricsPeriods,
+      metricsPeriod: function (key) { var p = metricsPeriodOf(key); return { key: p.key, label: p.label, days: p.days }; },
+      metricsRatePct: metricsRatePct,
+      metricsStageOf: metricsStageOf,
+      metricsReceivedIso: metricsReceivedIso,
+      metricsVisitIso: metricsVisitIso,
+      metricsDistrictOf: metricsDistrictOf,
+      metricsVisitsPerTeacher: METRICS_VISITS_PER_TEACHER,
+      metricsSlaHours: METRICS_SLA_HOURS,
+      metricsLocalNote: METRICS_LOCAL_NOTE,
+      buildAdminMetrics: buildAdminMetrics,
+      adminMetricsText: adminMetricsText,
+      adminMetricsCsv: adminMetricsCsv,
       /* v25 · 보호자 홈 통합 요약·첫 방문 온보딩 */
       guardianSummaryVersion: GUARDIAN_SUMMARY_VERSION,
       settlementStatementVersion: SETTLEMENT_STATEMENT_VERSION,
@@ -13376,6 +13860,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   if (backupCancelBtn) backupCancelBtn.addEventListener('click', function () { cancelRestore(); });
 
   function renderAdmin() {
+    try { renderAdminMetrics(); } catch (e) {}
     renderAdminResv();
     renderAdminOpsBoard();
     renderAdminBackup();
@@ -13666,6 +14151,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         ' · 확정 ' + counts.confirmed + ' · 변경 ' + counts.rescheduled +
         ' · 완료 ' + counts.completed + ' · 취소·노쇼 ' + counts.closed;
     }
+    /* v28 · 예약이 바뀌면 운영 지표도 같이 다시 그린다(배치·취소·완료 직후 수치 유지). */
+    try { renderAdminMetrics(); } catch (e) {}
   }
 
   /* ===================================================================
@@ -16227,6 +16714,215 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return okCopy;
   }
 
+  /* ===================================================================
+     v28 · 관리자 운영 지표 대시보드
+     ─ TtModel.buildAdminMetrics 한 곳의 계산 결과를 그대로 그린다.
+     ─ 저장·발송·서버 호출 없음. 기간 칩만 화면 상태를 바꾼다.
+     =================================================================== */
+  var adminMetricsPeriod = 'all';
+  var adminMetricsCache = null;
+  function adminMetricsPeriodLabel(key) {
+    return TtModel.metricsPeriod(key).label;
+  }
+  /* 지표 금액 표기 — 0원도 '0원'으로 보이게 한다(홈의 won()은 0을 '무료'로 쓴다). */
+  function mMoney(n) {
+    var v = Math.round(Number(n) || 0);
+    return v.toLocaleString('ko-KR') + '원';
+  }
+  function adminMetricsCtx(period) {
+    return {
+      bookings: (account && account.bookings) || [],
+      teachers: (typeof teachers !== 'undefined' && teachers) ? teachers : [],
+      journals: (function () { try { return sharedJournals(); } catch (e) { return []; } })(),
+      ledger: (partner && partner.ledger) || [],
+      period: period || adminMetricsPeriod,
+      todayIso: TtModel.todayIsoKst(),
+      nowIso: TtModel.nowIso()
+    };
+  }
+  function adminMetricsBuild(period) {
+    try {
+      return TtModel.buildAdminMetrics(adminMetricsCtx(period), TtModel.todayIsoKst());
+    } catch (e) {
+      return {
+        version: 'v28', period: period || 'all', periodLabel: '전체', periods: TtModel.metricsPeriods(),
+        funnel: { applied: 0, assigned: 0, confirmed: 0, completed: 0, canceled: 0, noShow: 0, steps: [], closed: [], completionRate: 0, cancelNoShowRate: 0 },
+        revenue: { sessions: 0, completedSessions: 0, confirmedSessions: 0, freeSessions: 0, guardianTotal: 0, teacherTotal: 0, platformMargin: 0, marginRate: 0 },
+        journal: { completed: 0, withJournal: 0, rate: 0 },
+        regions: { rows: [], summary: { demandRegions: 0, shortage: 0, balanced: 0, surplus: 0, demand: 0, supplyDistricts: 0, teachers: 0, idleDistricts: 0, noSupply: [] } },
+        sla: { pending: 0, awaitingAssign: 0, awaitingConfirm: 0, reconfirm: 0, over24: 0, over48: 0, oldestHours: 0, items: [], note: '' },
+        kpis: [], basis: {}, text: '', csv: '', note: TtModel.metricsLocalNote
+      };
+    }
+  }
+  function adminMetricsValue(k) {
+    var v = k.value, u = String(k.unit || '');
+    if (u === '원') return mMoney(v);
+    if (u === '%') return (Math.round(Number(v) * 10) / 10) + '%';
+    if (u === '건') return v + '건';
+    if (u === '곳') return v + '곳';
+    return String(v);
+  }
+  function adminMetricsKpiTone(k) {
+    var t = String(k.tone || 'plain');
+    if (t === 'warn') return 'color:#B23B3B';
+    if (t === 'watch') return 'color:#9A5B12';
+    if (t === 'good') return 'color:#0B5F6B';
+    return 'color:var(--ink)';
+  }
+  function adminMetricsPeriodChipsHtml(m) {
+    return (m.periods || []).map(function (p) {
+      var on = p.key === m.period;
+      return '<button class="chip' + (on ? ' is-on' : '') + '" type="button" role="tab" aria-selected="' + (on ? 'true' : 'false') + '"' +
+        ' data-metrics-period="' + esc(p.key) + '">' + esc(p.label) + '</button>';
+    }).join('');
+  }
+  function adminMetricsFunnelHtml(m) {
+    var f = m.funnel || {};
+    var rows = (f.steps || []).map(function (s) {
+      return '<div class="sum-row" data-metrics-step="' + esc(s.key) + '"><span>' + esc(s.label) + '</span>' +
+        '<b>' + s.count + '건 <span style="font-weight:600;color:var(--muted);font-size:11px">' + s.rate + '%</span></b></div>';
+    }).join('');
+    var closed = (f.closed || []).map(function (s) {
+      return '<div class="sum-row" data-metrics-step="' + esc(s.key) + '"><span>' + esc(s.label) + '</span>' +
+        '<b>' + s.count + '건 <span style="font-weight:600;color:var(--muted);font-size:11px">' + s.rate + '%</span></b></div>';
+    }).join('');
+    return rows + closed +
+      '<p class="fine" style="margin:8px 0 0">취소·노쇼는 도달했던 단계까지 누적해 세고, 취소·노쇼율은 신청 건수 대비입니다.</p>';
+  }
+  function adminMetricsRevenueHtml(m) {
+    var r = m.revenue || {};
+    var j = m.journal || {};
+    return '' +
+      '<div class="sum-row" data-metrics-rev="sessions"><span>회차</span><b>' + r.sessions + '회 <span style="font-weight:600;color:var(--muted);font-size:11px">완료 ' + r.completedSessions + ' · 확정 ' + r.confirmedSessions + '</span></b></div>' +
+      '<div class="sum-row" data-metrics-rev="guardian"><span>보호자 결제</span><b>' + mMoney(r.guardianTotal) + '</b></div>' +
+      '<div class="sum-row" data-metrics-rev="teacher"><span>선생님 정산</span><b>' + mMoney(r.teacherTotal) + '</b></div>' +
+      '<div class="sum-row" data-metrics-rev="margin"><span>플랫폼 마진</span><b>' + mMoney(r.platformMargin) + ' <span style="font-weight:600;color:var(--muted);font-size:11px">' + r.marginRate + '%</span></b></div>' +
+      '<div class="sum-row" data-metrics-rev="journal"><span>일지 기록률</span><b>' + j.rate + '% <span style="font-weight:600;color:var(--muted);font-size:11px">완료 ' + j.completed + '회 중 ' + j.withJournal + '회</span></b></div>' +
+      '<p class="fine" style="margin:8px 0 0">완료 회차는 정산 원장의 실제 금액, 확정 회차는 단가(90,000 / 70,000원) 기준 예상치입니다.' +
+        (r.freeSessions ? ' 무료 평가 ' + r.freeSessions + '회는 매출에서 빠집니다.' : '') + '</p>';
+  }
+  function adminMetricsRegionCardHtml(row) {
+    var warn = row.badgeKey === 'shortage';
+    var ava = warn ? 'background:var(--rose-50);color:#B23B3B' : 'background:var(--teal-50);color:#0B5F6B';
+    var names = (row.teachers || []).slice(0, 3).join(' · ');
+    var more = (row.teachers || []).length > 3 ? ' 외 ' + (row.teachers.length - 3) + '명' : '';
+    return '<div class="admin-card" data-metrics-region="' + esc(row.key) + '" data-metrics-badge="' + esc(row.badgeKey) + '"' +
+      ' data-metrics-demand="' + row.demand + '" data-metrics-supply="' + row.supply + '">' +
+      '<div class="admin-top" style="cursor:default">' +
+        '<div class="admin-av" aria-hidden="true" style="' + ava + '">' + row.demand + '</div>' +
+        '<div style="min-width:0;flex:1">' +
+          '<p class="admin-name">' + esc(row.label) + ' <span class="status-badge ' + (warn ? 'is-warn' : 'is-on') + '">' + esc(row.badge) + '</span></p>' +
+          '<p class="admin-meta">' + esc(row.note) + '</p>' +
+          (names
+            ? '<p class="admin-meta" style="color:#475569;margin-top:4px">활동 선생님 ' + esc(names + more) + '</p>'
+            : '<p class="admin-meta" style="color:#B23B3B;margin-top:4px">등록된 선생님이 없어요 — 모집이 필요합니다.</p>') +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  function adminMetricsSlaHtml(m) {
+    var s = m.sla || {};
+    var head = '<div class="admin-card" data-metrics-sla="summary">' +
+      '<div class="admin-top" style="cursor:default">' +
+        '<div class="admin-av" aria-hidden="true" style="' + (s.over24 > 0 ? 'background:var(--rose-50);color:#B23B3B' : 'background:var(--blue-50);color:#1D4ED8') + '">' + (s.over24 || 0) + '</div>' +
+        '<div style="min-width:0;flex:1">' +
+          '<p class="admin-name">매칭 대기 시간 <span class="status-badge ' + (s.over24 > 0 ? 'is-warn' : 'is-on') + '">' + (s.over24 > 0 ? '지연 ' + s.over24 + '건' : '지연 없음') + '</span></p>' +
+          '<p class="admin-meta">' + esc(s.note || '') + '</p>' +
+          '<p class="admin-meta" style="color:#475569;margin-top:4px">미배정 ' + s.awaitingAssign + ' · 확정 대기 ' + s.awaitingConfirm +
+            ' · 재확정 ' + s.reconfirm + ' · 48시간 초과 ' + s.over48 + '건</p>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+    var items = (s.items || []).map(function (it) {
+      return '<div class="admin-card" data-metrics-sla-item="' + esc(it.no) + '">' +
+        '<p class="admin-name">' + esc(it.no || '예약') + ' <span class="status-badge is-warn">' + esc(it.badge) + '</span></p>' +
+        '<p class="admin-meta">' + esc(it.region || '지역 미기재') + ' · ' + esc(it.statusLabel) + ' ' + it.hours + '시간째' +
+          (it.visitLabel ? ' · 방문 ' + esc(it.visitLabel) : '') + '</p>' +
+      '</div>';
+    }).join('');
+    return head + items;
+  }
+  function renderAdminMetrics() {
+    var sec = $('#adminMetricsSec');
+    if (!sec) return null;
+    var m = adminMetricsBuild(adminMetricsPeriod);
+    adminMetricsCache = m;
+    var pc = $('#adminMetricsPeriods');
+    if (pc) pc.innerHTML = adminMetricsPeriodChipsHtml(m);
+    var sub = $('#adminMetricsSub');
+    if (sub) {
+      sub.textContent = '신청 ' + m.funnel.applied + '건 · 예상 마진 ' + mMoney(m.revenue.platformMargin) +
+        ' · 모집 필요 ' + m.regions.summary.shortage + '곳 · 미배정 지연 ' + m.sla.over24 + '건';
+    }
+    var kpis = $('#adminMetricsKpis');
+    if (kpis) {
+      kpis.innerHTML = (m.kpis || []).map(function (k) {
+        return '<div class="settle-cell" data-kpi="' + esc(k.key) + '" data-kpi-tone="' + esc(k.tone || 'plain') + '">' +
+          '<b style="' + adminMetricsKpiTone(k) + '" data-kpi-value="' + esc(String(k.value)) + '">' + esc(adminMetricsValue(k)) + '</b>' +
+          '<span>' + esc(k.label) + '</span>' +
+          '<span style="font-size:9px;color:var(--muted-2);margin-top:2px">' + esc(k.note || '') + '</span>' +
+        '</div>';
+      }).join('');
+    }
+    var cap = $('#adminMetricsKpiCaption');
+    if (cap) cap.textContent = m.periodLabel + ' · ' + String(m.todayIso || '');
+    var fBasis = $('#adminMetricsFunnelBasis');
+    if (fBasis) fBasis.textContent = (m.basis && m.basis.funnel) || '접수일 기준';
+    var fRows = $('#adminMetricsFunnelRows');
+    if (fRows) fRows.innerHTML = adminMetricsFunnelHtml(m);
+    var rBasis = $('#adminMetricsRevenueBasis');
+    if (rBasis) rBasis.textContent = (m.basis && m.basis.revenue) || '방문일 기준';
+    var rRows = $('#adminMetricsRevenueRows');
+    if (rRows) rRows.innerHTML = adminMetricsRevenueHtml(m);
+    var regEl = $('#adminMetricsRegions');
+    if (regEl) {
+      var rows = m.regions.rows || [];
+      var summary = m.regions.summary || {};
+      regEl.innerHTML = (rows.length
+        ? rows.map(adminMetricsRegionCardHtml).join('')
+        : '<div class="empty" style="box-shadow:none"><p>이번 기간 수요가 있는 지역이 없어요.<br>새 예약이 접수되면 지역별 수요·공급 갭이 여기에 모입니다.</p></div>') +
+        '<p class="fine" style="margin:2px 2px 0;padding:0 2px">수요 있는 지역 ' + (summary.demandRegions || 0) + '곳 · 모집 필요 ' + (summary.shortage || 0) +
+        '곳 · 균형 ' + (summary.balanced || 0) + '곳 · 여유 ' + (summary.surplus || 0) + '곳 · 선생님 ' + (summary.teachers || 0) +
+        '명이 ' + (summary.supplyDistricts || 0) + '개 시·군·구에 활동 중입니다(선생님 1명당 ' + m.visitsPerTeacher + '건 기준).</p>';
+    }
+    var slaEl = $('#adminMetricsSla');
+    if (slaEl) slaEl.innerHTML = adminMetricsSlaHtml(m);
+    var note = $('#adminMetricsNote');
+    if (note) note.textContent = m.note || TtModel.metricsLocalNote;
+    try {
+      window.__ttokttokAdminMetrics = {
+        version: m.version, period: m.period, periodLabel: m.periodLabel, todayIso: m.todayIso, fromIso: m.fromIso,
+        funnel: { applied: m.funnel.applied, assigned: m.funnel.assigned, confirmed: m.funnel.confirmed, completed: m.funnel.completed, canceled: m.funnel.canceled, noShow: m.funnel.noShow, completionRate: m.funnel.completionRate, cancelNoShowRate: m.funnel.cancelNoShowRate },
+        revenue: { sessions: m.revenue.sessions, guardianTotal: m.revenue.guardianTotal, teacherTotal: m.revenue.teacherTotal, platformMargin: m.revenue.platformMargin, marginRate: m.revenue.marginRate },
+        sla: { pending: m.sla.pending, over24: m.sla.over24, over48: m.sla.over48 },
+        regions: (m.regions.rows || []).map(function (r) { return { label: r.label, demand: r.demand, supply: r.supply, badge: r.badge, badgeKey: r.badgeKey }; }),
+        text: m.text, csv: m.csv, at: Date.now()
+      };
+    } catch (e) {}
+    return m;
+  }
+  function setAdminMetricsPeriod(period) {
+    var p = TtModel.metricsPeriod(period);
+    if (!p || p.key === adminMetricsPeriod) return renderAdminMetrics();
+    adminMetricsPeriod = p.key;
+    return renderAdminMetrics();
+  }
+  function copyAdminMetricsText() {
+    var m = adminMetricsCache || adminMetricsBuild(adminMetricsPeriod);
+    var okCopy = copyToClipboard(m.text);
+    try { window.__ttokttokMetricsCopy = { kind: 'text', text: m.text, copied: okCopy, period: m.period, at: Date.now() }; } catch (e) {}
+    toast(okCopy ? '운영 지표 요약을 복사했어요. 기간 ' + m.periodLabel + '.' : '복사가 막혀 있어요. 지표를 직접 확인해 주세요.');
+    return okCopy;
+  }
+  function copyAdminMetricsCsv() {
+    var m = adminMetricsCache || adminMetricsBuild(adminMetricsPeriod);
+    var okCopy = copyToClipboard(m.csv);
+    try { window.__ttokttokMetricsCopy = { kind: 'csv', text: m.csv, copied: okCopy, period: m.period, at: Date.now() }; } catch (e) {}
+    toast(okCopy ? '지역 수요·공급 표를 CSV로 복사했어요.' : '복사가 막혀 있어요. 표를 직접 확인해 주세요.');
+    return okCopy;
+  }
+
   function readNotif(id) {
     var n = notifStore.filter(function (x) { return x.id === id; })[0];
     if (!n) return null;
@@ -16623,6 +17319,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var remCopy = e.target.closest('[data-reminder-copy]');
     if (remCopy) { copyAdminReminder(remCopy.getAttribute('data-reminder-copy'), remCopy.getAttribute('data-reminder-aud')); return; }
     if (e.target.closest('#adminReminderCopyAll')) { copyAllAdminReminders(); return; }
+
+    /* v28 · 운영 지표 기간 필터·복사 */
+    var mPeriod = e.target.closest('[data-metrics-period]');
+    if (mPeriod) { setAdminMetricsPeriod(mPeriod.getAttribute('data-metrics-period')); return; }
+    if (e.target.closest('#adminMetricsCopyText')) { copyAdminMetricsText(); return; }
+    if (e.target.closest('#adminMetricsCopyCsv')) { copyAdminMetricsCsv(); return; }
 
     var nt = e.target.closest('[data-notif]');
     if (nt) {
@@ -17172,9 +17874,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       storageRead: function (key) { return TtStorage.get(key, null); },
       storageWrite: function (key, value) { return TtStorage.set(key, value); },
       /* v24 · 모바일·접근성·성능 QA */
-      qaVersion: 'v27',
+      qaVersion: 'v28',
       a11y: {
-        version: 'v27',
+        version: 'v28',
         dialogOrder: DIALOG_ORDER.slice(),
         openDialog: function () { return topOpenDialog(); },
         focusInside: function (sel) {
@@ -17399,6 +18101,59 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         } : null;
       },
       copyNotifPreview: function (aud) { return copyNotifPreview(aud); },
+      /* v28 · 관리자 운영 지표 대시보드 */
+      adminMetricsVersion: TtModel.adminMetricsVersion,
+      metricsPeriods: function () { return TtModel.metricsPeriods(); },
+      metricsPeriod: TtModel.metricsPeriod,
+      metricsRatePct: TtModel.metricsRatePct,
+      metricsStageOf: TtModel.metricsStageOf,
+      metricsReceivedIso: TtModel.metricsReceivedIso,
+      metricsDistrictOf: TtModel.metricsDistrictOf,
+      metricsVisitsPerTeacher: TtModel.metricsVisitsPerTeacher,
+      metricsSlaHours: TtModel.metricsSlaHours,
+      metricsLocalNote: TtModel.metricsLocalNote,
+      buildAdminMetrics: function (ctx, todayIso) { return TtModel.buildAdminMetrics(ctx || {}, todayIso); },
+      adminMetricsText: function (ctx) { return TtModel.adminMetricsText(ctx || adminMetricsBuild(adminMetricsPeriod)); },
+      adminMetricsCsv: function (ctx) { return TtModel.adminMetricsCsv(ctx || adminMetricsBuild(adminMetricsPeriod)); },
+      adminMetrics: function (period) { return adminMetricsBuild(period || adminMetricsPeriod); },
+      renderAdminMetrics: function () { return renderAdminMetrics(); },
+      setAdminMetricsPeriod: function (period) { return setAdminMetricsPeriod(period); },
+      adminMetricsState: function () {
+        var m = adminMetricsCache || adminMetricsBuild(adminMetricsPeriod);
+        function txt(sel) { var el = $(sel); return el ? String(el.textContent || '').replace(/\s+/g, ' ').trim() : ''; }
+        return {
+          version: m.version, period: m.period, periodLabel: m.periodLabel, todayIso: m.todayIso, fromIso: m.fromIso,
+          applied: m.funnel.applied, assigned: m.funnel.assigned, confirmed: m.funnel.confirmed, completed: m.funnel.completed,
+          canceled: m.funnel.canceled, noShow: m.funnel.noShow,
+          completionRate: m.funnel.completionRate, cancelNoShowRate: m.funnel.cancelNoShowRate,
+          sessions: m.revenue.sessions, completedSessions: m.revenue.completedSessions, confirmedSessions: m.revenue.confirmedSessions,
+          guardianTotal: m.revenue.guardianTotal, teacherTotal: m.revenue.teacherTotal, margin: m.revenue.platformMargin,
+          journalRate: m.journal.rate, journalCompleted: m.journal.completed, journalWith: m.journal.withJournal,
+          pending: m.sla.pending, delay: m.sla.over24, over48: m.sla.over48, reconfirm: m.sla.reconfirm, awaitingAssign: m.sla.awaitingAssign,
+          shortage: m.regions.summary.shortage, balanced: m.regions.summary.balanced, surplus: m.regions.summary.surplus,
+          demandRegions: m.regions.summary.demandRegions, supplyDistricts: m.regions.summary.supplyDistricts,
+          regions: (m.regions.rows || []).map(function (r) {
+            return { label: r.label, demand: r.demand, supply: r.supply, need: r.need, gap: r.gap, badge: r.badge, badgeKey: r.badgeKey };
+          }),
+          kpis: (m.kpis || []).map(function (k) { return { key: k.key, label: k.label, value: k.value, unit: k.unit, note: k.note }; }),
+          chips: [].slice.call(document.querySelectorAll('#adminMetricsPeriods [data-metrics-period]')).map(function (b) {
+            return { key: b.getAttribute('data-metrics-period'), on: b.classList.contains('is-on'), text: String(b.textContent || '').trim() };
+          }),
+          kpiCards: document.querySelectorAll('#adminMetricsKpis [data-kpi]').length,
+          kpiText: txt('#adminMetricsKpis'),
+          regionCards: document.querySelectorAll('#adminMetricsRegions [data-metrics-region]').length,
+          regionText: txt('#adminMetricsRegions'),
+          funnelText: txt('#adminMetricsFunnelRows'),
+          revenueText: txt('#adminMetricsRevenueRows'),
+          slaText: txt('#adminMetricsSla'),
+          subText: txt('#adminMetricsSub'),
+          captionText: txt('#adminMetricsKpiCaption'),
+          noteText: txt('#adminMetricsNote'),
+          text: m.text, csv: m.csv
+        };
+      },
+      copyAdminMetricsText: function () { return copyAdminMetricsText(); },
+      copyAdminMetricsCsv: function () { return copyAdminMetricsCsv(); },
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
