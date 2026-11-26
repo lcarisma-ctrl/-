@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v22">
+<meta name="app-version" content="v23">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3306,6 +3306,37 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <div class="admin-approved" id="adminResvDemoNotice"><svg class="ic" aria-hidden="true" style="align-self:flex-start;margin-top:2px"><use href="#i-shield-check"/></svg><span><b>로컬 데모 저장 · 서버 미연결(이 기기 브라우저에만 반영)</b><br>상태 변경·알림·정산 기록은 이 브라우저 안에서만 일어납니다. 실제 서버·DB·문자 발송과 연결되어 있지 않습니다.</span></div>
         <div class="chips" id="adminResvFilters" role="tablist" aria-label="예약 상태 필터" style="flex-wrap:wrap;overflow:visible;padding-top:4px"></div>
         <div class="admin-queue" id="adminResvQueue"></div>
+      </section>
+
+      <!-- v23 · 운영 데이터 백업/복원 (로컬 데모) -->
+      <section class="sec" style="margin-top:20px" id="adminBackupSec" aria-label="운영 데이터 백업·복원">
+        <div class="sec-head" style="margin-bottom:10px">
+          <div>
+            <h2 class="sec-title">운영 데이터 백업</h2>
+            <p class="sec-sub" id="adminBackupSub">예약·방문 일지·정산 원장·알림·선생님 프로필을 JSON 파일 하나로 내려받고, 같은 파일로 되돌립니다. 서버 없이 이 기기 안에서만 동작합니다.</p>
+          </div>
+          <span class="tag-example">DEMO</span>
+        </div>
+        <div class="admin-card" id="adminBackupCard">
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <span style="font-size:12px;color:var(--muted);letter-spacing:-.01em">지금 기기에 있는 데이터</span>
+            <b id="adminBackupCounts" style="font-size:13px;letter-spacing:-.02em">-</b>
+          </div>
+          <p class="fine" id="adminBackupMeta" style="margin:8px 0 0">백업 파일에는 빠른일지 초안(임시 입력)은 들어가지 않습니다.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+            <button class="btn btn-outline btn-sm" type="button" id="adminBackupExport">운영 데이터 백업(JSON)</button>
+            <button class="btn btn-outline btn-sm" type="button" id="adminBackupPick">백업 파일 복원</button>
+            <input type="file" id="adminBackupFile" accept="application/json,.json" style="display:none">
+          </div>
+          <div id="adminBackupConfirmBox" hidden style="margin-top:12px">
+            <p class="fine" id="adminBackupConfirmText" style="margin:0 0 8px"></p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <button class="btn btn-outline btn-sm" type="button" id="adminBackupConfirm">이 내용으로 복원</button>
+              <button class="btn btn-outline btn-sm" type="button" id="adminBackupCancel">취소</button>
+            </div>
+          </div>
+          <p class="fine" id="adminBackupResult" role="status" aria-live="polite" style="margin:10px 0 0"></p>
+        </div>
       </section>
 
       <section class="sec" style="margin-top:20px">
@@ -6833,6 +6864,255 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return { partner: p, dropped: dropped, kept: kept, totalChars: total };
     }
 
+    /* =================================================================
+       v23 · 운영 데이터 백업/복원(JSON 스냅샷)
+       ─ 포함: 예약(reservations)·방문일지(journals)·정산원장(ledger)·
+               알림(notifications)·선생님 프로필 오버라이드(teacherProfile)
+       ─ 제외: 빠른일지 초안(임시 입력, ttokttok_quicklog_v1)·로그인 역할 등 화면 상태
+       ─ 세 함수 모두 계산·검증만 한다(저장소를 직접 건드리지 않는다).
+         실제 반영은 화면 쪽 applyWorkspaceSnapshot()이 한 번에 한다.
+       ================================================================= */
+    var BACKUP_VERSION = 'v23';
+    var SNAPSHOT_SCHEMA = 'ttokttok.v23';
+    var SNAPSHOT_KIND = 'workspace-backup';
+    var SNAPSHOT_MAX_CHARS = 8000000;      /* 파일 8MB 상한(사진 포함 여유) */
+    var SNAPSHOT_MAX_ITEMS = 20000;        /* 항목 수 상한(비정상 대용량 차단) */
+    var SNAPSHOT_ARRAY_KEYS = ['reservations', 'journals', 'ledger', 'notifications'];
+
+    function isObj(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
+    function cloneData(v) {
+      if (v == null) return v;
+      try { return JSON.parse(JSON.stringify(v)); } catch (e) { return null; }
+    }
+    function snapshotCounts(data) {
+      var d = data || {};
+      return {
+        reservations: Array.isArray(d.reservations) ? d.reservations.length : 0,
+        journals: Array.isArray(d.journals) ? d.journals.length : 0,
+        ledger: Array.isArray(d.ledger) ? d.ledger.length : 0,
+        notifications: Array.isArray(d.notifications) ? d.notifications.length : 0,
+        teacherProfile: isObj(d.teacherProfile) ? 1 : 0
+      };
+    }
+    function countsTotal(counts) {
+      var c = counts || {};
+      return num(c.reservations, 0) + num(c.journals, 0) + num(c.ledger, 0) + num(c.notifications, 0) + num(c.teacherProfile, 0);
+    }
+    /* 화면·테스트가 같이 쓰는 요약 문구: "예약 4 · 일지 3 · 정산 3 · 알림 12 · 프로필 1" */
+    function snapshotSummaryText(counts) {
+      var c = counts || {};
+      return '예약 ' + num(c.reservations, 0) + ' · 일지 ' + num(c.journals, 0) +
+        ' · 정산 ' + num(c.ledger, 0) + ' · 알림 ' + num(c.notifications, 0) +
+        ' · 프로필 ' + num(c.teacherProfile, 0);
+    }
+    function snapshotFileName(atIso) {
+      var iso = isIso(atIso) ? atIso : nowIso();
+      var d = new Date(iso);
+      var y = isFinite(d.getTime()) ? d : new Date();
+      return 'ttokttok-backup-' + y.getUTCFullYear() + pad2(y.getUTCMonth() + 1) + pad2(y.getUTCDate()) +
+        '-' + pad2(y.getUTCHours()) + pad2(y.getUTCMinutes()) + '.json';
+    }
+
+    /* 내보내기 — 저장소 값을 복사해 스키마·시각·항목 수와 함께 돌려준다(순수 함수). */
+    function exportWorkspaceSnapshot(ctx) {
+      var c = ctx || {};
+      var data = {
+        reservations: Array.isArray(c.reservations) ? (cloneData(c.reservations) || []) : [],
+        journals: Array.isArray(c.journals) ? (cloneData(c.journals) || []) : [],
+        ledger: Array.isArray(c.ledger) ? (cloneData(c.ledger) || []) : [],
+        notifications: Array.isArray(c.notifications) ? (cloneData(c.notifications) || []) : [],
+        teacherProfile: isObj(c.teacherProfile) ? cloneData(c.teacherProfile) : null
+      };
+      return {
+        kind: SNAPSHOT_KIND,
+        schemaVersion: SNAPSHOT_SCHEMA,
+        appVersion: BACKUP_VERSION,
+        exportedAt: nowIso(),
+        counts: snapshotCounts(data),
+        data: data
+      };
+    }
+
+    /* 검증 — 손상·악성·형식 불일치 파일을 구체적 오류 코드와 함께 거부한다(순수 함수).
+       돌려주는 값: { ok, errors:[{code,message,path}], warnings:[...], snapshot, counts, data } */
+    function validateWorkspaceSnapshot(raw, opts) {
+      var o = opts || {};
+      var errors = [], warnings = [];
+      function bad(code, message, path) { errors.push({ code: code, message: message, path: path || '' }); }
+      function warn(code, message, path) { warnings.push({ code: code, message: message, path: path || '' }); }
+      function done(snap, counts) {
+        return {
+          ok: errors.length === 0, errors: errors, warnings: warnings,
+          snapshot: errors.length ? null : snap,
+          counts: counts || (snap && snap.counts) || null,
+          data: errors.length ? null : (snap && snap.data) || null
+        };
+      }
+      var maxChars = num(o.maxChars, 0) > 0 ? num(o.maxChars, 0) : SNAPSHOT_MAX_CHARS;
+      var value = raw;
+
+      if (typeof value === 'string') {
+        var text = value.trim();
+        if (!text) { bad('json_parse', '백업 파일이 비어 있어요.'); return done(); }
+        if (text.length > maxChars) { bad('too_large', '백업 파일이 너무 커요(8MB 이하만 복원할 수 있어요).'); return done(); }
+        /* 프로토타입 오염 시도는 파싱 전에 막는다. */
+        if (/"?__proto__"?\s*:|\bconstructor\s*:|\bprototype\b/.test(text)) {
+          bad('unsafe_key', '안전하지 않은 키(__proto__ 등)가 들어 있어 복원하지 않았어요.');
+          return done();
+        }
+        try { value = JSON.parse(text); } catch (e) {
+          bad('json_parse', 'JSON 형식이 아니에요. 똑똑쌤에서 내려받은 백업 파일(.json)인지 확인해 주세요.');
+          return done();
+        }
+      }
+      if (!isObj(value)) { bad('not_object', '백업 데이터 형식이 아니에요(JSON 객체가 필요해요).'); return done(); }
+      if (!value.schemaVersion) {
+        bad('schema_version_missing', '스키마 버전(schemaVersion)이 없어요. 똑똑쌤 백업 파일이 맞는지 확인해 주세요.');
+        return done();
+      }
+      if (value.schemaVersion !== SNAPSHOT_SCHEMA) {
+        bad('schema_version', '스키마 버전이 맞지 않아요(파일: ' + String(value.schemaVersion) + ' · 필요: ' + SNAPSHOT_SCHEMA + ').');
+        return done();
+      }
+      var data = value.data;
+      if (!isObj(data)) { bad('data_missing', '백업 안에 data 묶음이 없어요.'); return done(); }
+
+      /* 필수 배열 4종 — 타입이 다르면 거부한다. */
+      SNAPSHOT_ARRAY_KEYS.forEach(function (k) {
+        if (!Array.isArray(data[k])) { bad(k + '_type', k + ' 항목이 배열이 아니에요.'); return; }
+        if (data[k].length > num(o.maxItems, SNAPSHOT_MAX_ITEMS)) {
+          bad(k + '_too_many', k + ' 항목이 너무 많아요(최대 ' + num(o.maxItems, SNAPSHOT_MAX_ITEMS) + '건).');
+        }
+      });
+      if (data.teacherProfile != null && !isObj(data.teacherProfile)) {
+        bad('teacherProfile_type', '선생님 프로필 항목이 객체가 아니에요.');
+      }
+      if (errors.length) return done();
+
+      /* 예약 — id/no 중복 금지, 상태는 enum만 */
+      var seenId = {}, seenNo = {};
+      data.reservations.forEach(function (b, i) {
+        if (!isObj(b)) { bad('reservation_type', '예약 ' + (i + 1) + '번째 항목이 객체가 아니에요.', 'reservations[' + i + ']'); return; }
+        var id = String(b.id || '');
+        if (id) {
+          if (seenId[id]) bad('reservation_duplicate', '예약 ID가 중복돼요: ' + id, 'reservations[' + i + '].id');
+          seenId[id] = true;
+        }
+        var no = String(b.no || '');
+        if (no) {
+          if (seenNo[no]) bad('reservation_duplicate_no', '예약번호가 중복돼요: ' + no, 'reservations[' + i + '].no');
+          seenNo[no] = true;
+        }
+        if (b.status == null || b.status === '') {
+          warn('reservation_status_missing', '예약 ' + (no || id || (i + 1)) + '에 상태값이 없어 접수(received)로 채웁니다.', 'reservations[' + i + '].status');
+        } else if (STATUS.reservation.indexOf(String(b.status)) === -1) {
+          bad('reservation_status', '허용되지 않은 예약 상태예요: ' + String(b.status) + ' (예약 ' + (no || id || (i + 1)) + ')', 'reservations[' + i + '].status');
+        }
+      });
+
+      /* 방문 일지 — 사진은 data:image/(png·jpeg·webp)만, 160,000자 상한 */
+      data.journals.forEach(function (j, i) {
+        if (!isObj(j)) { bad('journal_type', '일지 ' + (i + 1) + '번째 항목이 객체가 아니에요.', 'journals[' + i + ']'); return; }
+        if (j.status != null && j.status !== '' && STATUS.journal.indexOf(String(j.status)) === -1) {
+          bad('journal_status', '허용되지 않은 일지 상태예요: ' + String(j.status), 'journals[' + i + '].status');
+        }
+        if (j.photo == null) return;
+        var url = (typeof j.photo === 'string') ? j.photo : String((j.photo && (j.photo.thumb || j.photo.dataUrl || j.photo.url)) || '');
+        if (!url) { bad('journal_photo', '일지 사진 주소가 비어 있어요.', 'journals[' + i + '].photo'); return; }
+        if (!PHOTO_DATA_RE.test(url)) {
+          bad('journal_photo_type', '일지 사진은 이미지(data:image/png·jpeg·webp)만 복원할 수 있어요.', 'journals[' + i + '].photo');
+          return;
+        }
+        if (url.length > num(o.photoMaxChars, PHOTO_MAX_CHARS)) {
+          bad('journal_photo_size', '일지 사진이 용량 상한(' + num(o.photoMaxChars, PHOTO_MAX_CHARS).toLocaleString('en-US') + '자)을 넘었어요.', 'journals[' + i + '].photo');
+        }
+      });
+
+      /* 정산 원장 — 상태 enum, 금액은 숫자 */
+      data.ledger.forEach(function (r, i) {
+        if (!isObj(r)) { bad('ledger_type', '정산 ' + (i + 1) + '번째 항목이 객체가 아니에요.', 'ledger[' + i + ']'); return; }
+        if (r.status != null && r.status !== '' && STATUS.settlement.indexOf(String(r.status)) === -1) {
+          bad('ledger_status', '허용되지 않은 정산 상태예요: ' + String(r.status), 'ledger[' + i + '].status');
+        }
+        ['grossAmount', 'feeAmount', 'netAmount'].forEach(function (k) {
+          if (r[k] != null && r[k] !== '' && !isFinite(Number(r[k]))) {
+            bad('ledger_amount', '정산 금액(' + k + ')이 숫자가 아니에요.', 'ledger[' + i + '].' + k);
+          }
+        });
+      });
+
+      /* 알림 — 상태 enum */
+      data.notifications.forEach(function (n, i) {
+        if (!isObj(n)) { bad('notification_type', '알림 ' + (i + 1) + '번째 항목이 객체가 아니에요.', 'notifications[' + i + ']'); return; }
+        if (n.status != null && n.status !== '' && STATUS.notification.indexOf(String(n.status)) === -1) {
+          bad('notification_status', '허용되지 않은 알림 상태예요: ' + String(n.status), 'notifications[' + i + '].status');
+        }
+        if (!n.title) warn('notification_title', '알림 ' + (i + 1) + '번째에 제목이 없어 복원 후 목록에서 빠집니다.', 'notifications[' + i + '].title');
+      });
+
+      /* 선생님 프로필 오버라이드 — 배열 필드 타입 확인 */
+      if (isObj(data.teacherProfile)) {
+        ['availableDays', 'availableTimes', 'districts', 'dongs', 'specialties', 'cats'].forEach(function (k) {
+          if (data.teacherProfile[k] != null && !Array.isArray(data.teacherProfile[k])) {
+            bad('teacherProfile_field', '선생님 프로필의 ' + k + ' 항목이 배열이 아니에요.', 'teacherProfile.' + k);
+          }
+        });
+      }
+
+      /* 항목 수 요약이 파일과 다르면 경고(거부는 아니다 — 손으로 고친 파일일 수 있다). */
+      if (isObj(value.counts)) {
+        var real = snapshotCounts(data);
+        Object.keys(real).forEach(function (k) {
+          if (value.counts[k] != null && num(value.counts[k], -1) !== real[k]) {
+            warn('counts_mismatch', '항목 수 요약(' + k + ')이 실제와 달라요(파일 ' + num(value.counts[k], 0) + ' · 실제 ' + real[k] + ').', 'counts.' + k);
+          }
+        });
+      }
+      return done(value, snapshotCounts(data));
+    }
+
+    /* 가져오기 — 검증을 통과한 값만 정규화해 "적용할 데이터"로 돌려준다(순수 함수). */
+    function importWorkspaceSnapshot(raw, opts) {
+      var v = validateWorkspaceSnapshot(raw, opts);
+      if (!v.ok) {
+        return { ok: false, errors: v.errors, warnings: v.warnings, counts: v.counts, data: null, schemaVersion: null, exportedAt: null };
+      }
+      var snap = v.snapshot || {};
+      var data = v.data || {};
+      var now = nowIso();
+      var reservations = data.reservations.map(function (b) {
+        return normalizeReservation(cloneData(b) || {}, { now: now });
+      });
+      var journals = data.journals.map(function (j, i) {
+        var r = cloneData(j) || {};
+        if (!r.id) r.id = 'jnl-' + slug(r.date || '') + '-' + (i + 1);
+        r.teacherId = r.teacherId || '';
+        r.visitDate = r.visitDate || dateLabelToIso(r.date);
+        r.status = STATUS.journal.indexOf(r.status) !== -1 ? r.status : 'shared';
+        if (r.photo != null) {
+          var p = normalizePhoto(r.photo);
+          if (p.ok) r.photo = p.photo; else delete r.photo;
+        }
+        r.createdAt = isoOr(r.createdAt, now);
+        r.updatedAt = isoOr(r.updatedAt, r.createdAt);
+        return r;
+      });
+      var ledger = data.ledger.map(function (r) { return normalizeLedgerRow(cloneData(r) || {}, { now: now }); });
+      var notifications = data.notifications.map(function (n) { return normalizeNotification(cloneData(n) || {}, { now: now }); });
+      var teacherProfile = isObj(data.teacherProfile) ? cloneData(data.teacherProfile) : null;
+      var out = {
+        reservations: reservations, journals: journals, ledger: ledger,
+        notifications: notifications, teacherProfile: teacherProfile
+      };
+      return {
+        ok: true, errors: [], warnings: v.warnings || [],
+        schemaVersion: snap.schemaVersion || SNAPSHOT_SCHEMA,
+        exportedAt: snap.exportedAt || '',
+        counts: snapshotCounts(out),
+        data: out
+      };
+    }
+
     return {
       SCHEMA_VERSION: SCHEMA_VERSION,
       STATUS: STATUS,
@@ -7014,7 +7294,119 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       paymentLabel: paymentLabel,
       pushHistory: pushHistory,
       exportBundle: exportBundle,
-      integrity: integrity
+      integrity: integrity,
+      /* v23 · 운영 데이터 백업/복원 */
+      backupVersion: BACKUP_VERSION,
+      snapshotSchema: SNAPSHOT_SCHEMA,
+      snapshotMaxChars: SNAPSHOT_MAX_CHARS,
+      snapshotMaxItems: SNAPSHOT_MAX_ITEMS,
+      snapshotArrayKeys: SNAPSHOT_ARRAY_KEYS.slice(),
+      snapshotCounts: snapshotCounts,
+      countsTotal: countsTotal,
+      snapshotSummaryText: snapshotSummaryText,
+      snapshotFileName: snapshotFileName,
+      exportWorkspaceSnapshot: exportWorkspaceSnapshot,
+      validateWorkspaceSnapshot: validateWorkspaceSnapshot,
+      importWorkspaceSnapshot: importWorkspaceSnapshot
+    };
+  })();
+
+  /* ===================================================================
+     v23 · 저장소 어댑터(StorageAdapter)
+     ─ 화면 코드는 TtStorage 한 곳만 본다. 지금은 localStorage(SafeStorage) 구현체.
+     ─ 서버(L1)로 옮길 때는 remote 어댑터를 만들어 TtStorage.use()로 갈아 끼우면
+       화면·계산 코드는 그대로 둔다(기존 동작 100% 호환).
+     ─ 계약(계약 문서: API-CONTRACT.md §2):
+         kind: 'local' | 'memory' | 'remote'
+         available() → bool, getRaw(key) → string|null, setRaw(key, text) → bool,
+         get(key, dflt) → 값, set(key, value) → bool, remove(key) → bool, keys() → string[]
+       값은 JSON으로 직렬화해 저장한다(문자열 키·값만 쓰는 저장소 공통 규칙).
+     =================================================================== */
+  var TtStorage = (function () {
+    var ADAPTER_VERSION = 'ttokttok.storage.v23';
+
+    function localAdapter(store) {
+      return {
+        kind: 'local',
+        version: ADAPTER_VERSION,
+        available: function () { return !!(store && store.available); },
+        getRaw: function (key) { try { return store.getItem(key); } catch (e) { return null; } },
+        setRaw: function (key, text) { try { store.setItem(key, text); return true; } catch (e) { return false; } },
+        remove: function (key) { try { store.removeItem(key); return true; } catch (e) { return false; } },
+        get: function (key, dflt) {
+          var raw = this.getRaw(key);
+          if (raw == null) return dflt === undefined ? null : dflt;
+          try { var v = JSON.parse(raw); return v == null ? (dflt === undefined ? null : dflt) : v; }
+          catch (e) { return dflt === undefined ? null : dflt; }
+        },
+        set: function (key, value) {
+          try { return this.setRaw(key, JSON.stringify(value)); } catch (e) { return false; }
+        },
+        keys: function () {
+          try {
+            if (store && store.keys) return Array.prototype.slice.call(store.keys());
+            if (window.localStorage && window.localStorage.length != null) {
+              var out = [];
+              for (var i = 0; i < window.localStorage.length; i++) out.push(window.localStorage.key(i));
+              return out;
+            }
+          } catch (e) {}
+          return [];
+        }
+      };
+    }
+
+    /* 테스트·오프라인 검증용 메모리 어댑터(계약이 같다). */
+    function memoryAdapter(seed) {
+      var mem = Object.create(null);
+      if (seed && typeof seed === 'object') {
+        Object.keys(seed).forEach(function (k) { mem[k] = String(seed[k]); });
+      }
+      return {
+        kind: 'memory',
+        version: ADAPTER_VERSION,
+        available: function () { return true; },
+        getRaw: function (key) { return Object.prototype.hasOwnProperty.call(mem, key) ? mem[key] : null; },
+        setRaw: function (key, text) { mem[key] = String(text); return true; },
+        remove: function (key) { delete mem[key]; return true; },
+        get: function (key, dflt) {
+          var raw = this.getRaw(key);
+          if (raw == null) return dflt === undefined ? null : dflt;
+          try { var v = JSON.parse(raw); return v == null ? (dflt === undefined ? null : dflt) : v; }
+          catch (e) { return dflt === undefined ? null : dflt; }
+        },
+        set: function (key, value) {
+          try { return this.setRaw(key, JSON.stringify(value)); } catch (e) { return false; }
+        },
+        keys: function () { return Object.keys(mem); }
+      };
+    }
+
+    /* remote 교체 포인트: createRemoteAdapter()는 서버(L1) 단계에서 채운다.
+       그때까지는 넘겨받은 로컬 캐시 어댑터로 읽고, 쓰기는 캐시에 먼저 반영한다(write-through). */
+    var active = localAdapter(SafeStorage);
+    var defaultAdapter = active;
+
+    return {
+      version: ADAPTER_VERSION,
+      localAdapter: localAdapter,
+      memoryAdapter: memoryAdapter,
+      adapter: function () { return active; },
+      defaultAdapter: function () { return defaultAdapter; },
+      use: function (adapter) {
+        if (!adapter || typeof adapter.get !== 'function' || typeof adapter.set !== 'function') return false;
+        active = adapter;
+        return true;
+      },
+      reset: function () { active = defaultAdapter; return true; },
+      kind: function () { return active && active.kind ? active.kind : 'unknown'; },
+      available: function () { try { return !!active.available(); } catch (e) { return false; } },
+      getRaw: function (key) { return active.getRaw(key); },
+      setRaw: function (key, text) { return active.setRaw(key, text); },
+      get: function (key, dflt) { return active.get(key, dflt); },
+      set: function (key, value) { return active.set(key, value); },
+      remove: function (key) { return active.remove(key); },
+      keys: function () { try { return active.keys(); } catch (e) { return []; } }
     };
   })();
 
@@ -8929,15 +9321,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   function loadAccount() {
     try {
-      var raw = SafeStorage.getItem(STORE_KEY);
-      if (!raw) return null;
-      var obj = JSON.parse(raw);
+      var obj = TtStorage.get(STORE_KEY, null);   /* v23 · 어댑터 경유 */
       if (!obj || !Array.isArray(obj.passes) || !Array.isArray(obj.bookings) || !Array.isArray(obj.receipts)) return null;
       return normalizeAccount(obj);
     } catch (e) { return null; }
   }
   function saveAccount() {
-    try { SafeStorage.setItem(STORE_KEY, JSON.stringify(account)); } catch (e) {}
+    try { TtStorage.set(STORE_KEY, account); } catch (e) {}
   }
 
   var account = normalizeAccount(loadAccount() || seedAccount());
@@ -9708,9 +10098,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   function loadPartner() {
     try {
-      var raw = SafeStorage.getItem(P_KEY);
-      if (!raw) return null;
-      var obj = JSON.parse(raw);
+      var obj = TtStorage.get(P_KEY, null);   /* v23 · 어댑터 경유 */
       if (!obj || !obj.status) return null;
       return obj;
     } catch (e) { return null; }
@@ -9719,7 +10107,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function savePartner() {
     try {
       lastPhotoGuard = TtModel.pruneJournalPhotos(partner, {});
-      SafeStorage.setItem(P_KEY, JSON.stringify(partner));
+      TtStorage.set(P_KEY, partner);
     } catch (e) {}
   }
 
@@ -10452,15 +10840,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       specialties: (t.specialties || []).slice(), cats: (t.cats || []).slice(),
       updatedAt: TtModel.nowIso()
     };
-    try { SafeStorage.setItem(TEACHER_PROFILE_KEY, JSON.stringify(override)); } catch (e) {}
+    try { TtStorage.set(TEACHER_PROFILE_KEY, override); } catch (e) {}
     return override;
   }
   function applySavedTeacherProfile() {
-    var raw = null;
-    try { raw = SafeStorage.getItem(TEACHER_PROFILE_KEY); } catch (e) { return null; }
-    if (!raw) return null;
     var o = null;
-    try { o = JSON.parse(raw); } catch (e) { return null; }
+    try { o = TtStorage.get(TEACHER_PROFILE_KEY, null); } catch (e) { return null; }
     if (!o || !o.teacherId) return null;
     var t = teacherById(o.teacherId);
     if (!t) return null;
@@ -11276,9 +11661,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   function loadAdmin() {
     try {
-      var raw = SafeStorage.getItem(ADMIN_KEY);
-      if (!raw) return null;
-      var obj = JSON.parse(raw);
+      var obj = TtStorage.get(ADMIN_KEY, null);   /* v23 · 어댑터 경유 */
       if (!obj || !Array.isArray(obj.applications)) return null;
       if (!obj.verified) obj.verified = {};
       if (!Array.isArray(obj.decisions)) obj.decisions = [];
@@ -11286,7 +11669,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     } catch (e) { return null; }
   }
   function saveAdmin() {
-    try { SafeStorage.setItem(ADMIN_KEY, JSON.stringify(adminStore)); } catch (e) {}
+    try { TtStorage.set(ADMIN_KEY, adminStore); } catch (e) {}
   }
 
   var adminStore = TtModel.normalizeAdmin(loadAdmin() || seedAdmin());
@@ -11373,9 +11756,182 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     '</div>';
   }
 
+  /* ===================================================================
+     v23 · 운영 데이터 백업/복원 (로컬 데모 · 서버 없음)
+     ─ 백업 = 예약·방문일지·정산원장·알림·선생님 프로필을 JSON 하나로.
+     ─ 복원 = 검증 → 확인 단계 → 반영(저장소·화면) 한 번에.
+     ─ 실제 저장은 TtStorage 어댑터를 지난다(서버 교체 포인트, API-CONTRACT.md).
+     =================================================================== */
+  function backupContext() {
+    return {
+      reservations: account.bookings || [],
+      journals: partner.journals || [],
+      ledger: partner.ledger || [],
+      notifications: notifStore || [],
+      teacherProfile: (function () { try { return TtStorage.get(TEACHER_PROFILE_KEY, null); } catch (e) { return null; } })()
+    };
+  }
+  function currentSnapshot() { return TtModel.exportWorkspaceSnapshot(backupContext()); }
+  function storageModeText() {
+    var kind = TtStorage.kind();
+    if (kind === 'local') return TtStorage.available() ? '이 브라우저(localStorage)' : '임시 메모리(기기 저장 차단) · 창을 닫으면 사라짐';
+    return kind;
+  }
+  function setBackupResult(msg, isError) {
+    var el = $('#adminBackupResult');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.color = isError ? '#B42318' : '';
+  }
+  function renderAdminBackup() {
+    var countsEl = $('#adminBackupCounts');
+    if (!countsEl) return;
+    var snap = currentSnapshot();
+    countsEl.textContent = TtModel.snapshotSummaryText(snap.counts);
+    var meta = $('#adminBackupMeta');
+    if (meta) meta.textContent = '백업 파일에는 빠른일지 초안(임시 입력)은 들어가지 않습니다. · 저장소: ' + storageModeText();
+  }
+
+  /* 내려받기 — 파일 이름·내용을 window.__ttokttokBackup 에도 남긴다(검증용). */
+  function downloadWorkspaceBackup() {
+    var snap = currentSnapshot();
+    var text = JSON.stringify(snap, null, 2);
+    var name = TtModel.snapshotFileName(snap.exportedAt);
+    var url = '';
+    try {
+      if (window.Blob && window.URL && window.URL.createObjectURL) {
+        url = window.URL.createObjectURL(new window.Blob([text], { type: 'application/json' }));
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = name;
+        a.rel = 'noopener';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function () {
+          try { a.parentNode && a.parentNode.removeChild(a); } catch (e) {}
+          try { window.URL.revokeObjectURL(url); } catch (e) {}
+        }, 1500);
+      }
+    } catch (e) { url = ''; }
+    try {
+      window.__ttokttokBackup = { name: name, text: text, counts: snap.counts, schemaVersion: snap.schemaVersion, exportedAt: snap.exportedAt, chars: text.length, url: url };
+    } catch (e) {}
+    setBackupResult('백업 파일을 만들었어요 · ' + TtModel.snapshotSummaryText(snap.counts) + ' · ' + name, false);
+    return window.__ttokttokBackup;
+  }
+
+  var pendingImport = null;
+
+  /* 복원 1단계 — 파일 내용을 검증하고 확인 박스를 연다(아직 바꾸지 않는다). */
+  function beginRestoreFromText(text, fileName) {
+    var res = TtModel.importWorkspaceSnapshot(text);
+    var box = $('#adminBackupConfirmBox');
+    pendingImport = null;
+    if (!res.ok) {
+      if (box) box.hidden = true;
+      var msgs = (res.errors || []).slice(0, 3).map(function (e) { return e.message; });
+      setBackupResult('복원하지 않았어요 · ' + (msgs.join(' / ') || '알 수 없는 오류'), true);
+      try { window.__ttokttokRestore = { ok: false, stage: 'rejected', fileName: fileName || '', errors: res.errors || [] }; } catch (e) {}
+      return res;
+    }
+    pendingImport = { data: res.data, counts: res.counts, fileName: fileName || '', exportedAt: res.exportedAt, warnings: res.warnings || [] };
+    var txt = $('#adminBackupConfirmText');
+    if (txt) {
+      txt.textContent = '이 파일로 지금 기기의 운영 데이터를 바꿉니다 · ' + TtModel.snapshotSummaryText(res.counts) +
+        (res.exportedAt ? ' · 내보낸 시각 ' + String(res.exportedAt).slice(0, 16).replace('T', ' ') : '') +
+        (pendingImport.warnings.length ? ' · 참고 ' + pendingImport.warnings.length + '건' : '');
+    }
+    if (box) box.hidden = false;
+    setBackupResult('파일을 확인했어요. 아래 「이 내용으로 복원」을 누르면 반영됩니다.', false);
+    try { window.__ttokttokRestore = { ok: true, stage: 'preview', fileName: fileName || '', counts: res.counts, warnings: pendingImport.warnings }; } catch (e) {}
+    return res;
+  }
+
+  /* 복원 2단계 — 저장소·화면에 한 번에 반영한다. */
+  function applyWorkspaceSnapshot(data) {
+    if (!data) return { ok: false, message: '복원할 데이터가 없어요.' };
+    account.bookings = (data.reservations || []).slice();
+    saveAccount();
+    partner.journals = (data.journals || []).slice();
+    partner.ledger = (data.ledger || []).slice();
+    savePartner();
+    notifStore.length = 0;
+    (data.notifications || []).forEach(function (n) { notifStore.push(n); });
+    saveJson(NOTIF_KEY, notifStore);
+    if (data.teacherProfile) {
+      try { TtStorage.set(TEACHER_PROFILE_KEY, data.teacherProfile); } catch (e) {}
+      try { applySavedTeacherProfile(); } catch (e) {}
+    } else {
+      try { TtStorage.remove(TEACHER_PROFILE_KEY); } catch (e) {}
+    }
+    try { renderAccount(); } catch (e) {}
+    try { renderPartner(); } catch (e) {}
+    try { renderNotifs(); } catch (e) {}
+    try { renderAdmin(); } catch (e) {}
+    return {
+      ok: true,
+      counts: TtModel.snapshotCounts({
+        reservations: account.bookings, journals: partner.journals, ledger: partner.ledger,
+        notifications: notifStore, teacherProfile: data.teacherProfile
+      })
+    };
+  }
+
+  function confirmRestore() {
+    if (!pendingImport) { setBackupResult('먼저 백업 파일을 선택해 주세요.', true); return { ok: false }; }
+    var job = pendingImport;
+    pendingImport = null;
+    var box = $('#adminBackupConfirmBox');
+    if (box) box.hidden = true;
+    var applied = applyWorkspaceSnapshot(job.data);
+    var msg = applied.ok
+      ? '복원했어요 · ' + TtModel.snapshotSummaryText(applied.counts) + (job.fileName ? ' · ' + job.fileName : '')
+      : '복원하지 못했어요 · ' + (applied.message || '');
+    setBackupResult(msg, !applied.ok);
+    try {
+      window.__ttokttokRestore = {
+        ok: !!applied.ok, stage: 'applied', fileName: job.fileName || '',
+        counts: applied.counts || null, warnings: job.warnings || [], at: TtModel.nowIso()
+      };
+    } catch (e) {}
+    return applied;
+  }
+  function cancelRestore() {
+    pendingImport = null;
+    var box = $('#adminBackupConfirmBox');
+    if (box) box.hidden = true;
+    setBackupResult('복원을 취소했어요. 기기 데이터는 그대로예요.', false);
+    try { window.__ttokttokRestore = { ok: false, stage: 'canceled' }; } catch (e) {}
+    return { ok: false, canceled: true };
+  }
+
+  var backupExportBtn = $('#adminBackupExport');
+  if (backupExportBtn) backupExportBtn.addEventListener('click', function () { downloadWorkspaceBackup(); });
+  var backupPickBtn = $('#adminBackupPick');
+  var backupFileInput = $('#adminBackupFile');
+  if (backupPickBtn && backupFileInput) {
+    backupPickBtn.addEventListener('click', function () { try { backupFileInput.click(); } catch (e) {} });
+    backupFileInput.addEventListener('change', function () {
+      var f = (this.files && this.files[0]) || null;
+      if (!f) return;
+      try {
+        var reader = new FileReader();
+        reader.onload = function () { beginRestoreFromText(String(reader.result || ''), f.name || ''); };
+        reader.onerror = function () { setBackupResult('파일을 읽지 못했어요. 다시 시도해 주세요.', true); };
+        reader.readAsText(f);
+      } catch (e) { setBackupResult('파일을 읽지 못했어요. 다시 시도해 주세요.', true); }
+    });
+  }
+  var backupConfirmBtn = $('#adminBackupConfirm');
+  if (backupConfirmBtn) backupConfirmBtn.addEventListener('click', function () { confirmRestore(); });
+  var backupCancelBtn = $('#adminBackupCancel');
+  if (backupCancelBtn) backupCancelBtn.addEventListener('click', function () { cancelRestore(); });
+
   function renderAdmin() {
     renderAdminResv();
     renderAdminOpsBoard();
+    renderAdminBackup();
     var stats = $('#adminStats');
     if (stats) stats.innerHTML = adminStatsHtml();
     var queue = $('#adminQueue');
@@ -13722,15 +14278,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   var COUPON_CODES = { WELCOME: 5000, TTOKTTOK: 5000 };
 
   function readJson(key) {
+    /* v23 · 어댑터 경유(손상 JSON은 기본값으로 떨어진다 — 기존 동작과 같다). */
     try {
-      var raw = SafeStorage.getItem(key);
-      if (!raw) return null;
-      var obj = JSON.parse(raw);
+      var obj = TtStorage.get(key, null);
       return obj == null ? null : obj;
     } catch (e) { return null; }
   }
   function saveJson(key, val) {
-    try { SafeStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+    try { TtStorage.set(key, val); } catch (e) {}
   }
   function clockLabel() {
     var d = new Date();
@@ -14677,7 +15232,34 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         var j = latestSharedJournal();
         if (!j) return null;
         return { id: j.id || '', date: j.date || '', patient: j.patient || '', hasPhoto: !!TtModel.photoOf(j), photo: TtModel.photoMetaOf(j) };
-      }
+      },
+      /* v23 · 운영 데이터 백업/복원 */
+      backupVersion: TtModel.backupVersion,
+      snapshotSchema: TtModel.snapshotSchema,
+      snapshotMaxChars: TtModel.snapshotMaxChars,
+      snapshotFileName: function (atIso) { return TtModel.snapshotFileName(atIso); },
+      snapshotSummaryText: function (counts) { return TtModel.snapshotSummaryText(counts); },
+      exportWorkspaceSnapshot: function () { return currentSnapshot(); },
+      exportWorkspaceText: function () { return JSON.stringify(currentSnapshot(), null, 2); },
+      validateWorkspaceSnapshot: function (raw, opts) { return TtModel.validateWorkspaceSnapshot(raw, opts); },
+      importWorkspaceSnapshot: function (raw, opts) { return TtModel.importWorkspaceSnapshot(raw, opts); },
+      downloadBackup: function () { return downloadWorkspaceBackup(); },
+      lastBackup: function () { return window.__ttokttokBackup || null; },
+      restoreFromText: function (text, fileName) { return beginRestoreFromText(text, fileName); },
+      pendingRestore: function () {
+        return pendingImport ? { counts: pendingImport.counts, fileName: pendingImport.fileName, warnings: pendingImport.warnings } : null;
+      },
+      applyPendingRestore: function () { return confirmRestore(); },
+      cancelPendingRestore: function () { return cancelRestore(); },
+      backupResultText: function () { var el = $('#adminBackupResult'); return el ? el.textContent : ''; },
+      backupCountsText: function () { var el = $('#adminBackupCounts'); return el ? el.textContent : ''; },
+      storageAdapter: function () { return { kind: TtStorage.kind(), available: TtStorage.available(), version: TtStorage.version }; },
+      storageAdapterContract: ['kind', 'available', 'get', 'set', 'getRaw', 'setRaw', 'remove', 'keys'],
+      useStorageAdapter: function (adapter) { return TtStorage.use(adapter); },
+      memoryAdapter: function (seed) { return TtStorage.memoryAdapter(seed); },
+      resetStorageAdapter: function () { return TtStorage.reset(); },
+      storageRead: function (key) { return TtStorage.get(key, null); },
+      storageWrite: function (key, value) { return TtStorage.set(key, value); }
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
