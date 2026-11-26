@@ -8144,14 +8144,24 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       });
       return best;
     }
-    /* 접수일(YYYY-MM-DD) — createdAt → 첫 이력 at → 방문일 순으로 찾는다. */
+    /* 접수일(YYYY-MM-DD, KST) — createdAt → 첫 이력 at → 방문일 순으로 찾는다. */
     function metricsReceivedIso(b) {
       var r = (b && typeof b === 'object') ? b : {};
-      var iso = String(r.createdAt || '').slice(0, 10);
+      var raw = String(r.createdAt || '');
+      if (isIso(raw)) {
+        var k = todayIsoKst(raw);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(k)) return k;
+      }
+      var iso = raw.slice(0, 10);
       if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
       var hist = Array.isArray(r.statusHistory) ? r.statusHistory : [];
       for (var i = 0; i < hist.length; i++) {
-        iso = String((hist[i] && hist[i].at) || '').slice(0, 10);
+        var at = String((hist[i] && hist[i].at) || '');
+        if (isIso(at)) {
+          var kk = todayIsoKst(at);
+          if (/^\d{4}-\d{2}-\d{2}$/.test(kk)) return kk;
+        }
+        iso = at.slice(0, 10);
         if (/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso;
       }
       return metricsVisitIso(r);
