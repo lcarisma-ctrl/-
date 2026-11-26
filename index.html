@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v32">
+<meta name="app-version" content="v33">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2236,6 +2236,25 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           <div id="homeSummaryReport"></div>
         </section>
 
+        <!-- v33 · 첫 방문 전 보호자: 브랜드 가치 + 첫 방문 안내가 첫 카드(이용 중이면 위 요약 카드가 첫 카드) -->
+        <section class="card" id="homeFirstVisitCard" aria-labelledby="homeFirstVisitTitle" hidden style="margin-top:14px">
+          <div class="card-head" style="margin-bottom:6px">
+            <h2 id="homeFirstVisitTitle">처음이신가요?</h2>
+            <span class="tag" id="homeFirstVisitTag">첫 방문 무료</span>
+          </div>
+          <p id="homeFirstVisitLead" style="margin:0;font-size:12.5px;line-height:1.6;color:var(--ink-2);letter-spacing:-.01em">면허·경력을 검증한 재활 선생님이 우리 집으로 찾아갑니다.</p>
+          <div id="homeFirstVisitPoints" style="margin-top:10px"></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #F1F4F9">
+            <span class="fine" style="margin:0">첫 방문 순서</span>
+            <div id="homeFirstVisitSteps" style="margin-top:3px;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.55;word-break:keep-all"></div>
+          </div>
+          <button class="btn btn-navy" type="button" data-book="eval" style="margin-top:14px">무료 평가 신청</button>
+          <button class="btn btn-outline" type="button" data-go="teachers" style="margin-top:8px">선생님 둘러보기</button>
+          <button class="sec-link" type="button" id="homeFirstVisitGuide" style="margin-top:12px">이용안내 · 준비물 보기<svg class="ic" aria-hidden="true"><use href="#i-chev-r"/></svg></button>
+          <p class="fine" id="homeFirstVisitNote" style="margin-top:8px">이동비 없음 · 강제 결제 없음 · 선생님 교체 가능</p>
+          <button class="sec-link" type="button" id="homeStagePreviewNote" hidden style="margin-top:10px">첫 방문 전 화면 미리보기 중 · 실제 데이터는 그대로 · 끄기</button>
+        </section>
+
         <section class="home-hero" aria-labelledby="homeHeroTitle">
           <p class="hh-greet"><b id="homeGreetName">현수</b>님, 반가워요</p>
           <h1 class="hh-title" id="homeHeroTitle">똑똑쌤과 <span class="hh-hl">건강한 회복</span>을 시작해요</h1>
@@ -3428,6 +3447,27 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           <p class="fine" id="adminBackupResult" role="status" aria-live="polite" style="margin:10px 0 0"></p>
           <div id="adminBackupBusy" hidden style="margin-top:10px"></div>
           <div id="adminBackupError" style="margin-top:10px"></div>
+        </div>
+      </section>
+
+      <!-- v33 · 첫 방문 전 홈 미리보기(화면만 바꾸고 데이터는 그대로) -->
+      <section class="sec" style="margin-top:20px" id="adminHomeStageSec" aria-label="홈 화면 미리보기">
+        <div class="sec-head" style="margin-bottom:10px">
+          <div>
+            <h2 class="sec-title">홈 화면 미리보기</h2>
+            <p class="sec-sub" id="adminHomeStageSub">보호자 상태에 따라 홈 첫 카드가 달라집니다. 미리보기는 화면만 바꾸고 이 기기의 예약·회차권 데이터는 그대로 둡니다.</p>
+          </div>
+          <span class="tag-example">DEMO</span>
+        </div>
+        <div class="admin-card" id="adminHomeStageCard">
+          <div class="sum-row"><span>지금 보호자 상태</span><b id="adminHomeStageNow">-</b></div>
+          <div class="sum-row"><span>홈 첫 카드</span><b id="adminHomeStageFirst">-</b></div>
+          <div class="sum-row"><span>예약 · 회차권 · 내 일지</span><b id="adminHomeStageCounts">-</b></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+            <button class="btn btn-outline btn-sm" type="button" id="adminStageFirst">첫 방문 전 화면 보기</button>
+            <button class="btn btn-outline btn-sm" type="button" id="adminStageReset">실제 상태로 보기</button>
+          </div>
+          <p class="fine" id="adminHomeStageResult" role="status" aria-live="polite" style="margin:10px 0 0">미리보기를 보려면 버튼을 누르면 보호자 홈으로 이동합니다.</p>
         </div>
       </section>
 
@@ -6439,6 +6479,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       { title: '강제 결제 없음', desc: '평가만 받고 결정하지 않아도 괜찮아요. 결제는 원하실 때만 진행해요.' },
       { title: '선생님 교체 가능', desc: '맞지 않으면 1:1 문의로 언제든 바꿀 수 있어요.' }
     ];
+    /* v33 · 첫 방문 전 홈 분기 — 예약·회차권·일지가 하나도 없으면
+       빈 요약 카드 대신 브랜드 가치 + 첫 방문 안내를 첫 카드로 보여 준다. */
+    var GUARDIAN_HOME_VERSION = 'v33';
+    var FIRST_VISIT_POINTS = [
+      { code: 'teacher', k: '선생님', v: '면허·경력 검증' },
+      { code: 'visit', k: '방문', v: '1회 60분 · 집에서' },
+      { code: 'report', k: '방문 후', v: '2분 일지 · 주 1회 리포트' }
+    ];
+    var FIRST_VISIT_NOTE = '이동비 없음 · 강제 결제 없음 · 선생님 교체 가능';
 
     /* 통증·컨디션 1~5. 5가 가장 좋은 상태(통증 없음·아주 좋음).
        기존 측정값(통증 NRS 0~10, 보행 m/s, 무릎 ROM)은 그대로 둔다. */
@@ -6948,6 +6997,84 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return {
         version: GUARDIAN_SUMMARY_VERSION, todayIso: todayIso,
         nextVisit: nextVisit, passes: passSummary, report: report
+      };
+    }
+
+    /* ==================================================================
+       v33 · 첫 방문 전 홈 분기 (계산만 · 저장·발송·DOM 접근 없음)
+       ─ 첫 방문 전(pre_first): 예약(취소·노쇼만 있는 경우 포함)·회차권·일지가
+         하나도 없는 보호자. 이때는 빈 요약 대신 첫 방문 안내를 첫 카드로 둔다.
+       ─ 이용 중(active): 위 셋 중 하나라도 있으면 기존 요약 카드를 첫 카드로 둔다.
+       ================================================================== */
+    function guardianStageCounts(ctx) {
+      var c = ctx || {};
+      var bookings = (Array.isArray(c.bookings) ? c.bookings : []).filter(function (b) {
+        return b && typeof b === 'object';
+      });
+      var live = 0, completed = 0, canceled = 0, keys = {};
+      bookings.forEach(function (b) {
+        if (b.no) keys['no:' + String(b.no)] = 1;
+        if (b.id) keys['id:' + String(b.id)] = 1;
+        var st = reservationCode(b.status);
+        if (st === 'completed') completed += 1;
+        else if (st === 'canceled' || st === 'no_show') canceled += 1;
+        else live += 1;
+      });
+      var passCount = 0, passRemaining = 0;
+      (Array.isArray(c.passes) ? c.passes : []).forEach(function (p) {
+        if (!p || typeof p !== 'object') return;
+        var remain = num(p.remaining, 0);
+        if (remain > 0) { passRemaining += remain; passCount += 1; }
+      });
+      /* 일지는 **이 보호자 것만** 센다 — 예약번호·예약 id로 연결되거나 보호자 이름과 맞을 때.
+         (기본 시드의 파트너 일지는 다른 어르신 기록이라 빈 계정 보호자와 섞지 않는다.) */
+      var name = String(c.memberName || c.name || '').trim();
+      var journals = (Array.isArray(c.journals) ? c.journals : []).filter(function (j) {
+        if (!j || typeof j !== 'object' || j.status === 'archived') return false;
+        var rid = String(j.reservationId || j.bookingNo || j.reservationNo || '');
+        if (rid && (keys['no:' + rid] || keys['id:' + rid])) return true;
+        if (name && String(j.patient || '').indexOf(name) === 0) return true;
+        return false;
+      }).length;
+      return {
+        bookings: bookings.length, liveBookings: live, completedBookings: completed,
+        canceledBookings: canceled, passCount: passCount, passRemaining: passRemaining, journals: journals
+      };
+    }
+
+    function buildGuardianHomePlan(ctx) {
+      var c = ctx || {};
+      var todayIso = c.todayIso || todayIsoKst();
+      var summary = buildGuardianSummary({ bookings: c.bookings, passes: c.passes, journals: c.journals, todayIso: todayIso });
+      var counts = guardianStageCounts(c);
+      var preFirst = counts.liveBookings === 0 && counts.completedBookings === 0 &&
+        counts.passRemaining === 0 && counts.journals === 0;
+      var actual = preFirst ? 'pre_first' : 'active';
+      var ov = String(c.stageOverride || '');
+      var stage = ov === 'first' || ov === 'pre_first' ? 'pre_first' : (ov === 'active' ? 'active' : actual);
+      return {
+        version: GUARDIAN_HOME_VERSION,
+        todayIso: todayIso,
+        stage: stage, actualStage: actual,
+        preview: stage === actual ? '' : (stage === 'pre_first' ? 'first' : 'active'),
+        stageLabel: stage === 'pre_first' ? '첫 방문 전' : '이용 중',
+        firstCard: stage === 'pre_first' ? 'firstVisit' : 'summary',
+        summaryHidden: stage === 'pre_first',
+        firstVisit: {
+          title: '처음이신가요?',
+          tag: '첫 방문 무료',
+          lead: '면허·경력을 검증한 재활 선생님이 우리 집으로 찾아갑니다. 첫 방문 평가는 무료이고, 평가 뒤에 결정하시면 됩니다.',
+          points: FIRST_VISIT_POINTS.map(function (p) { return { code: p.code, k: p.k, v: p.v }; }),
+          steps: ONBOARDING_FLOW.map(function (s) { return { n: s.n, title: s.title, desc: s.desc }; }),
+          stepLine: ONBOARDING_FLOW.map(function (s) { return s.n + ' ' + s.title; }).join(' → '),
+          ctas: [
+            { key: 'book', label: '무료 평가 신청', attrs: 'data-book="eval"' },
+            { key: 'teachers', label: '선생님 둘러보기', attrs: 'data-go="teachers"' }
+          ],
+          note: FIRST_VISIT_NOTE
+        },
+        counts: counts,
+        summary: summary
       };
     }
     /* 첫 방문 온보딩(준비물 3·진행 3단계·불안 해소 2) — 저장 값 정규화만 담당한다. */
@@ -9022,6 +9149,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       onboardingFlow: ONBOARDING_FLOW.map(function (s) { return { n: s.n, title: s.title, desc: s.desc }; }),
       onboardingAssurance: ONBOARDING_ASSURANCE.map(function (a) { return { title: a.title, desc: a.desc }; }),
       buildGuardianSummary: buildGuardianSummary,
+      guardianHomeVersion: GUARDIAN_HOME_VERSION,
+      firstVisitPoints: FIRST_VISIT_POINTS.map(function (p) { return { code: p.code, k: p.k, v: p.v }; }),
+      firstVisitNote: FIRST_VISIT_NOTE,
+      guardianStageCounts: guardianStageCounts,
+      buildGuardianHomePlan: buildGuardianHomePlan,
       normalizeOnboarding: normalizeOnboarding,
       onboardingDoneCount: onboardingDoneCount,
       onboardingNote: onboardingNote,
@@ -11904,6 +12036,73 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     });
   }
 
+  /* v33 · 보호자 상태(첫 방문 전 / 이용 중)에 따라 홈 첫 카드를 정한다.
+     미리보기는 화면만 바꾸고 예약·회차권·일지 데이터는 건드리지 않는다.
+     (?stage=first 또는 관리자 콘솔 「홈 화면 미리보기」) */
+  var homeStagePreview = (function () {
+    try {
+      var m = String((typeof location !== 'undefined' && location.search) || '').match(/[?&]stage=(first|pre_first|active)\b/);
+      if (!m) return '';
+      return m[1] === 'active' ? 'active' : 'first';
+    } catch (e) { return ''; }
+  })();
+
+  function guardianHomePlan() {
+    return TtModel.buildGuardianHomePlan({
+      bookings: account.bookings || [],
+      passes: account.passes || [],
+      journals: sharedJournals(),
+      memberName: customerName(),
+      todayIso: TtModel.todayIsoKst(),
+      stageOverride: homeStagePreview
+    });
+  }
+
+  function renderHomeStage(plan) {
+    var card = $('#homeFirstVisitCard');
+    var summary = $('#homeSummaryCard');
+    if (!card || !summary || !summary.parentNode) return;
+    var body = summary.parentNode;
+    var first = plan.stage === 'pre_first';
+    if (first) {
+      if (card.nextElementSibling !== summary) body.insertBefore(card, summary);
+      card.hidden = false;
+      summary.hidden = true;
+    } else {
+      if (summary.nextElementSibling !== card) body.insertBefore(summary, card);
+      summary.hidden = false;
+      card.hidden = true;
+    }
+    var lead = $('#homeFirstVisitLead');
+    if (lead) lead.textContent = plan.firstVisit.lead;
+    var tag = $('#homeFirstVisitTag');
+    if (tag) tag.textContent = plan.firstVisit.tag;
+    var pts = $('#homeFirstVisitPoints');
+    if (pts) {
+      pts.innerHTML = plan.firstVisit.points.map(function (p) {
+        return '<div class="sum-row"><span>' + esc(p.k) + '</span><b>' + esc(p.v) + '</b></div>';
+      }).join('');
+    }
+    var steps = $('#homeFirstVisitSteps');
+    if (steps) steps.textContent = plan.firstVisit.stepLine;
+    var note = $('#homeFirstVisitNote');
+    if (note) note.textContent = plan.firstVisit.note;
+    var pv = $('#homeStagePreviewNote');
+    if (pv) pv.hidden = !plan.preview;
+    /* 첫 방문 전에는 위 파란 공지(「처음 오셨나요?」)가 카드와 같은 말을 하므로 접는다. */
+    var notice = $('#homeNotice');
+    if (notice) notice.hidden = first;
+    try { toucApplyAll(card); } catch (e) {}
+    try { window.__ttokttokHomeStage = { stage: plan.stage, actualStage: plan.actualStage, preview: plan.preview, firstCard: plan.firstCard, at: Date.now() }; } catch (e) {}
+  }
+
+  function setHomeStagePreview(value) {
+    homeStagePreview = value === 'active' ? 'active' : (value === 'first' || value === 'pre_first' ? 'first' : '');
+    try { renderHomeSummary(); } catch (e) {}
+    try { renderAdminHomeStage(); } catch (e) {}
+    return guardianHomePlan();
+  }
+
   function summaryChevron() {
     return '<svg class="ic" aria-hidden="true"><use href="#i-chev-r"/></svg>';
   }
@@ -11911,7 +12110,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function renderHomeSummary() {
     var card = $('#homeSummaryCard');
     if (!card) return;
-    var s = guardianSummaryData();
+    var plan = guardianHomePlan();
+    renderHomeStage(plan);
+    var s = plan.summary;
     var dateEl = $('#homeSummaryDate');
     if (dateEl) dateEl.textContent = TtModel.dateLabelOf(s.todayIso) + ' 기준';
 
@@ -14960,6 +15161,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderAdminResv();
     renderAdminOpsBoard();
     renderAdminBackup();
+    try { renderAdminHomeStage(); } catch (e) {}
     try { renderAdminReminders(); } catch (e) {}
     var stats = $('#adminStats');
     if (stats) stats.innerHTML = adminStatsHtml();
@@ -14979,6 +15181,24 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           '<div><b>' + esc(d.name) + '</b> 선생님 · ' + (ok ? '승인 완료' : '보완 요청') + '</div>' +
           '<span class="when">' + esc(d.at) + '</span></div>';
       }).join('') : TtUI.emptyHtml('admin-recent', { style: 'box-shadow:none' });
+    }
+  }
+
+  /* v33 · 관리자 콘솔 「홈 화면 미리보기」 — 지금 보호자 상태와 홈 첫 카드를 보여 주고,
+     미리보기(첫 방문 전)를 화면에서만 바꿔 본다. 저장소·예약 데이터는 건드리지 않는다. */
+  function renderAdminHomeStage() {
+    var plan = guardianHomePlan();
+    var now = $('#adminHomeStageNow');
+    if (now) now.textContent = (plan.actualStage === 'pre_first' ? '첫 방문 전' : '이용 중') + (plan.preview ? ' · 미리보기 중' : '');
+    var fc = $('#adminHomeStageFirst');
+    if (fc) fc.textContent = plan.firstCard === 'firstVisit' ? '첫 방문 안내 카드' : '한눈에 보기(요약) 카드';
+    var co = $('#adminHomeStageCounts');
+    if (co) co.textContent = '예약 ' + plan.counts.bookings + '건 · 회차권 ' + plan.counts.passRemaining + '회 · 일지 ' + plan.counts.journals + '건';
+    var res = $('#adminHomeStageResult');
+    if (res) {
+      res.textContent = plan.preview
+        ? '지금은 첫 방문 전 화면을 미리 보는 중입니다. 「실제 상태로 보기」를 누르면 원래대로 돌아갑니다.'
+        : '미리보기를 보려면 버튼을 누르면 보호자 홈으로 이동합니다.';
     }
   }
 
@@ -15657,6 +15877,24 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   document.addEventListener('click', function (e) {
     if (e.target.closest('[data-admin-open]')) { openAdmin(); return; }
     if (e.target.closest('[data-admin-back]')) { closeAdmin(); return; }
+    /* v33 · 홈 화면 미리보기(화면만 바꾼다) */
+    if (e.target.closest('#adminStageFirst')) {
+      setHomeStagePreview('first');
+      closeAdmin();
+      toast('첫 방문 전 보호자 홈을 미리 보는 중이에요. 실제 데이터는 그대로입니다.');
+      return;
+    }
+    if (e.target.closest('#adminStageReset')) {
+      setHomeStagePreview('');
+      closeAdmin();
+      toast('지금 보호자 상태의 홈으로 돌아왔어요.');
+      return;
+    }
+    if (e.target.closest('#homeStagePreviewNote')) {
+      setHomeStagePreview('');
+      toast('첫 방문 전 화면 미리보기를 껐어요.');
+      return;
+    }
     if (e.target.closest('[data-app-close]') || e.target.id === 'appSheet') { closeAppSheet(); return; }
 
     /* v17 · 예약 접수 큐: 상태 필터 · 안내 문구 복사 · 상태 전이 */
@@ -16427,7 +16665,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   document.addEventListener('click', function (e) {
-    if (e.target.closest('#homeNotice') || e.target.closest('#homeGuideBtn') || e.target.closest('#mpGuideLink')) {
+    if (e.target.closest('#homeNotice') || e.target.closest('#homeGuideBtn') || e.target.closest('#mpGuideLink') || e.target.closest('#homeFirstVisitGuide')) {
       openGuideSheet();
       return;
     }
@@ -19572,9 +19810,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       storageRead: function (key) { return TtStorage.get(key, null); },
       storageWrite: function (key, value) { return TtStorage.set(key, value); },
       /* v24 · 모바일·접근성·성능 QA */
-      qaVersion: 'v32',
+      qaVersion: 'v33',
       a11y: {
-        version: 'v32',
+        version: 'v33',
         dialogOrder: DIALOG_ORDER.slice(),
         openDialog: function () { return topOpenDialog(); },
         focusInside: function (sel) {
@@ -19631,6 +19869,31 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       guardianSummary: function (ctx) {
         var c = ctx || { bookings: account.bookings, passes: account.passes, journals: sharedJournals(), todayIso: TtModel.todayIsoKst() };
         return TtModel.buildGuardianSummary(c);
+      },
+      /* v33 · 첫 방문 전 / 이용 중 홈 분기 */
+      guardianHomeVersion: TtModel.guardianHomeVersion,
+      firstVisitPoints: TtModel.firstVisitPoints,
+      firstVisitNote: TtModel.firstVisitNote,
+      buildGuardianHomePlan: function (ctx) { return TtModel.buildGuardianHomePlan(ctx || {}); },
+      guardianStageCounts: function (ctx) { return TtModel.guardianStageCounts(ctx || {}); },
+      guardianHome: function () { return guardianHomePlan(); },
+      setStagePreview: function (value) { return setHomeStagePreview(value); },
+      homeStageState: function () {
+        var card = $('#homeFirstVisitCard');
+        var sum = $('#homeSummaryCard');
+        var body = sum ? sum.parentNode : null;
+        var pv = $('#homeStagePreviewNote');
+        return {
+          preview: homeStagePreview,
+          firstCardVisible: !!card && !card.hidden,
+          summaryVisible: !!sum && !sum.hidden,
+          firstElement: body && body.firstElementChild ? (body.firstElementChild.id || body.firstElementChild.className) : '',
+          noteVisible: !!pv && !pv.hidden,
+          title: card ? (card.querySelector('#homeFirstVisitTitle') ? String(card.querySelector('#homeFirstVisitTitle').textContent || '') : '') : '',
+          points: card ? [].slice.call(card.querySelectorAll('#homeFirstVisitPoints .sum-row')).map(function (r) { return String(r.textContent || '').replace(/\s+/g, ' ').trim(); }) : [],
+          steps: card ? (card.querySelector('#homeFirstVisitSteps') ? String(card.querySelector('#homeFirstVisitSteps').textContent || '').trim() : '') : '',
+          ctas: card ? [].slice.call(card.querySelectorAll('#homeFirstVisitCard .btn')).map(function (b) { return String(b.textContent || '').trim(); }) : []
+        };
       },
       summaryText: function () {
         return ['#homeSummaryNext', '#homeSummaryPass', '#homeSummaryReport'].map(function (s) {
