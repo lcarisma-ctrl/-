@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v26">
+<meta name="app-version" content="v27">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2841,12 +2841,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       <div id="tpStatusCard" style="margin-top:10px"></div>
       <div id="tpSettle" style="margin-top:10px"></div>
 
-      <!-- v19 · 선생님 전용 알림함 (audience: teacher) -->
+      <!-- v19 · 선생님 전용 알림함 (audience: teacher) / v27 · 카테고리 필터·전체 보기 -->
       <section class="sec" style="margin-top:20px" id="tpNotifSec" aria-label="선생님 알림함">
         <div class="sec-head" style="margin-bottom:8px">
           <h2 class="sec-title" style="font-size:15px">알림함 <span id="tpNotifCount" style="font-size:11px;font-weight:700;color:var(--blue)"></span></h2>
-          <button class="sec-link" type="button" data-tp-notif-all>모두 읽음</button>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="sec-link" type="button" data-tp-noti-open>전체 보기</button>
+            <button class="sec-link" type="button" data-tp-notif-all>모두 읽음</button>
+          </div>
         </div>
+        <div class="chips" id="tpNotifChips" role="tablist" aria-label="선생님 알림 분류 필터" style="flex-wrap:wrap;overflow:visible"></div>
         <div class="notif-list" id="tpNotifList"></div>
         <p class="fine" style="margin-top:8px">* 앱 안 알림입니다. 문자·카카오 발송은 아직 연결되지 않았어요.</p>
       </section>
@@ -3313,6 +3317,23 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <div class="admin-queue" id="adminExceptionBoard" style="margin-top:12px" aria-label="운영 예외"></div>
         <!-- v20 · 4주 재평가 시점 -->
         <div class="admin-queue" id="adminReevalBoard" style="margin-top:12px" aria-label="4주 재평가"></div>
+      </section>
+
+      <!-- v27 · 오늘 발송할 리마인드 미리보기 (로컬 데모 · 실제 발송 없음) -->
+      <section class="sec" style="margin-top:20px" id="adminReminderSec" aria-label="오늘 발송할 리마인드 미리보기">
+        <div class="sec-head" style="margin-bottom:10px">
+          <div>
+            <h2 class="sec-title">오늘 발송할 리마인드 미리보기</h2>
+            <p class="sec-sub" id="adminReminderSub">방문 D-1·4주 재평가·최근 변경/취소·정산 확정/지급 예정 문구를 모았습니다.</p>
+          </div>
+          <span class="tag-example">DEMO</span>
+        </div>
+        <div class="admin-approved" id="adminReminderNotice"><svg class="ic" aria-hidden="true" style="align-self:flex-start;margin-top:2px"><use href="#i-shield-check"/></svg><span><b>실제 문자·알림톡 발송은 하지 않습니다</b><br>이 화면은 발송 전 문구를 확인·복사하는 로컬 미리보기입니다. 외부 발송기·서버와 연결되어 있지 않아요.</span></div>
+        <div id="adminReminderCounts" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+          <button class="btn btn-outline btn-sm" type="button" id="adminReminderCopyAll">오늘 리마인드 전체 문구 복사</button>
+        </div>
+        <div class="admin-queue" id="adminReminderQueue" aria-label="오늘 리마인드 목록"></div>
       </section>
 
       <!-- v17 · 예약 접수 큐 & 상태 관리 (로컬 데모) -->
@@ -3870,8 +3891,47 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <button class="sec-link" type="button" id="notifReadAll">모두 읽음</button>
       </div>
       <p class="sheet-desc">방문 확정·리마인드·회복 리포트 소식을 모았어요.</p>
+      <div class="chips" id="notifChips" role="tablist" aria-label="알림 분류 필터" style="flex-wrap:wrap;overflow:visible"></div>
       <div class="notif-list" id="notifList"></div>
-      <p class="sheet-note">* 알림은 이 기기에만 저장되는 프로토타입입니다.</p>
+      <p class="sheet-note" id="notifNote">* 알림은 이 기기에만 저장되는 프로토타입입니다. 알림을 누르면 관련 화면으로 이동하고, 발송 전 문구를 미리 볼 수 있어요(실제 발송 없음).</p>
+    </div>
+  </div>
+</div>
+
+<!-- v27 · 알림 문구 미리보기 시트 (실제 발송 없음) -->
+<div class="sheet-backdrop" id="notifPreviewSheet" role="dialog" aria-modal="true" aria-labelledby="notifPreviewTitle">
+  <div class="sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close sheet-close-top" type="button" data-notif-preview-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="sheet-scroll">
+      <h2 class="sheet-title" id="notifPreviewTitle">알림 문구 미리보기</h2>
+      <p class="sheet-desc">문자·알림톡으로 나갈 문구를 발송 전에 확인하는 화면이에요.</p>
+      <div class="admin-approved" style="margin-top:12px">
+        <svg class="ic" aria-hidden="true" style="align-self:flex-start;margin-top:2px"><use href="#i-shield-check"/></svg>
+        <span><b>실제 발송 전 로컬 미리보기</b><br>문자·카카오 알림톡은 아직 연결되어 있지 않아요. 이 화면에서 외부로 발송되지 않습니다.</span>
+      </div>
+      <div id="notifPreviewBody"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+        <button class="btn btn-outline btn-sm" type="button" data-notif-preview-close>닫기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- v27 · 선생님 알림함 전체 보기 시트 -->
+<div class="sheet-backdrop" id="tpNotiSheet" role="dialog" aria-modal="true" aria-labelledby="tpNotiTitle">
+  <div class="sheet">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <button class="sheet-close sheet-close-top" type="button" data-tp-noti-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+    <div class="sheet-scroll">
+      <div class="sheet-head-row">
+        <h2 class="sheet-title" id="tpNotiTitle">선생님 알림함</h2>
+        <button class="sec-link" type="button" data-tp-notif-all>모두 읽음</button>
+      </div>
+      <p class="sheet-desc">방문 배정·확정·정산 소식을 모았어요. 알림을 누르면 발송 전 문구를 미리 볼 수 있어요.</p>
+      <div class="chips" id="tpNotiChips" role="tablist" aria-label="선생님 알림 분류 필터" style="flex-wrap:wrap;overflow:visible"></div>
+      <div class="notif-list" id="tpNotiList"></div>
+      <p class="sheet-note">* 앱 안 알림입니다. 문자·카카오 발송은 아직 연결되지 않았어요.</p>
     </div>
   </div>
 </div>
@@ -7632,6 +7692,371 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       };
     }
 
+    /* =================================================================
+       v27 · 알림·리마인드 센터 (보호자 · 선생님 · 운영자)
+       ─────────────────────────────────────────────────────────────────
+       예약·정산 원장에서 "오늘 보낼 리마인드"를 자동으로 만들어 모은다.
+       · buildReminderQueue(ctx, todayIso) : 순수 함수 — 저장·발송·DOM 접근 없음
+       · reminderPreviewText(item, audience) : 발송 전 문구(미리보기·복사용)
+       · notificationCategoryOf / summarizeNotifCategories : 알림함 분류·안 읽음 수
+       정산 규칙은 v21/v26 한 곳(payoutConfirmIsoOf·nextPayoutDue)만 쓴다.
+       ================================================================= */
+    var REMINDER_QUEUE_VERSION = 'v27';
+    var REMINDER_LOOKBACK_DAYS = 7;        /* 변경·취소 안내를 모으는 기간 */
+    var REMINDER_PAYOUT_SOON_DAYS = 7;     /* 지급 예정 알림을 띄우는 기간 */
+    var REMINDER_LOCAL_NOTE = '실제 문자·알림톡 발송 전 로컬 미리보기입니다. 이 화면에서 외부로 발송되지 않아요.';
+    var REMINDER_CATEGORIES = [
+      { key: 'all', label: '전체' },
+      { key: 'visit', label: '방문 일정' },
+      { key: 'report', label: '리포트/재평가' },
+      { key: 'ops', label: '정산/운영' }
+    ];
+    var REMINDER_KIND_META = {
+      visit_d1: { label: '방문 D-1', category: 'visit', audiences: ['customer', 'teacher'], order: 1 },
+      visit_change: { label: '일정 변경', category: 'visit', audiences: ['customer', 'teacher'], order: 2 },
+      visit_cancel: { label: '방문 취소', category: 'visit', audiences: ['customer', 'teacher'], order: 3 },
+      visit_substitute: { label: '대체·재배정', category: 'visit', audiences: ['customer', 'teacher'], order: 4 },
+      reeval: { label: '4주 재평가', category: 'report', audiences: ['customer', 'teacher'], order: 5 },
+      settle_confirm: { label: '정산 확정(D+3)', category: 'ops', audiences: ['teacher'], order: 6 },
+      settle_payout: { label: '지급 예정', category: 'ops', audiences: ['teacher'], order: 7 }
+    };
+    /* 알림(notifStore) kind → 알림함 카테고리. 모르는 kind는 '정산/운영'으로 둔다. */
+    var NOTIF_KIND_CATEGORY = {
+      visit: 'visit', remind: 'visit', schedule_change: 'visit', cancel: 'visit', substitute: 'visit',
+      report: 'report', reeval: 'report',
+      coupon: 'ops', system: 'ops', settle: 'ops', settlement: 'ops'
+    };
+    /* 알림함 kind의 짧은 이름(미리보기 머리말에만 쓴다). */
+    var NOTIF_KIND_LABEL = {
+      visit: '방문 일정', remind: '리마인드', schedule_change: '일정 변경', cancel: '방문 취소',
+      substitute: '대체·재배정', report: '리포트', reeval: '4주 재평가',
+      coupon: '쿠폰', system: '안내', settle: '정산', settlement: '정산'
+    };
+    function reminderCategoryLabel(key) {
+      var k = String(key == null ? '' : key);
+      for (var i = 0; i < REMINDER_CATEGORIES.length; i++) {
+        if (REMINDER_CATEGORIES[i].key === k) return REMINDER_CATEGORIES[i].label;
+      }
+      return '정산/운영';
+    }
+    function notificationCategoryOf(n) {
+      var s = (n && typeof n === 'object') ? n : {};
+      var k = String(s.kind || '');
+      if (NOTIF_KIND_CATEGORY[k]) return NOTIF_KIND_CATEGORY[k];
+      var c = String(s.category || '');
+      if (c === 'visit' || c === 'report' || c === 'ops') return c;
+      return 'ops';
+    }
+    /* 알림 목록 → 카테고리별 전체·안 읽음 수(알림함 칩에 그대로 쓴다). */
+    function summarizeNotifCategories(list, audience) {
+      var arr = Array.isArray(list) ? list : [];
+      var counts = {};
+      REMINDER_CATEGORIES.forEach(function (c) { counts[c.key] = { total: 0, unread: 0 }; });
+      arr.forEach(function (n) {
+        if (!n || !n.title) return;
+        if (audience && (audience === 'teacher' ? n.audience !== 'teacher' : n.audience === 'teacher')) return;
+        var c = notificationCategoryOf(n);
+        counts.all.total += 1;
+        if (!n.read) counts.all.unread += 1;
+        if (counts[c]) { counts[c].total += 1; if (!n.read) counts[c].unread += 1; }
+      });
+      return {
+        total: counts.all.total, unread: counts.all.unread,
+        categories: REMINDER_CATEGORIES.map(function (c) {
+          return { key: c.key, label: c.label, total: counts[c.key].total, unread: counts[c.key].unread };
+        })
+      };
+    }
+    /* 발송 전 문구(복사·미리보기). 외부로 보내지 않는다. */
+    function reminderPreviewText(item, audience) {
+      var it = (item && typeof item === 'object') ? item : {};
+      var aud = String(audience) === 'teacher' ? 'teacher' : 'customer';
+      var msg = (it[aud] && (it[aud].title || it[aud].body)) ? it[aud] : { title: it.title || '', body: it.body || '' };
+      var kindLabel = (it.kindLabel || (REMINDER_KIND_META[String(it.kind || '')] || {}).label || '알림');
+      var catLabel = it.categoryLabel || reminderCategoryLabel(it.category || (REMINDER_KIND_META[String(it.kind || '')] || {}).category);
+      return '[똑똑쌤 알림 문구 · ' + (aud === 'teacher' ? '선생님' : '보호자') + ']\n' +
+        '분류: ' + catLabel + ' · ' + kindLabel + '\n\n' +
+        String(msg.title || '') + '\n' + String(msg.body || '') +
+        '\n\n* ' + REMINDER_LOCAL_NOTE;
+    }
+    /* 알림 1건 또는 리마인드 큐 항목 → 미리보기 모델(화면·테스트 공용). */
+    function notificationPreview(src) {
+      var s = (src && typeof src === 'object') ? src : {};
+      var aud = s.audience === 'teacher' ? 'teacher' : 'customer';
+      var category = notificationCategoryOf(s);
+      var kind = String(s.kind || 'visit');
+      function msgOf(x) {
+        if (!x || (!x.title && !x.body)) return null;
+        return { title: String(x.title || ''), body: String(x.body || '') };
+      }
+      var cust = msgOf(s.customer);
+      var tea = msgOf(s.teacher);
+      var out = {
+        ok: !!(s.title || cust || tea),
+        id: String(s.id || ''),
+        kind: kind,
+        kindLabel: (REMINDER_KIND_META[kind] && REMINDER_KIND_META[kind].label) || NOTIF_KIND_LABEL[kind] || '알림',
+        category: category,
+        categoryLabel: reminderCategoryLabel(category),
+        audience: aud,
+        audienceLabel: aud === 'teacher' ? '선생님' : '보호자',
+        title: String(s.title || (s[aud] && s[aud].title) || ''),
+        body: String(s.body || (s[aud] && s[aud].body) || ''),
+        customer: cust, teacher: tea,
+        dueLabel: String(s.dueLabel || ''),
+        note: REMINDER_LOCAL_NOTE
+      };
+      out.text = reminderPreviewText(out, aud);
+      return out;
+    }
+    /* 오늘 발송할 리마인드 큐 — 계산만 한다(저장·발송·DOM 접근 없음).
+       ctx: { bookings, ledger, journals?, todayIso? } */
+    function buildReminderQueue(ctx, todayIso) {
+      var c = (ctx && typeof ctx === 'object') ? ctx : {};
+      var today = String(todayIso || c.todayIso || todayIsoKst()).slice(0, 10);
+      var todayDate = dateObjOf(today);
+      var bookings = Array.isArray(c.bookings) ? c.bookings : [];
+      var ledger = Array.isArray(c.ledger) ? c.ledger : [];
+      var items = [], seen = {};
+      function gapOf(iso) {
+        var d = dateObjOf(iso);
+        if (!d || !todayDate) return null;
+        return Math.round((d.getTime() - todayDate.getTime()) / 86400000);
+      }
+      function isoOfResv(b) {
+        var iso = String((b && (b.dateIso || b.visitDate)) || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) iso = dateLabelToIso(b && b.date);
+        return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : '';
+      }
+      function add(it) {
+        if (!it || !it.id || seen[it.id]) return;
+        var meta = REMINDER_KIND_META[it.kind] || {};
+        it.category = it.category || meta.category || 'ops';
+        it.audiences = Array.isArray(it.audiences) ? it.audiences : (meta.audiences || ['customer']);
+        it.categoryLabel = reminderCategoryLabel(it.category);
+        it.kindLabel = meta.label || String(it.kind);
+        seen[it.id] = true;
+        items.push(it);
+      }
+
+      /* ① 방문 D-1 — 내일 예정된 확정·배정·재확정 예약 */
+      var tomorrow = todayDate ? isoDateOf(new Date(todayDate.getTime() + 86400000)) : '';
+      bookings.forEach(function (b) {
+        if (!b || typeof b !== 'object') return;
+        var st = reservationCode(b.status);
+        if (st !== 'confirmed' && st !== 'assigned' && st !== 'rescheduled') return;
+        var iso = isoOfResv(b);
+        if (!iso || iso !== tomorrow) return;
+        var no = String(b.no || b.id || '');
+        var n = buildReminderNotice(b, 'd_minus_1', {});
+        var cust = (n && n.ok && n.customer) ? n.customer
+          : { title: '내일 ' + (b.time || '') + ' 방문이 예정돼 있어요', body: no + ' · ' + String(b.teacher || '담당 선생님') + ' 방문입니다.' };
+        var tea = (n && n.ok && n.teacher) ? n.teacher
+          : { title: '내일 방문 일정 알림', body: no + ' · ' + (b.time || '') + ' 방문입니다.' };
+        add({
+          id: 'rq-d1-' + no,
+          kind: 'visit_d1', category: 'visit', audiences: ['customer', 'teacher'],
+          title: no + ' 방문 D-1 안내',
+          summary: '내일 ' + (b.time || '') + ' · ' + String(b.teacher || '담당 선생님') + ' · ' + regionTextOf(b.regionId, b.region),
+          badge: 'D-1', dueIso: iso,
+          dueLabel: dateLabelOf(iso) + (weekdayOf(iso) ? ' (' + weekdayOf(iso) + ')' : ''),
+          bookingNo: no, bookingId: String(b.id || ''), teacherId: String(b.teacherId || ''),
+          prep: ONBOARDING_PREP.map(function (p) { return p.label; }),
+          target: { screen: 'account', sheet: '#accountSheet' },
+          customer: cust, teacher: tea
+        });
+      });
+
+      /* ② 4주(28일) 재평가 — 도래·임박 건은 보호자·선생님 모두에게 */
+      var alerts = buildReevalAlerts(bookings, { todayIso: today });
+      (alerts.items || []).forEach(function (it) {
+        var firstLabel = dateLabelOf(it.firstVisitIso) || it.firstVisitIso;
+        var whenText = it.status === 'due'
+          ? (it.overdueDays ? it.overdueDays + '일 지났어요' : '오늘 도래했어요')
+          : it.daysLeft + '일 남았어요';
+        add({
+          id: 'rq-reeval-' + it.dueIso + '-' + (slug(it.key) || 'member'),
+          kind: 'reeval', category: 'report', audiences: ['customer', 'teacher'],
+          title: it.label + ' 4주 재평가',
+          summary: '첫 방문 ' + firstLabel + ' · ' + it.badge,
+          badge: it.badge, dueIso: it.dueIso, dueLabel: dateLabelOf(it.dueIso) || it.dueIso,
+          bookingNo: it.bookingNo || '', memberLabel: it.label,
+          target: { screen: 'journal' },
+          customer: {
+            title: it.badge + ' · 4주 재평가 시점이에요',
+            body: it.label + ' · 첫 방문 ' + firstLabel + ' 기준 4주가 ' + whenText +
+              '. 지금 상태를 다시 재고 다음 4주 목표를 정할 때예요.'
+          },
+          teacher: {
+            title: '4주 재평가 시점이에요',
+            body: it.label + ' · 첫 방문 ' + firstLabel + ' · ' + it.badge + '. 다음 방문 때 재평가를 진행해 주세요.'
+          }
+        });
+      });
+
+      /* ③ 최근 변경·취소·대체 선생님 — 예약 이력(statusHistory) 기준 최근 7일 */
+      var sinceMs = todayDate ? (todayDate.getTime() - REMINDER_LOOKBACK_DAYS * 86400000) : 0;
+      var eventLabel = { visit_change: '일정 변경 안내', visit_cancel: '방문 취소 안내', visit_substitute: '대체 선생님 안내' };
+      var eventBadge = { visit_change: '변경', visit_cancel: '취소', visit_substitute: '재배정' };
+      bookings.forEach(function (b) {
+        if (!b || typeof b !== 'object') return;
+        var hist = Array.isArray(b.statusHistory) ? b.statusHistory : [];
+        hist.forEach(function (h, i) {
+          if (!h || !h.status) return;
+          var at = String(h.at || '');
+          var t = Date.parse(at);
+          if (!isFinite(t) || t < sinceMs) return;
+          var prev = i > 0 ? String(hist[i - 1].status || '') : String(h.from || '');
+          var hs = reservationCode(h.status) || String(h.status);
+          var ps = reservationCode(prev) || prev;
+          var key = '', kind = '';
+          if (hs === 'rescheduled') { key = 'rescheduled'; kind = 'visit_change'; }
+          else if (hs === 'canceled') { key = 'canceled'; kind = 'visit_cancel'; }
+          else if (hs === 'received' && ps === 'assigned') { key = 'reassigned'; kind = 'visit_substitute'; }
+          if (!key) return;
+          var iso = isoOfResv(b);
+          var no = String(b.no || b.id || '');
+          var n = noticeFor(b, key, { refund: b.refund });
+          add({
+            id: 'rq-ev-' + no + '-' + key + '-' + String(h.at || i),
+            kind: kind, category: 'visit', audiences: ['customer', 'teacher'],
+            title: no + ' ' + eventLabel[kind],
+            summary: (b.date || dateLabelOf(iso) || iso) + (b.time ? ' ' + b.time : '') +
+              (h.reason ? ' · ' + String(h.reason) : ''),
+            badge: eventBadge[kind], dueIso: iso, dueLabel: dateLabelOf(iso), bookingNo: no, changedAt: at,
+            target: { screen: 'account', sheet: '#accountSheet' },
+            customer: n.customer, teacher: n.teacher
+          });
+        });
+      });
+
+      /* ④ 정산 확정(D+3)·지급 예정(15일·말일) — 선생님용 요약 */
+      var rows = [];
+      ledger.forEach(function (r) {
+        if (!r || typeof r !== 'object') return;
+        if (String(r.status) === 'paid' || String(r.status) === 'held') return;
+        var visit = String(r.visitDate || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) visit = dateLabelToIso(r.visitDate);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(visit)) return;
+        var payout = Math.max(0, Math.round(num(r.netAmount, payoutOf(num(r.grossAmount, 0)))));
+        if (payout <= 0) return;   /* 무료 평가·0원 회차는 알리지 않는다 */
+        rows.push({
+          no: String(r.reservationNo || ''), visit: visit,
+          confirm: payoutConfirmIsoOf(visit),
+          due: String(r.payoutDueDate || '').slice(0, 10) || nextPayoutDue(visit),
+          payout: payout, patient: String(r.patient || '')
+        });
+      });
+      function sumOf(list, k) { var s = 0; list.forEach(function (x) { s += num(x[k], 0); }); return s; }
+      function earliestOf(list, k) {
+        var best = '';
+        list.forEach(function (x) { if (x[k] && (!best || x[k] < best)) best = x[k]; });
+        return best;
+      }
+      function nosOf(list) {
+        var nos = [];
+        list.forEach(function (x) { if (x.no && nos.indexOf(x.no) === -1) nos.push(x.no); });
+        return nos;
+      }
+      var confirmSoon = rows.filter(function (r) {
+        var g = gapOf(r.confirm);
+        return g != null && g >= 0 && g <= SETTLEMENT_RULE.confirmDays;
+      });
+      if (confirmSoon.length) {
+        var cIso = earliestOf(confirmSoon, 'confirm');
+        var cGap = gapOf(cIso);
+        var cAmount = sumOf(confirmSoon, 'payout');
+        var cLabel = dateLabelOf(cIso) || cIso;
+        add({
+          id: 'rq-settle-confirm-' + cIso,
+          kind: 'settle_confirm', category: 'ops', audiences: ['teacher'],
+          title: '정산 확정 예정 ' + confirmSoon.length + '건 · ' + wonText(cAmount),
+          summary: (nosOf(confirmSoon).slice(0, 2).join(', ') || '회차') + ' · 확정 후 15일·말일 지급',
+          badge: cGap === 0 ? '오늘 확정' : '확정 D-' + cGap,
+          dueIso: cIso, dueLabel: cLabel, target: { screen: 'tp-settle', sheet: '#settlementPrintSheet' },
+          teacher: {
+            title: '정산이 곧 확정돼요',
+            body: cLabel + ' 정산 확정 예정 ' + confirmSoon.length + '건 · 지급액 ' + wonText(cAmount) +
+              '. 확정 뒤 첫 15일·말일에 지급돼요.'
+          }
+        });
+      }
+      var dueSoon = rows.filter(function (r) {
+        var g = gapOf(r.due);
+        return g != null && g >= 0 && g <= REMINDER_PAYOUT_SOON_DAYS;
+      });
+      if (dueSoon.length) {
+        var dIso = earliestOf(dueSoon, 'due');
+        var dGap = gapOf(dIso);
+        var dAmount = sumOf(dueSoon, 'payout');
+        var dLabel = dateLabelOf(dIso) || dIso;
+        add({
+          id: 'rq-settle-payout-' + dIso,
+          kind: 'settle_payout', category: 'ops', audiences: ['teacher'],
+          title: '지급 예정 ' + dueSoon.length + '건 · ' + wonText(dAmount),
+          summary: (nosOf(dueSoon).slice(0, 2).join(', ') || '회차') + ' · 15일·말일 지급',
+          badge: dGap === 0 ? '오늘 지급' : 'D-' + dGap,
+          dueIso: dIso, dueLabel: dLabel, target: { screen: 'tp-settle', sheet: '#settlementPrintSheet' },
+          teacher: {
+            title: '지급 예정 안내',
+            body: dLabel + ' 지급 예정 ' + dueSoon.length + '건 · ' + wonText(dAmount) +
+              '. 정산 명세서에서 회차별 내역을 확인해 주세요.'
+          }
+        });
+      }
+
+      items.sort(function (a, b) {
+        var oa = (REMINDER_KIND_META[a.kind] || {}).order || 9;
+        var ob = (REMINDER_KIND_META[b.kind] || {}).order || 9;
+        if (oa !== ob) return oa - ob;
+        var da = String(a.dueIso || ''), db = String(b.dueIso || '');
+        if (da !== db) return da < db ? -1 : 1;
+        return String(a.id) < String(b.id) ? -1 : 1;
+      });
+
+      var byCategory = { all: items.length, visit: 0, report: 0, ops: 0 };
+      var byAudience = { customer: 0, teacher: 0 };
+      items.forEach(function (it) {
+        if (byCategory[it.category] != null) byCategory[it.category] += 1;
+        if (it.audiences.indexOf('customer') !== -1) byAudience.customer += 1;
+        if (it.audiences.indexOf('teacher') !== -1) byAudience.teacher += 1;
+      });
+      var out = {
+        version: REMINDER_QUEUE_VERSION, todayIso: today,
+        lookbackDays: REMINDER_LOOKBACK_DAYS, payoutSoonDays: REMINDER_PAYOUT_SOON_DAYS,
+        total: items.length,
+        counts: { total: items.length, byCategory: byCategory, audience: byAudience },
+        categories: REMINDER_CATEGORIES.map(function (cat) {
+          return { key: cat.key, label: cat.label, count: byCategory[cat.key] || 0 };
+        }),
+        items: items, note: REMINDER_LOCAL_NOTE
+      };
+      out.text = reminderQueueText(out);
+      return out;
+    }
+    /* 큐 전체를 복사용 텍스트로(운영자 화면 "전체 복사"). */
+    function reminderQueueText(queue) {
+      var q = (queue && typeof queue === 'object') ? queue : {};
+      var items = Array.isArray(q.items) ? q.items : [];
+      var lines = [];
+      lines.push('[똑똑쌤 오늘 발송할 리마인드] ' + String(q.todayIso || todayIsoKst()) + ' · ' + items.length + '건');
+      lines.push('* ' + REMINDER_LOCAL_NOTE);
+      if (!items.length) { lines.push(''); lines.push('오늘 보낼 리마인드가 없어요.'); return lines.join('\n'); }
+      items.forEach(function (it, i) {
+        lines.push('');
+        lines.push((i + 1) + '. [' + (it.categoryLabel || '') + '] ' + String(it.title || ''));
+        if (it.summary) lines.push('   ' + String(it.summary));
+        ['customer', 'teacher'].forEach(function (aud) {
+          if ((it.audiences || []).indexOf(aud) === -1) return;
+          var m = it[aud] || {};
+          if (!m.title && !m.body) return;
+          lines.push('   · ' + (aud === 'teacher' ? '선생님' : '보호자') + ': ' + String(m.title || ''));
+          if (m.body) lines.push('     ' + String(m.body));
+        });
+      });
+      return lines.join('\n');
+    }
+
     return {
       SCHEMA_VERSION: SCHEMA_VERSION,
       STATUS: STATUS,
@@ -7755,6 +8180,22 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       reevalBadgeOf: reevalBadgeOf,
       firstVisitIsoOf: firstVisitIsoOf,
       buildReevalAlerts: buildReevalAlerts,
+      /* v27 · 알림·리마인드 센터 */
+      reminderQueueVersion: REMINDER_QUEUE_VERSION,
+      reminderCategories: REMINDER_CATEGORIES.map(function (c) { return { key: c.key, label: c.label }; }),
+      reminderKinds: Object.keys(REMINDER_KIND_META).map(function (k) {
+        return { key: k, label: REMINDER_KIND_META[k].label, category: REMINDER_KIND_META[k].category, audiences: REMINDER_KIND_META[k].audiences.slice() };
+      }),
+      reminderLookbackDays: REMINDER_LOOKBACK_DAYS,
+      reminderPayoutSoonDays: REMINDER_PAYOUT_SOON_DAYS,
+      reminderLocalNote: REMINDER_LOCAL_NOTE,
+      buildReminderQueue: buildReminderQueue,
+      reminderQueueText: reminderQueueText,
+      reminderPreviewText: reminderPreviewText,
+      reminderCategoryLabel: reminderCategoryLabel,
+      notificationCategoryOf: notificationCategoryOf,
+      summarizeNotifCategories: summarizeNotifCategories,
+      notificationPreview: notificationPreview,
       /* v25 · 보호자 홈 통합 요약·첫 방문 온보딩 */
       guardianSummaryVersion: GUARDIAN_SUMMARY_VERSION,
       settlementStatementVersion: SETTLEMENT_STATEMENT_VERSION,
@@ -10891,26 +11332,35 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return teacherNotifs().filter(function (n) { return !n.read; }).length;
   }
   function renderTpNotifs() {
-    var wrap = $('#tpNotifList');
+    var list = notifListOf('teacher');
+    var counts = TtModel.summarizeNotifCategories(list, 'teacher');
+    var u = counts.unread;
     var countEl = $('#tpNotifCount');
-    var allBtn = $('#tpNotifSec [data-tp-notif-all]');
-    var u = unreadTeacherNotifs();
     if (countEl) countEl.textContent = u ? '안 읽음 ' + u + '건' : '';
-    if (allBtn) allBtn.disabled = u === 0;
-    if (!wrap) return;
-    var list = teacherNotifs();
-    if (!list.length) {
-      wrap.innerHTML = '<div class="empty" style="box-shadow:none"><p>아직 선생님 알림이 없어요.<br>방문 요청이 배정되면 여기에 쌓입니다.</p></div>';
-      return;
+    $$('[data-tp-notif-all]').forEach(function (b) { b.disabled = u === 0; });
+    ['#tpNotifChips', '#tpNotiChips'].forEach(function (sel) {
+      var el = $(sel);
+      if (el) el.innerHTML = notifChipsHtml('teacher', counts);
+    });
+    var rows = notifFilteredOf('teacher');
+    var inline = $('#tpNotifList');
+    if (inline) {
+      inline.innerHTML = rows.length
+        ? rows.slice(0, 8).map(function (n) { return notifRowHtml(n, 'teacher'); }).join('')
+        : notifEmptyHtml(list.length, 'teacher');
     }
-    wrap.innerHTML = list.slice(0, 8).map(function (n) {
-      var m = NOTIF_META[n.kind] || NOTIF_META.visit;
-      return '<button class="notif' + (n.read ? ' is-read' : '') + (m.cls ? ' ' + m.cls : '') + '" type="button" data-tp-notif="' + esc(n.id) + '">' +
-        '<span class="n-ico" aria-hidden="true">' + icon(m.ico) + '</span>' +
-        '<span class="notif-main"><b>' + esc(n.title) + '</b><p>' + esc(n.body) + '</p><span class="notif-when">' + esc(n.when) + '</span></span>' +
-        (n.read ? '' : '<span class="notif-dot" aria-hidden="true"></span>') +
-      '</button>';
-    }).join('');
+    var full = $('#tpNotiList');
+    if (full) {
+      full.innerHTML = rows.length
+        ? rows.slice(0, 50).map(function (n) { return notifRowHtml(n, 'teacher'); }).join('')
+        : notifEmptyHtml(list.length, 'teacher');
+    }
+    try {
+      window.__ttokttokNotifInbox = {
+        teacher: { total: counts.total, unread: u, shown: rows.length, filter: notifCatOf('teacher'), counts: counts },
+        at: Date.now()
+      };
+    } catch (e) {}
   }
   function readTeacherNotif(id) {
     var n = notifStore.filter(function (x) { return x.id === id && x.audience === 'teacher'; })[0];
@@ -11622,8 +12072,20 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   /* 선생님 알림함 · 가능 시간/지역 편집 이벤트 */
   document.addEventListener('click', function (e) {
     var tpNotifBtn = e.target.closest('[data-tp-notif]');
-    if (tpNotifBtn) { readTeacherNotif(tpNotifBtn.getAttribute('data-tp-notif')); return; }
+    if (tpNotifBtn) {
+      var tn = readTeacherNotif(tpNotifBtn.getAttribute('data-tp-notif'));
+      /* v27 · 읽음 처리 후 발송 전 문구 미리보기(발송 없음) */
+      if (tn) openNotifPreview(tn);
+      return;
+    }
     if (e.target.closest('[data-tp-notif-all]')) { readAllTeacherNotifs(); return; }
+    if (e.target.closest('[data-tp-noti-open]')) { openTpNotiSheet(); return; }
+    if (e.target.closest('[data-tp-noti-close]') || e.target.id === 'tpNotiSheet') { closeSheetEl('#tpNotiSheet'); return; }
+    var tpCat = e.target.closest('[data-notif-cat]');
+    if (tpCat && tpCat.getAttribute('data-notif-scope') === 'teacher') {
+      setNotifCategory('teacher', tpCat.getAttribute('data-notif-cat'));
+      return;
+    }
 
     var s = tpAvailState();
     var dayBtn = e.target.closest('[data-tp-day]');
@@ -12917,6 +13379,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderAdminResv();
     renderAdminOpsBoard();
     renderAdminBackup();
+    try { renderAdminReminders(); } catch (e) {}
     var stats = $('#adminStats');
     if (stats) stats.innerHTML = adminStatsHtml();
     var queue = $('#adminQueue');
@@ -13777,7 +14240,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   });
 
   /* v24 · 모든 시트·모달을 Escape로 닫는다(맨 위 레이어부터 하나씩) */
-  var DIALOG_ORDER = ['#receiptModal', '#chatSheet', '#rejectSheet', '#appSheet', '#reviewSheet', '#manageSheet',
+  var DIALOG_ORDER = ['#notifPreviewSheet', '#tpNotiSheet', '#receiptModal', '#chatSheet', '#rejectSheet', '#appSheet', '#reviewSheet', '#manageSheet',
     '#settlementPrintSheet', '#weeklySheet', '#reportSheet', '#safetySheet', '#faqSheet', '#paySheet', '#notifSheet', '#couponSheet',
     '#accountSheet', '#roleSheet', '#guideSheet', '#teacherSheet', '#gateSheet', '#regionSheet'];
   function topOpenDialog() {
@@ -15514,23 +15977,255 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (all) all.disabled = n === 0;
   }
 
+  /* ===================================================================
+     v27 · 알림함 분류 필터 · 발송 전 문구 미리보기
+     ─ 보호자 알림 시트(#notifSheet)·선생님 알림함(#tpNotifSec·#tpNotiSheet) 공통.
+     ─ 분류·안 읽음 수는 TtModel.summarizeNotifCategories 한 곳에서 계산한다.
+     ─ 미리보기는 이 기기 안의 문구만 보여준다(문자·알림톡 발송 없음).
+     =================================================================== */
+  var notifCategoryFilter = { customer: 'all', teacher: 'all' };
+  var notifPreviewState = null;
+
+  function notifListOf(scope) {
+    return notifStore.filter(function (n) {
+      if (!n || !n.title) return false;
+      return scope === 'teacher' ? n.audience === 'teacher' : n.audience !== 'teacher';
+    });
+  }
+  /* 부팅 중(필터 상태 var 초기화 전)에도 안전하게 현재 필터를 읽는다. */
+  function notifCatOf(scope) {
+    var f = notifCategoryFilter || {};
+    return f[scope === 'teacher' ? 'teacher' : 'customer'] || 'all';
+  }
+  function notifFilteredOf(scope) {
+    var list = notifListOf(scope);
+    var cat = notifCatOf(scope);
+    if (cat === 'all') return list;
+    return list.filter(function (n) { return TtModel.notificationCategoryOf(n) === cat; });
+  }
+  function notifChipsHtml(scope, counts) {
+    var cat = notifCatOf(scope);
+    return (counts.categories || []).map(function (c) {
+      var on = c.key === cat;
+      return '<button class="chip' + (on ? ' is-on' : '') + '" type="button" role="tab" aria-selected="' + (on ? 'true' : 'false') + '"' +
+        ' data-notif-cat="' + esc(c.key) + '" data-notif-scope="' + esc(scope) + '"' +
+        ' aria-label="' + esc(c.label + ' 안 읽음 ' + c.unread + '건 · 전체 ' + c.total + '건') + '">' +
+        esc(c.label) + ' <span style="font-weight:800">' + c.unread + '</span></button>';
+    }).join('');
+  }
+  function notifRowHtml(n, scope) {
+    var m = NOTIF_META[n.kind] || NOTIF_META.visit;
+    var catLabel = TtModel.reminderCategoryLabel(TtModel.notificationCategoryOf(n));
+    var attr = scope === 'teacher' ? ' data-tp-notif="' : ' data-notif="';
+    return '<button class="notif' + (n.read ? ' is-read' : '') + (m.cls ? ' ' + m.cls : '') + '" type="button"' + attr + esc(n.id) + '">' +
+      '<span class="n-ico" aria-hidden="true">' + icon(m.ico) + '</span>' +
+      '<span class="notif-main"><b>' + esc(n.title) + '</b><p>' + esc(n.body) + '</p>' +
+      '<span class="notif-when">' + esc(n.when || '') + ' · ' + esc(catLabel) + '</span></span>' +
+      (n.read ? '' : '<span class="notif-dot" aria-hidden="true"></span>') +
+    '</button>';
+  }
+  function notifEmptyHtml(total, scope) {
+    var msg = total ? '이 분류의 알림이 없어요.<br>‘전체’로 바꾸면 다른 알림을 볼 수 있어요.'
+      : (scope === 'teacher' ? '아직 선생님 알림이 없어요.<br>방문 요청이 배정되면 여기에 쌓입니다.' : '아직 알림이 없어요.');
+    return '<div class="empty" style="box-shadow:none"><p>' + msg + '</p></div>';
+  }
+  function setNotifCategory(scope, cat) {
+    var key = String(cat || 'all');
+    var known = TtModel.reminderCategories.some(function (c) { return c.key === key; });
+    if (!known) return false;
+    if (!notifCategoryFilter) notifCategoryFilter = { customer: 'all', teacher: 'all' };
+    if (scope === 'teacher') notifCategoryFilter.teacher = key;
+    else notifCategoryFilter.customer = key;
+    if (scope === 'teacher') renderTpNotifs();
+    else renderNotifs();
+    return true;
+  }
+  /* "2026-11-27" 같은 값이 있으면 제목 옆에 같이 보여준다(없으면 생략). */
+  function notifPreviewHtml(pv) {
+    if (!pv) return '';
+    var out = [];
+    out.push('<p class="fine" style="margin-top:10px">' + esc(pv.categoryLabel || '') + ' · ' + esc(pv.kindLabel || '') +
+      (pv.dueLabel ? ' · ' + esc(pv.dueLabel) : '') + '</p>');
+    function block(aud, m) {
+      if (!m || (!m.title && !m.body)) return '';
+      var label = aud === 'teacher' ? '선생님' : '보호자';
+      return '<div class="card" style="margin-top:12px" data-preview-aud="' + esc(aud) + '">' +
+        '<div class="card-head"><h2>' + label + ' 문구</h2><span class="tag">문자·알림톡</span></div>' +
+        '<p style="font-size:13px;font-weight:800;color:var(--v7-ink);margin-top:8px">' + esc(m.title || '') + '</p>' +
+        '<p class="fine" style="margin-top:4px;white-space:pre-line">' + esc(m.body || '') + '</p>' +
+        '<button class="btn btn-outline btn-sm" type="button" style="margin-top:10px" data-notif-preview-copy="' + esc(aud) + '">' + label + ' 문구 복사</button>' +
+      '</div>';
+    }
+    if (pv.customer) out.push(block('customer', pv.customer));
+    if (pv.teacher) out.push(block('teacher', pv.teacher));
+    if (!pv.customer && !pv.teacher) out.push(block(pv.audience, { title: pv.title, body: pv.body }));
+    return out.join('');
+  }
+  function openNotifPreview(src) {
+    var pv = null;
+    try { pv = TtModel.notificationPreview(src); } catch (e) { pv = null; }
+    if (!pv || !pv.ok) return false;
+    notifPreviewState = pv;
+    var body = $('#notifPreviewBody');
+    if (body) body.innerHTML = notifPreviewHtml(pv);
+    openSheetEl('#notifPreviewSheet');
+    try {
+      window.__ttokttokNotifPreview = { id: pv.id, kind: pv.kind, category: pv.category, audience: pv.audience, title: pv.title, text: pv.text, at: Date.now() };
+    } catch (e) {}
+    return true;
+  }
+  function copyNotifPreview(aud) {
+    var pv = notifPreviewState;
+    if (!pv) return false;
+    var which = aud === 'teacher' ? 'teacher' : 'customer';
+    var text = TtModel.reminderPreviewText(pv, which);
+    var okCopy = copyToClipboard(text);
+    try {
+      window.__ttokttokNotifPreview = { id: pv.id, kind: pv.kind, category: pv.category, audience: which, title: pv.title, text: text, copied: okCopy, at: Date.now() };
+    } catch (e) {}
+    toast(okCopy ? '발송 전 문구를 복사했어요. 실제 발송은 되지 않습니다.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
+    return okCopy;
+  }
+  function openTpNotiSheet() {
+    renderTpNotifs();
+    openSheetEl('#tpNotiSheet');
+  }
+
   function renderNotifs() {
     var wrap = $('#notifList');
     if (!wrap) return;
-    wrap.innerHTML = notifStore.filter(function (n) { return n.audience !== 'teacher'; }).map(function (n) {
-      var m = NOTIF_META[n.kind] || NOTIF_META.visit;
-      return '<button class="notif' + (n.read ? ' is-read' : '') + (m.cls ? ' ' + m.cls : '') + '" type="button" data-notif="' + esc(n.id) + '">' +
-        '<span class="n-ico" aria-hidden="true">' + icon(m.ico) + '</span>' +
-        '<span class="notif-main"><b>' + esc(n.title) + '</b><p>' + esc(n.body) + '</p><span class="notif-when">' + esc(n.when) + '</span></span>' +
-        (n.read ? '' : '<span class="notif-dot" aria-hidden="true"></span>') +
-      '</button>';
-    }).join('');
+    var list = notifListOf('customer');
+    var counts = TtModel.summarizeNotifCategories(list);
+    var chips = $('#notifChips');
+    if (chips) chips.innerHTML = notifChipsHtml('customer', counts);
+    var rows = notifFilteredOf('customer');
+    wrap.innerHTML = rows.length ? rows.map(function (n) { return notifRowHtml(n, 'customer'); }).join('')
+      : notifEmptyHtml(list.length, 'customer');
     renderNotifBadge();
     /* v19 · 선생님 알림함도 같은 저장소를 쓴다 — 보호자 알림함이 갱신될 때 함께 다시 그린다. */
     try { renderTpNotifs(); } catch (e) {}
+    try {
+      window.__ttokttokNotifScreen = {
+        filter: notifCatOf('customer'), counts: counts,
+        rows: rows.length, total: list.length,
+        chips: [].slice.call(document.querySelectorAll('#notifChips [data-notif-cat]')).map(function (b) {
+          return { key: b.getAttribute('data-notif-cat'), on: b.classList.contains('is-on'), text: String(b.textContent || '').replace(/\s+/g, ' ').trim() };
+        })
+      };
+    } catch (e) {}
   }
 
   function openNotifSheet() { renderNotifs(); openSheetEl('#notifSheet'); }
+
+  /* ===================================================================
+     v27 · 운영자 「오늘 발송할 리마인드 미리보기」
+     ─ TtModel.buildReminderQueue 한 곳의 계산 결과를 그대로 그린다.
+     ─ 실제 문자·알림톡 발송은 하지 않는다(문구 확인·복사만).
+     =================================================================== */
+  var adminReminderData = null;
+  function adminReminderQueue() {
+    try {
+      return TtModel.buildReminderQueue({
+        bookings: (account && account.bookings) || [],
+        journals: (function () { try { return sharedJournals(); } catch (e) { return []; } })(),
+        ledger: (partner && partner.ledger) || [],
+        todayIso: TtModel.todayIsoKst()
+      });
+    } catch (e) { return { total: 0, items: [], counts: { byCategory: {}, audience: {} }, text: '' }; }
+  }
+  function adminReminderAvatar(it) {
+    var k = String((it && it.kind) || '');
+    if (k === 'visit_d1') return 'D-1';
+    if (k === 'reeval') return '4주';
+    if (k === 'settle_confirm') return '확';
+    if (k === 'settle_payout') return '지';
+    if (k === 'visit_cancel') return '취';
+    if (k === 'visit_change') return '변';
+    return '재';
+  }
+  function adminReminderCardHtml(it) {
+    var auds = it.audiences || [];
+    var lines = [];
+    if (it.customer) {
+      lines.push('<p class="admin-meta" style="color:#334155;margin-top:5px"><b>보호자</b> ' + esc(it.customer.title || '') + '<br>' + esc(it.customer.body || '') + '</p>');
+    }
+    if (it.teacher) {
+      lines.push('<p class="admin-meta" style="color:#334155;margin-top:5px"><b>선생님</b> ' + esc(it.teacher.title || '') + '<br>' + esc(it.teacher.body || '') + '</p>');
+    }
+    var btns = [];
+    if (auds.indexOf('customer') !== -1) {
+      btns.push('<button class="btn btn-outline btn-sm" type="button" data-reminder-copy="' + esc(it.id) + '" data-reminder-aud="customer">보호자 문구 복사</button>');
+    }
+    if (auds.indexOf('teacher') !== -1) {
+      btns.push('<button class="btn btn-outline btn-sm" type="button" data-reminder-copy="' + esc(it.id) + '" data-reminder-aud="teacher">선생님 문구 복사</button>');
+    }
+    return '<div class="admin-card" data-reminder="' + esc(it.id) + '" data-reminder-kind="' + esc(it.kind) + '" data-reminder-cat="' + esc(it.category) + '">' +
+      '<div class="admin-top" style="cursor:default">' +
+        '<div class="admin-av" aria-hidden="true" style="background:var(--blue-50);color:#1D4ED8">' + esc(adminReminderAvatar(it)) + '</div>' +
+        '<div style="min-width:0">' +
+          '<p class="admin-name">' + esc(it.title || '') +
+            ' <span class="status-badge ' + (it.kind === 'visit_cancel' ? 'is-warn' : 'is-on') + '">' + esc(it.categoryLabel || '') + '</span></p>' +
+          '<p class="admin-meta">' + esc(it.kindLabel || '') + (it.dueLabel ? ' · ' + esc(it.dueLabel) : '') +
+            (it.summary ? ' · ' + esc(it.summary) : '') + '</p>' +
+          lines.join('') +
+        '</div>' +
+      '</div>' +
+      '<div class="admin-actions" style="flex-wrap:wrap">' + btns.join('') + '</div>' +
+    '</div>';
+  }
+  function renderAdminReminders() {
+    var board = $('#adminReminderQueue');
+    if (!board) return null;
+    var q = adminReminderQueue();
+    adminReminderData = q;
+    var cs = (q.counts && q.counts.byCategory) || {};
+    var au = (q.counts && q.counts.audience) || {};
+    var countsEl = $('#adminReminderCounts');
+    if (countsEl) {
+      countsEl.innerHTML = [
+        ['전체', q.total || 0], ['방문 일정', cs.visit || 0], ['리포트/재평가', cs.report || 0], ['정산/운영', cs.ops || 0],
+        ['보호자', au.customer || 0], ['선생님', au.teacher || 0]
+      ].map(function (c) {
+        return '<span class="admin-fact" data-reminder-count="' + esc(c[0]) + '">' + esc(c[0]) + ' ' + c[1] + '</span>';
+      }).join('');
+    }
+    var sub = $('#adminReminderSub');
+    if (sub) {
+      sub.textContent = '오늘 ' + (q.total || 0) + '건 · 보호자 ' + (au.customer || 0) + '건 · 선생님 ' + (au.teacher || 0) +
+        '건 — 방문 D-1·4주 재평가·최근 변경/취소·정산 확정/지급 예정 문구를 모았습니다(발송 없음).';
+    }
+    board.innerHTML = (q.items && q.items.length)
+      ? q.items.map(adminReminderCardHtml).join('')
+      : '<div class="empty" style="box-shadow:none"><p>오늘 발송할 리마인드가 없어요.<br>내일 방문·재평가 도래·정산 확정 일정이 생기면 여기에 모입니다.</p></div>';
+    try {
+      window.__ttokttokReminders = {
+        todayIso: q.todayIso, total: q.total, counts: q.counts,
+        kinds: (q.items || []).map(function (it) { return it.kind; }),
+        ids: (q.items || []).map(function (it) { return it.id; }),
+        text: q.text, at: Date.now()
+      };
+    } catch (e) {}
+    return q;
+  }
+  function copyAdminReminder(id, aud) {
+    var q = adminReminderData || adminReminderQueue();
+    var it = (q.items || []).filter(function (x) { return x.id === id; })[0];
+    if (!it) { toast('리마인드를 찾을 수 없어요.'); return false; }
+    var which = aud === 'teacher' ? 'teacher' : 'customer';
+    var text = TtModel.reminderPreviewText(it, which);
+    var okCopy = copyToClipboard(text);
+    try { window.__ttokttokReminderCopy = { id: id, audience: which, text: text, copied: okCopy, at: Date.now() }; } catch (e) {}
+    toast(okCopy ? '발송 전 문구를 복사했어요. 실제 발송은 하지 않았습니다.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
+    return okCopy;
+  }
+  function copyAllAdminReminders() {
+    var q = adminReminderData || adminReminderQueue();
+    var text = TtModel.reminderQueueText(q);
+    var okCopy = copyToClipboard(text);
+    try { window.__ttokttokReminderCopy = { id: 'all', audience: 'all', text: text, copied: okCopy, at: Date.now() }; } catch (e) {}
+    toast(okCopy ? '오늘 리마인드 ' + (q.total || 0) + '건 문구를 복사했어요. 발송은 하지 않았습니다.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
+    return okCopy;
+  }
 
   function readNotif(id) {
     var n = notifStore.filter(function (x) { return x.id === id; })[0];
@@ -15915,6 +16610,20 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (e.target.closest('[data-notif-close]') || e.target.id === 'notifSheet') { closeSheetEl('#notifSheet'); return; }
     if (e.target.closest('#notifReadAll')) { readAllNotifs(); return; }
 
+    /* v27 · 카테고리 필터 칩 · 문구 미리보기 */
+    var notifCat = e.target.closest('[data-notif-cat]');
+    if (notifCat) {
+      setNotifCategory(notifCat.getAttribute('data-notif-scope') || 'customer', notifCat.getAttribute('data-notif-cat'));
+      return;
+    }
+    if (e.target.closest('[data-notif-preview-close]') || e.target.id === 'notifPreviewSheet') { closeSheetEl('#notifPreviewSheet'); return; }
+    var pvCopy = e.target.closest('[data-notif-preview-copy]');
+    if (pvCopy) { copyNotifPreview(pvCopy.getAttribute('data-notif-preview-copy')); return; }
+    /* v27 · 운영자 리마인드 미리보기 복사(실제 발송 없음) */
+    var remCopy = e.target.closest('[data-reminder-copy]');
+    if (remCopy) { copyAdminReminder(remCopy.getAttribute('data-reminder-copy'), remCopy.getAttribute('data-reminder-aud')); return; }
+    if (e.target.closest('#adminReminderCopyAll')) { copyAllAdminReminders(); return; }
+
     var nt = e.target.closest('[data-notif]');
     if (nt) {
       var n = readNotif(nt.getAttribute('data-notif'));
@@ -15922,6 +16631,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       if (n.go === 'coupon') { closeSheetEl('#notifSheet'); openCouponSheet(); }
       else if (n.go === 'account') { closeSheetEl('#notifSheet'); openAccountSheet(); }
       else if (n.go === 'report') { closeSheetEl('#notifSheet'); showTab('journal'); openReport(); }
+      else if (n.go === 'settle') { closeSheetEl('#notifSheet'); setRole('therapist'); showTab('tp-settle'); }
+      else { closeSheetEl('#notifSheet'); }
+      /* v27 · 해당 화면으로 이동한 뒤 발송 전 문구를 같이 보여준다(쿠폰은 문구 미리보기 없음). */
+      if (n.kind !== 'coupon') openNotifPreview(n);
       return;
     }
 
@@ -16459,9 +17172,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       storageRead: function (key) { return TtStorage.get(key, null); },
       storageWrite: function (key, value) { return TtStorage.set(key, value); },
       /* v24 · 모바일·접근성·성능 QA */
-      qaVersion: 'v26',
+      qaVersion: 'v27',
       a11y: {
-        version: 'v26',
+        version: 'v27',
         dialogOrder: DIALOG_ORDER.slice(),
         openDialog: function () { return topOpenDialog(); },
         focusInside: function (sel) {
@@ -16615,7 +17328,77 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       exportStatementJson: function () { return downloadSettlementJson(); },
       lastStatementExport: function () { return window.__ttokttokStatement || null; },
       statementPrintHtml: function (monthKey) { return settlementPrintDocument(currentStatement(monthKey)); },
-      printStatement: function () { return printSettlement(); }
+      printStatement: function () { return printSettlement(); },
+      /* v27 · 알림·리마인드 센터(보호자 · 선생님 · 운영자) */
+      reminderQueueVersion: TtModel.reminderQueueVersion,
+      reminderCategories: TtModel.reminderCategories,
+      reminderKinds: TtModel.reminderKinds,
+      reminderLookbackDays: TtModel.reminderLookbackDays,
+      reminderPayoutSoonDays: TtModel.reminderPayoutSoonDays,
+      reminderLocalNote: TtModel.reminderLocalNote,
+      buildReminderQueue: function (ctx, todayIso) { return TtModel.buildReminderQueue(ctx || {}, todayIso); },
+      reminderPreviewText: function (item, aud) { return TtModel.reminderPreviewText(item, aud); },
+      reminderQueueText: function (ctx) { return TtModel.reminderQueueText(ctx || (adminReminderData || adminReminderQueue())); },
+      notificationCategoryOf: function (n) { return TtModel.notificationCategoryOf(n); },
+      summarizeNotifCategories: function (list, aud) { return TtModel.summarizeNotifCategories(list, aud); },
+      notificationPreview: function (src) { return TtModel.notificationPreview(src); },
+      adminReminders: function () { return renderAdminReminders(); },
+      adminReminderState: function () {
+        var q = adminReminderData || adminReminderQueue();
+        return {
+          total: q.total, counts: q.counts, todayIso: q.todayIso,
+          cards: [].slice.call(document.querySelectorAll('#adminReminderQueue [data-reminder]')).map(function (el) {
+            return { id: el.getAttribute('data-reminder'), kind: el.getAttribute('data-reminder-kind'), cat: el.getAttribute('data-reminder-cat') };
+          }),
+          countsText: $('#adminReminderCounts') ? String($('#adminReminderCounts').textContent || '').replace(/\s+/g, ' ').trim() : '',
+          subText: $('#adminReminderSub') ? String($('#adminReminderSub').textContent || '').replace(/\s+/g, ' ').trim() : '',
+          noticeText: $('#adminReminderNotice') ? String($('#adminReminderNotice').textContent || '').replace(/\s+/g, ' ').trim() : '',
+          copyAllVisible: !!$('#adminReminderCopyAll')
+        };
+      },
+      copyAdminReminder: function (id, aud) { return copyAdminReminder(id, aud); },
+      copyAllAdminReminders: function () { return copyAllAdminReminders(); },
+      notifCounts: function (scope) {
+        return TtModel.summarizeNotifCategories(notifListOf(scope === 'teacher' ? 'teacher' : 'customer'), scope === 'teacher' ? 'teacher' : 'customer');
+      },
+      notifFilter: function (scope) { return notifCatOf(scope === 'teacher' ? 'teacher' : 'customer'); },
+      setNotifFilter: function (scope, cat) { return setNotifCategory(scope, cat); },
+      notifScreenState: function () {
+        var pvSheet = $('#notifPreviewSheet');
+        return {
+          filter: notifCatOf('customer'),
+          chips: [].slice.call(document.querySelectorAll('#notifChips [data-notif-cat]')).map(function (b) {
+            return { key: b.getAttribute('data-notif-cat'), on: b.classList.contains('is-on'), text: String(b.textContent || '').replace(/\s+/g, ' ').trim() };
+          }),
+          rows: document.querySelectorAll('#notifList .notif').length,
+          emptyVisible: !!document.querySelector('#notifList .empty'),
+          text: $('#notifList') ? String($('#notifList').textContent || '').replace(/\s+/g, ' ').trim() : '',
+          previewOpen: !!(pvSheet && pvSheet.classList.contains('is-open'))
+        };
+      },
+      tpNotifState: function () {
+        return {
+          filter: notifCatOf('teacher'),
+          inline: document.querySelectorAll('#tpNotifList [data-tp-notif]').length,
+          sheetOpen: !!($('#tpNotiSheet') && $('#tpNotiSheet').classList.contains('is-open')),
+          sheetRows: document.querySelectorAll('#tpNotiList [data-tp-notif]').length,
+          chips: document.querySelectorAll('#tpNotiChips [data-notif-cat]').length,
+          inlineChips: document.querySelectorAll('#tpNotifChips [data-notif-cat]').length
+        };
+      },
+      openTpNotiSheet: function () { openTpNotiSheet(); return true; },
+      openNotifPreview: function (src) { return openNotifPreview(src); },
+      notifPreviewInfo: function () {
+        return notifPreviewState ? {
+          id: notifPreviewState.id, kind: notifPreviewState.kind, category: notifPreviewState.category,
+          title: notifPreviewState.title, text: notifPreviewState.text,
+          hasCustomer: !!notifPreviewState.customer, hasTeacher: !!notifPreviewState.teacher,
+          note: notifPreviewState.note,
+          open: !!($('#notifPreviewSheet') && $('#notifPreviewSheet').classList.contains('is-open')),
+          bodyText: $('#notifPreviewBody') ? String($('#notifPreviewBody').textContent || '').replace(/\s+/g, ' ').trim() : ''
+        } : null;
+      },
+      copyNotifPreview: function (aud) { return copyNotifPreview(aud); },
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
