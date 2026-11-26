@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v28">
+<meta name="app-version" content="v29">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2228,6 +2228,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             <span style="font-size:10px;color:var(--muted-2)" id="homeSummaryDate"></span>
           </div>
           <div id="homeSummaryNext"></div>
+          <div id="homeSummaryRebook"></div>
           <div id="homeSummaryPass"></div>
           <div id="homeSummaryReport"></div>
         </section>
@@ -2405,6 +2406,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
         <!-- step 1 -->
         <div class="wstep is-active" id="wstep-1">
+          <p class="fine" id="rebookBanner" role="status" style="margin:0 0 8px;padding:9px 12px;border-radius:10px;background:#EAF4FF;color:#1B4E8C;font-weight:700" hidden></p>
           <p class="wstep-title">어디로 갈까요?</p>
           <p class="wstep-sub">지역과 불편한 곳만 고르세요.</p>
           <div class="chips" id="provinceQuick" role="group" aria-label="자주 찾는 시·도">
@@ -3670,13 +3672,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <button type="button" data-star="5" aria-label="5점"><svg class="ic" aria-hidden="true"><use href="#i-star"/></svg></button>
       </div>
       <div class="review-chip-row" id="reviewTags">
-        <button type="button" data-rtag="친절해요">친절해요</button>
-        <button type="button" data-rtag="꼼꼼해요">꼼꼼해요</button>
-        <button type="button" data-rtag="설명이 쉬워요">설명이 쉬워요</button>
-        <button type="button" data-rtag="시간 약속을 잘 지켜요">시간 약속</button>
+        <button type="button" data-rtag="친절한 설명">친절한 설명</button>
+        <button type="button" data-rtag="시간 엄수">시간 엄수</button>
+        <button type="button" data-rtag="체계적 평가">체계적 평가</button>
+        <button type="button" data-rtag="통증 완화">통증 완화</button>
+        <button type="button" data-rtag="보호자 소통">보호자 소통</button>
       </div>
       <textarea class="review-in" id="reviewText" rows="3" maxlength="120" aria-label="후기 내용(한 줄)" placeholder="한 줄이면 충분해요"></textarea>
       <p class="sheet-note" id="reviewHint" role="status" aria-live="polite">별점을 먼저 골라주세요.</p>
+      <p class="sheet-note" id="reviewRuleNote">방문 1회당 후기 1개 · 등록 후 수정은 1:1 문의로 요청</p>
       <div class="reject-foot">
         <button class="btn btn-ghost" type="button" data-review-close>나중에</button>
         <button class="btn btn-navy" type="button" id="reviewSubmit">등록</button>
@@ -8536,6 +8540,289 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return lines.join('\n');
     }
 
+    /* ------------------------------------------------------------------
+       v29 · 고객 후기 신뢰 배지 · 원클릭 재예약
+       ──────────────────────────────────────────────────────────────────
+       ① 후기 태그 마스터 5종(친절한 설명·시간 엄수·체계적 평가·통증 완화·보호자 소통)
+       ② 방문 1회 1후기 규칙: 방문 완료 + 담당 선생님 + 아직 후기 없음 = 작성 가능
+       ③ 선생님 신뢰 요약: 완료 방문 수·평균 별점·후기 수·재방문 건수/율·대표 태그 TOP 3
+       ④ 재예약 초안: 같은 선생님·같은 지역·같은 증상, 1회권 90,000원(무료 평가 아님)
+       계산만 한다 — 저장·발송·DOM 접근 없음(테스트로 고정).
+       ------------------------------------------------------------------ */
+    var TRUST_VERSION = 'v29';
+    var REVIEW_TAG_MASTER = [
+      { code: 'kind', label: '친절한 설명' },
+      { code: 'time', label: '시간 엄수' },
+      { code: 'assess', label: '체계적 평가' },
+      { code: 'pain', label: '통증 완화' },
+      { code: 'comm', label: '보호자 소통' }
+    ];
+    /* 예전 화면의 태그 문구도 마스터 태그로 옮겨 센다(마이그레이션 호환). */
+    var REVIEW_TAG_ALIASES = {
+      '친절해요': 'kind', '설명이 쉬워요': 'kind', '친절한 설명': 'kind',
+      '꼼꼼해요': 'assess', '체계적': 'assess', '체계적 평가': 'assess',
+      '시간 약속': 'time', '시간 약속을 잘 지켜요': 'time', '시간 엄수': 'time',
+      '통증 완화': 'pain', '보호자 소통': 'comm'
+    };
+    var REVIEW_RULE_NOTE = '방문 1회당 후기 1개 · 등록 후 수정은 1:1 문의로 요청';
+    var REBOOK_DEFAULT_PASS_ID = 'p1';
+    var TRUST_LOCAL_NOTE = '후기·신뢰 배지는 이 기기에 남은 기록으로 계산했어요. 외부 발송·서버 집계는 없습니다.';
+
+    function reviewTagDef(v) {
+      var s = String(v == null ? '' : v).trim();
+      if (!s) return null;
+      var code = REVIEW_TAG_ALIASES[s] || s;
+      for (var i = 0; i < REVIEW_TAG_MASTER.length; i++) {
+        var d = REVIEW_TAG_MASTER[i];
+        if (d.code === code || d.label === s) return { code: d.code, label: d.label };
+      }
+      return null;
+    }
+    function reviewTagLabel(v) {
+      var d = reviewTagDef(v);
+      return d ? d.label : String(v == null ? '' : v);
+    }
+    function reviewTagOrder(code) {
+      for (var i = 0; i < REVIEW_TAG_MASTER.length; i++) {
+        if (REVIEW_TAG_MASTER[i].code === code) return i;
+      }
+      return 99;
+    }
+
+    function bookingListOf(ctx) {
+      var c = (ctx && typeof ctx === 'object') ? ctx : {};
+      if (Array.isArray(c.bookings)) return c.bookings;
+      if (Array.isArray(c.reservations)) return c.reservations;
+      return [];
+    }
+    function findReservationIn(ctx, id) {
+      var key = String(id == null ? '' : id);
+      if (!key) return null;
+      var list = bookingListOf(ctx);
+      for (var i = 0; i < list.length; i++) {
+        var b = list[i];
+        if (!b || typeof b !== 'object') continue;
+        if (String(b.no || '') === key || String(b.id || '') === key) return b;
+      }
+      return null;
+    }
+    function reviewRowsOf(ctx) {
+      var c = (ctx && typeof ctx === 'object') ? ctx : {};
+      var src = Array.isArray(c.reviews) ? c.reviews : [];
+      return src.filter(function (r) { return r && typeof r === 'object'; });
+    }
+    function reviewReservationNoOf(r) {
+      if (!r || typeof r !== 'object') return '';
+      return String(r.reservationId || r.reservationNo || r.bookingNo || '');
+    }
+    function teacherNameIn(ctx, teacherId) {
+      var list = (ctx && Array.isArray(ctx.teachers)) ? ctx.teachers : [];
+      for (var i = 0; i < list.length; i++) {
+        if (list[i] && String(list[i].id) === String(teacherId)) return String(list[i].name || '');
+      }
+      return '';
+    }
+    function patientKeyOf(row) {
+      if (!row || typeof row !== 'object') return '';
+      var who = String(row.memberName || row.patient || row.userId || row.who || '').trim();
+      return who || 'self';
+    }
+
+    /* 방문 1회 1후기 — 작성 가능 여부만 판정한다. */
+    function canReviewReservation(ctx, target) {
+      var c = (ctx && typeof ctx === 'object') ? ctx : {};
+      var b = (target && typeof target === 'object') ? target : findReservationIn(c, target);
+      if (!b) return { ok: false, code: 'not_found', reason: '예약을 찾을 수 없어요.', bookingNo: '' };
+      var no = String(b.no || b.id || '');
+      var st = reservationStatus(b.status);
+      if (st !== 'completed') {
+        return { ok: false, code: 'not_completed', reason: '방문 완료된 회차만 후기를 남길 수 있어요.',
+          bookingNo: no, status: st, teacherId: String(b.teacherId || '') };
+      }
+      if (!b.teacherId) {
+        return { ok: false, code: 'no_teacher', reason: '담당 선생님이 정해진 방문만 후기를 남길 수 있어요.',
+          bookingNo: no, status: st, teacherId: '' };
+      }
+      var dup = false;
+      reviewRowsOf(c).forEach(function (r) {
+        if (reviewReservationNoOf(r) && reviewReservationNoOf(r) === no) dup = true;
+      });
+      if (!dup && (b.reviewed === true || b.reviewId)) dup = true;
+      if (dup) {
+        return { ok: false, code: 'already_reviewed', reason: '이미 후기를 남긴 방문이에요.',
+          bookingNo: no, status: st, teacherId: String(b.teacherId || '') };
+      }
+      return { ok: true, code: 'ok', reason: '후기를 남길 수 있어요.',
+        bookingNo: no, status: st, teacherId: String(b.teacherId || ''),
+        teacherName: teacherNameIn(c, b.teacherId) || String(b.teacher || ''),
+        dateLabel: String(b.date || ''), time: String(b.time || ''), region: String(b.region || '') };
+    }
+
+    /* 후기 작성 가능한 예약 목록(최근 방문 순). */
+    function reviewableReservations(ctx) {
+      var c = (ctx && typeof ctx === 'object') ? ctx : {};
+      var out = [];
+      bookingListOf(c).forEach(function (b) {
+        if (!b || typeof b !== 'object') return;
+        var chk = canReviewReservation(c, b);
+        if (!chk.ok) return;
+        out.push({
+          bookingId: String(b.id || b.no || ''), no: chk.bookingNo, teacherId: chk.teacherId,
+          teacherName: chk.teacherName, dateLabel: chk.dateLabel, time: chk.time,
+          region: chk.region, dateIso: String(b.dateIso || ''),
+          passName: String(b.passName || ''), memberName: String(b.memberName || '')
+        });
+      });
+      out.sort(function (a, b) {
+        if (a.dateIso && b.dateIso && a.dateIso !== b.dateIso) return a.dateIso < b.dateIso ? 1 : -1;
+        return String(a.no) < String(b.no) ? 1 : -1;
+      });
+      return out;
+    }
+
+    /* 선생님 신뢰 요약 — 카드·상세 시트의 별점·후기 수·대표 태그·재방문·검증 배지. */
+    function buildTeacherTrustSummary(ctx, teacherId) {
+      var c = (ctx && typeof ctx === 'object') ? ctx : {};
+      var id = String(teacherId == null ? '' : teacherId);
+      var t = null;
+      var list = Array.isArray(c.teachers) ? c.teachers : [];
+      for (var i = 0; i < list.length; i++) {
+        if (list[i] && String(list[i].id) === id) { t = list[i]; break; }
+      }
+      if (!t && c.teacher && typeof c.teacher === 'object') t = c.teacher;
+      if (!id && t) id = String(t.id || '');
+      var bookings = bookingListOf(c);
+      var ledger = Array.isArray(c.ledger) ? c.ledger : [];
+      var seen = {};
+      var visits = [];
+      bookings.forEach(function (b) {
+        if (!b || typeof b !== 'object') return;
+        if (String(b.teacherId || '') !== id) return;
+        if (reservationStatus(b.status) !== 'completed') return;
+        var no = String(b.no || b.id || '');
+        if (no && seen[no]) return;
+        if (no) seen[no] = true;
+        visits.push({ no: no, patient: patientKeyOf(b), iso: String(b.dateIso || '').slice(0, 10) });
+      });
+      ledger.forEach(function (r) {
+        if (!r || typeof r !== 'object') return;
+        if (String(r.teacherId || '') !== id) return;
+        var st = String(r.status || '');
+        if (st === 'held' || st === 'canceled') return;
+        var no = String(r.reservationNo || '');
+        if (no && seen[no]) return;
+        if (no) seen[no] = true;
+        visits.push({ no: no, patient: patientKeyOf(r), iso: String(r.visitDate || '').slice(0, 10) });
+      });
+      var byPatient = {};
+      visits.forEach(function (v) {
+        byPatient[v.patient] = (byPatient[v.patient] || 0) + 1;
+      });
+      var patients = Object.keys(byPatient).length;
+      var repeatPatients = 0;
+      var repeatVisits = 0;
+      Object.keys(byPatient).forEach(function (k) {
+        if (byPatient[k] >= 2) { repeatPatients += 1; repeatVisits += byPatient[k] - 1; }
+      });
+      var rebookRate = patients ? Math.round((repeatPatients / patients) * 1000) / 10 : 0;
+
+      /* 대표 태그 — 상세 시트 후기(내 후기 포함)의 태그를 마스터 5종으로 센다. */
+      var tagSource = (Array.isArray(c.detailReviews) && c.detailReviews.length)
+        ? c.detailReviews : reviewRowsOf(c);
+      var tagCount = {};
+      tagSource.forEach(function (r) {
+        if (!r || typeof r !== 'object') return;
+        var tags = Array.isArray(r.tags) ? r.tags : [];
+        var once = {};
+        tags.forEach(function (x) {
+          var def = reviewTagDef(x);
+          if (!def || once[def.code]) return;
+          once[def.code] = true;
+          tagCount[def.code] = (tagCount[def.code] || 0) + 1;
+        });
+      });
+      var topTags = Object.keys(tagCount).map(function (code) {
+        return { code: code, label: reviewTagLabel(code), count: tagCount[code], order: reviewTagOrder(code) };
+      }).sort(function (a, b) {
+        if (a.count !== b.count) return b.count - a.count;
+        return a.order - b.order;
+      }).slice(0, 3).map(function (x) {
+        return { code: x.code, label: x.label, count: x.count };
+      });
+
+      var rating = Math.round(num(t && t.rating, 0) * 10) / 10;
+      var reviewCount = Math.max(0, Math.round(num(t && t.reviews, 0)));
+      if (!rating || !reviewCount) {
+        var sum = 0, n = 0;
+        reviewRowsOf(c).forEach(function (r) {
+          if (String(r.teacherId || '') !== id) return;
+          if (String(r.status || 'published') !== 'published') return;
+          sum += Math.max(0, Math.min(5, num(r.rating != null ? r.rating : r.stars, 0)));
+          n += 1;
+        });
+        if (n) { rating = Math.round((sum / n) * 10) / 10; reviewCount = Math.max(reviewCount, n); }
+      }
+      var verification = t ? verificationOf(t) : normalizeVerification(null);
+      var badges = t ? getVerificationBadges(t, { publicOnly: true }) : [];
+      var rebookLabel = repeatVisits > 0 ? ('재방문 ' + repeatVisits + '건')
+        : (visits.length ? '재방문 기록 없음' : '방문 기록 없음');
+
+      return {
+        version: TRUST_VERSION, teacherId: id, teacherName: String(t && t.name || ''),
+        rating: rating, reviewCount: reviewCount,
+        completedVisits: visits.length, patients: patients,
+        repeatPatients: repeatPatients, repeatVisits: repeatVisits, rebookRate: rebookRate,
+        rebookLabel: rebookLabel, topTags: topTags,
+        verified: {
+          identity: verification.identity === 'verified',
+          license: verification.license === 'verified',
+          career: verification.career === 'verified'
+        },
+        badges: badges.map(function (b) { return { step: b.step, label: b.label, short: b.short }; }),
+        summary: (rating ? '평점 ' + rating.toFixed(1) : '평점 준비 중') +
+          ' · 후기 ' + reviewCount + ' · 완료 ' + visits.length + '회',
+        note: TRUST_LOCAL_NOTE
+      };
+    }
+
+    /* 같은 선생님·같은 지역·같은 증상으로 채운 재예약 초안(1회권 90,000원, 무료 평가 아님). */
+    function buildRebookDraft(ctx, bookingId, opts) {
+      var c = (ctx && typeof ctx === 'object') ? ctx : {};
+      var o = (opts && typeof opts === 'object') ? opts : {};
+      var b = (bookingId && typeof bookingId === 'object') ? bookingId : findReservationIn(c, bookingId);
+      if (!b) return { ok: false, code: 'not_found', reason: '재예약할 예약을 찾을 수 없어요.' };
+      var st = reservationStatus(b.status);
+      if (st === 'canceled' || st === 'no_show') {
+        return { ok: false, code: 'not_rebookable', reason: '취소·노쇼 예약은 다시 예약할 수 없어요.', sourceNo: String(b.no || '') };
+      }
+      var teacherId = String(b.teacherId || '');
+      if (!teacherId) {
+        return { ok: false, code: 'no_teacher', reason: '담당 선생님이 정해진 방문만 같은 선생님으로 다시 예약할 수 있어요.', sourceNo: String(b.no || '') };
+      }
+      var rid = String(b.regionId || '');
+      var parts = rid.replace(/^reg-/, '').split('-');
+      var province = String(o.province || parts[0] || '');
+      var district = String(o.district || parts[1] || '');
+      var syms = Array.isArray(o.syms) ? o.syms.slice()
+        : (Array.isArray(b.symptomCodes) ? b.symptomCodes.map(symptomLabel).filter(function (x) { return !!x; }) : []);
+      var passId = String(o.passId || REBOOK_DEFAULT_PASS_ID);
+      var plan = null;
+      PRICING.plans.forEach(function (p) { if (p.id === passId) plan = p; });
+      if (!plan) { passId = REBOOK_DEFAULT_PASS_ID; PRICING.plans.forEach(function (p) { if (p.id === passId) plan = p; }); }
+      var unitPrice = plan ? plan.price : PRICING.regularSinglePrice;
+      return {
+        ok: true, code: 'ok', version: TRUST_VERSION,
+        sourceNo: String(b.no || b.id || ''), sourceStatus: st,
+        teacherId: teacherId,
+        teacherName: teacherNameIn(c, teacherId) || String(b.teacher || ''),
+        province: province, district: district, region: String(b.region || ''),
+        syms: syms, symptomCodes: Array.isArray(b.symptomCodes) ? b.symptomCodes.slice() : symptomCodesOf(syms),
+        passId: passId, passName: plan ? plan.name : '1회 방문권',
+        unitPrice: unitPrice, total: unitPrice, freeEval: false, free: false,
+        note: '같은 선생님 · 같은 지역 · 같은 증상으로 미리 채웠어요. 방문 주소와 날짜·시간만 확인하면 돼요.'
+      };
+    }
+
     return {
       SCHEMA_VERSION: SCHEMA_VERSION,
       STATUS: STATUS,
@@ -8690,6 +8977,17 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       buildAdminMetrics: buildAdminMetrics,
       adminMetricsText: adminMetricsText,
       adminMetricsCsv: adminMetricsCsv,
+      /* v29 · 고객 후기 신뢰 배지·원클릭 재예약 */
+      trustVersion: TRUST_VERSION,
+      reviewTagMaster: REVIEW_TAG_MASTER.map(function (x) { return { code: x.code, label: x.label }; }),
+      reviewRuleNote: REVIEW_RULE_NOTE,
+      trustLocalNote: TRUST_LOCAL_NOTE,
+      rebookDefaultPassId: REBOOK_DEFAULT_PASS_ID,
+      reviewTagLabel: reviewTagLabel,
+      canReviewReservation: canReviewReservation,
+      reviewableReservations: reviewableReservations,
+      buildTeacherTrustSummary: buildTeacherTrustSummary,
+      buildRebookDraft: buildRebookDraft,
       /* v25 · 보호자 홈 통합 요약·첫 방문 온보딩 */
       guardianSummaryVersion: GUARDIAN_SUMMARY_VERSION,
       settlementStatementVersion: SETTLEMENT_STATEMENT_VERSION,
@@ -9200,8 +9498,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       hospital: '서울 재활병원 뇌졸중 재활팀 12년',
       career: '대학병원 재활의학과 협진과 방문재활을 함께 해온 18년 차 물리치료사입니다. 뇌졸중·편마비 보행 재훈련과 낙상 예방을 주로 다루며, 회차마다 보행 속도와 균형을 측정해 기록합니다.',
       reviews: [
-        { who: '김*자 보호자', when: '2026.11.12', stars: 5, text: '어머니가 지팡이 없이 화장실까지 걸어가십니다. 매번 측정한 숫자를 보여주셔서 믿음이 갑니다.' },
-        { who: '이*호 보호자', when: '2026.10.28', stars: 5, text: '설명이 차분하고 무리한 운동을 시키지 않아 좋았어요. 다음 회차 계획도 미리 알려주십니다.' }
+        { who: '김*자 보호자', when: '2026.11.12', stars: 5, text: '어머니가 지팡이 없이 화장실까지 걸어가십니다. 매번 측정한 숫자를 보여주셔서 믿음이 갑니다.', tags: ['체계적 평가', '친절한 설명'] },
+        { who: '이*호 보호자', when: '2026.10.28', stars: 5, text: '설명이 차분하고 무리한 운동을 시키지 않아 좋았어요. 다음 회차 계획도 미리 알려주십니다.', tags: ['보호자 소통', '시간 엄수'] }
       ],
       days: ['월', '수', '금'], slots: ['10:00', '13:30', '15:00']
     },
@@ -9210,8 +9508,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       hospital: '분당 재활센터 근골격팀 6년',
       career: '무릎·고관절 수술 후 3개월 집중 재활을 주로 합니다. 관절가동범위(ROM)와 근력을 회차별로 기록해 수술 전 걸음으로 돌아가는 과정을 함께 만듭니다.',
       reviews: [
-        { who: '박*순 보호자', when: '2026.11.08', stars: 5, text: '인공관절 수술 후 계단을 못 오르셨는데 8회 만에 혼자 오르십니다. 운동 강도 조절이 좋아요.' },
-        { who: '정*미 보호자', when: '2026.10.19', stars: 5, text: '수술 부위뿐 아니라 걸음 전체를 봐주셔서 무릎 부담이 줄었어요.' }
+        { who: '박*순 보호자', when: '2026.11.08', stars: 5, text: '인공관절 수술 후 계단을 못 오르셨는데 8회 만에 혼자 오르십니다. 운동 강도 조절이 좋아요.', tags: ['체계적 평가', '보호자 소통'] },
+        { who: '정*미 보호자', when: '2026.10.19', stars: 5, text: '수술 부위뿐 아니라 걸음 전체를 봐주셔서 무릎 부담이 줄었어요.', tags: ['통증 완화', '친절한 설명'] }
       ],
       days: ['화', '목', '토'], slots: ['09:30', '11:00', '16:00']
     },
@@ -9220,8 +9518,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       hospital: '서울 시립재활병원 작업치료팀 5년',
       career: '파킨슨·척수손상 환자의 상지 기능과 일상생활동작(ADL)을 담당해 왔습니다. 식사하기, 옷 입기처럼 살아가는 동작을 목표로 과제를 설계합니다.',
       reviews: [
-        { who: '최*영 보호자', when: '2026.11.15', stars: 5, text: '아버지가 혼자 수저를 드시게 됐어요. 작은 동작부터 차근차근 알려주셔서 감사합니다.' },
-        { who: '한*수 보호자', when: '2026.09.30', stars: 5, text: '보호자 교육을 같이 해주셔서 제가 어떻게 도와야 하는지 알게 됐습니다.' }
+        { who: '최*영 보호자', when: '2026.11.15', stars: 5, text: '아버지가 혼자 수저를 드시게 됐어요. 작은 동작부터 차근차근 알려주셔서 감사합니다.', tags: ['보호자 소통', '체계적 평가'] },
+        { who: '한*수 보호자', when: '2026.09.30', stars: 5, text: '보호자 교육을 같이 해주셔서 제가 어떻게 도와야 하는지 알게 됐습니다.', tags: ['친절한 설명', '시간 엄수'] }
       ],
       days: ['월', '화', '목'], slots: ['10:30', '14:00', '16:30']
     },
@@ -9230,8 +9528,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       hospital: '경기 노인재활센터 재활팀 15년',
       career: '24년간 어르신 재활을 해왔습니다. 낙상 예방과 보행 보조가 중심이며, 집 안 동선과 가구 높이까지 확인해 안전한 운동을 설계합니다.',
       reviews: [
-        { who: '윤*자 보호자', when: '2026.11.05', stars: 5, text: '거실에서 넘어질 뻔한 뒤로 걱정이 많았는데, 집 안 위험한 곳을 다 짚어주셨어요.' },
-        { who: '김*남 보호자', when: '2026.10.11', stars: 4, text: '말씀은 적으시지만 운동은 빈틈없이 봐주십니다. 어머니가 기다리세요.' }
+        { who: '윤*자 보호자', when: '2026.11.05', stars: 5, text: '거실에서 넘어질 뻔한 뒤로 걱정이 많았는데, 집 안 위험한 곳을 다 짚어주셨어요.', tags: ['시간 엄수', '보호자 소통'] },
+        { who: '김*남 보호자', when: '2026.10.11', stars: 4, text: '말씀은 적으시지만 운동은 빈틈없이 봐주십니다. 어머니가 기다리세요.', tags: ['체계적 평가', '시간 엄수'] }
       ],
       days: ['월', '수', '토'], slots: ['09:30', '11:00', '14:00']
     },
@@ -9240,8 +9538,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       hospital: '부산 정형외과 재활실 3년',
       career: '정형·수술 후 재활을 중심으로 4년째 활동하고 있습니다. 젊은 감각으로 매 회차 측정하고 운동을 바꿔 가며, 부산 해운대·수영 지역을 집중 방문합니다.',
       reviews: [
-        { who: '서*진 보호자', when: '2026.11.02', stars: 5, text: '어깨 수술 후 팔을 못 들었는데 한 달 만에 머리를 감으십니다. 설명도 쉽게 해주세요.' },
-        { who: '조*호 보호자', when: '2026.10.07', stars: 4, text: '젊으신데 꼼꼼하세요. 운동 강도를 계속 조정해 주셔서 부담이 없었어요.' }
+        { who: '서*진 보호자', when: '2026.11.02', stars: 5, text: '어깨 수술 후 팔을 못 들었는데 한 달 만에 머리를 감으십니다. 설명도 쉽게 해주세요.', tags: ['친절한 설명', '통증 완화'] },
+        { who: '조*호 보호자', when: '2026.10.07', stars: 4, text: '젊으신데 꼼꼼하세요. 운동 강도를 계속 조정해 주셔서 부담이 없었어요.', tags: ['체계적 평가', '시간 엄수'] }
       ],
       days: ['화', '수', '금'], slots: ['10:00', '15:00', '19:00']
     },
@@ -9250,8 +9548,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       hospital: '대전 대학병원 재활의학과 작업치료 6년',
       career: '뇌졸중 상지 재활과 인지·일상동작 훈련을 담당합니다. 손을 다시 쓰는 과정을 목표로 집에서 할 수 있는 과제를 함께 정하고, 보호자에게도 방법을 알려드립니다.',
       reviews: [
-        { who: '임*숙 보호자', when: '2026.11.10', stars: 5, text: '남편이 다시 젓가락을 잡습니다. 집에서 연습할 과제를 매번 챙겨주셨어요.' },
-        { who: '박*경 보호자', when: '2026.09.22', stars: 5, text: '인지 훈련까지 같이 봐주셔서 대화도 많아지셨어요.' }
+        { who: '임*숙 보호자', when: '2026.11.10', stars: 5, text: '남편이 다시 젓가락을 잡습니다. 집에서 연습할 과제를 매번 챙겨주셨어요.', tags: ['체계적 평가', '보호자 소통'] },
+        { who: '박*경 보호자', when: '2026.09.22', stars: 5, text: '인지 훈련까지 같이 봐주셔서 대화도 많아지셨어요.', tags: ['친절한 설명', '통증 완화'] }
       ],
       days: ['월', '화', '금'], slots: ['10:30', '13:30', '16:00']
     },
@@ -9260,8 +9558,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       hospital: '대구 재활병원 척수재활팀 8년',
       career: '척수손상·보조기 보행을 주로 봅니다. 보조기 착용부터 계단까지 단계별로 나눠 연습하고, 이동 동선을 함께 점검합니다.',
       reviews: [
-        { who: '권*석 보호자', when: '2026.10.30', stars: 5, text: '보조기 신는 것부터 다시 배웠습니다. 계단 오르내리기까지 같이 해주셔서 든든해요.' },
-        { who: '문*자 보호자', when: '2026.09.18', stars: 4, text: '차분하게 단계를 나눠 알려주셔서 혼자서도 연습할 수 있게 됐어요.' }
+        { who: '권*석 보호자', when: '2026.10.30', stars: 5, text: '보조기 신는 것부터 다시 배웠습니다. 계단 오르내리기까지 같이 해주셔서 든든해요.', tags: ['체계적 평가', '시간 엄수'] },
+        { who: '문*자 보호자', when: '2026.09.18', stars: 4, text: '차분하게 단계를 나눠 알려주셔서 혼자서도 연습할 수 있게 됐어요.', tags: ['친절한 설명', '보호자 소통'] }
       ],
       days: ['수', '목', '토'], slots: ['10:00', '14:30', '17:00']
     },
@@ -9270,8 +9568,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       hospital: '광주 재활의학과 협진 4년',
       career: '허리·디스크와 어깨·관절 통증 관리를 중심으로 합니다. 아픈 부위만 보지 않고 앉기·서기·걷기의 움직임 전체를 평가해 자세 습관을 바꿉니다.',
       reviews: [
-        { who: '고*선 보호자', when: '2026.11.14', stars: 5, text: '디스크로 오래 앉아 있기 힘들었는데 의자 높이까지 같이 맞춰주셨어요. 통증이 줄었습니다.' },
-        { who: '신*영 보호자', when: '2026.10.02', stars: 4, text: '자세를 계속 짚어주셔서 조금 불편해도 효과는 확실합니다.' }
+        { who: '고*선 보호자', when: '2026.11.14', stars: 5, text: '디스크로 오래 앉아 있기 힘들었는데 의자 높이까지 같이 맞춰주셨어요. 통증이 줄었습니다.', tags: ['통증 완화', '체계적 평가'] },
+        { who: '신*영 보호자', when: '2026.10.02', stars: 4, text: '자세를 계속 짚어주셔서 조금 불편해도 효과는 확실합니다.', tags: ['친절한 설명', '시간 엄수'] }
       ],
       days: ['화', '목', '토'], slots: ['11:00', '15:00', '18:30']
     }
@@ -9401,6 +9699,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var rows = filteredTeachers();
     var html = rows.map(function (t) {
       var d = teacherDetails[t.id] || {};
+      var trust = teacherTrustOf(t.id);
+      var tagList = trust.topTags.map(function (x) { return x.label; });
+      t.tags.forEach(function (x) { if (tagList.indexOf(x) === -1) tagList.push(x); });
       return '' +
         '<article class="teacher' + (isFav(t.id) ? ' is-fav' : '') + '" data-teacher="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
           heartHtml(t.id) +
@@ -9413,7 +9714,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             '</div>' +
             '<div class="rating"><b>' + icon('star', 'ic-fill') + t.rating.toFixed(1) + '</b><span>후기 ' + t.reviews + '</span></div>' +
           '</div>' +
-          '<div class="t-tags">' + t.tags.slice(0, 3).map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>' +
+          '<div class="t-tags">' + tagList.slice(0, 3).map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>' +
           '<div class="t-foot">' +
             '<span class="t-more">프로필 · 후기 보기 ' + icon('chev-r') + '</span>' +
             '<span class="t-avail">1회 60분 · 이동비 없음</span>' +
@@ -9436,13 +9737,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (!list) return;
     list.innerHTML = teachers.slice(0, 3).map(function (t) {
       var d = teacherDetails[t.id] || {};
+      var hTrust = teacherTrustOf(t.id);
       return '<article class="h-teacher" data-teacher="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
         '<span class="h-av" style="' + avaStyle(t.id) + '" aria-hidden="true">' + avaSvg(t.id) + '</span>' +
         '<div class="h-body">' +
           '<p class="h-name">' + esc(t.name) + teacherBadgeHtml(t) + '</p>' +
           '<p class="h-meta">' + esc(t.license) + ' · 경력 ' + t.years + '년</p>' +
           '<p class="t-region">' + icon('map-pin') + esc(t.regions) + ' 방문</p>' +
-          '<div class="h-tags">' + t.tags.slice(0, 2).map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>' +
+          '<div class="h-tags">' + (hTrust.topTags.length ? hTrust.topTags : t.tags).slice(0, 2).map(function (x) { return '<span class="tag">' + esc(x.label || x) + '</span>'; }).join('') + '</div>' +
         '</div>' +
         '<div class="h-rate"><b>' + icon('star', 'ic-fill') + t.rating.toFixed(1) + '</b><span>후기 ' + t.reviews + '</span></div>' +
       '</article>';
@@ -9635,6 +9937,29 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return ' <span class="lic">' + icon('shield-check') + esc(txt) + '</span>';
   }
 
+  /* v29 · 신뢰 요약 — 카드·상세 시트가 같은 계산(TtModel.buildTeacherTrustSummary)을 쓴다. */
+  function teacherTrustOf(id) {
+    var d = teacherDetails[id] || {};
+    return TtModel.buildTeacherTrustSummary({
+      teachers: teachers,
+      reviews: myReviews(),
+      detailReviews: d.reviews || [],
+      bookings: account.bookings || []
+    }, id);
+  }
+  function trustTagChipsHtml(trust, max) {
+    var tags = (trust && trust.topTags ? trust.topTags : []).slice(0, max || 3);
+    if (!tags.length) return '';
+    return '<div class="t-tags" style="margin-bottom:6px;flex-wrap:wrap">' + tags.map(function (x) {
+      return '<span class="tag">' + esc(x.label) + (x.count > 1 ? ' ' + x.count : '') + '</span>';
+    }).join('') + '</div>';
+  }
+  function trustBadgeHtml(trust) {
+    if (!trust) return '';
+    return '<span class="tag" aria-label="신뢰 배지">' + icon('star', 'ic-fill') + esc(trust.rating.toFixed(1)) +
+      ' · 후기 ' + trust.reviewCount + ' · ' + esc(trust.rebookLabel) + '</span>';
+  }
+
   /* 시트 상단 칩 — 면허 확인(license)을 통과한 선생님만 '국가면허 검증'을 보여준다. */
   function teacherLicenseChipHtml(t) {
     if (TtModel.isVerified(t, 'license')) {
@@ -9688,6 +10013,19 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (t.maxWeeklyVisits) availExtra.push('주 ' + t.maxWeeklyVisits + '회까지 방문');
     if (t.firstAvailable) availExtra.push(t.firstAvailable.replace(/-/g, '.') + '부터 방문 가능');
     var regionText = TtModel.publicRegionText(t) || t.regions;
+    /* v29 · 신뢰 배지 — 별점·후기 수·완료 방문·재방문·대표 태그·검증을 한 블록에 모은다. */
+    var trust = teacherTrustOf(id);
+    var trustHtml = '<div class="sheet-block" id="teacherTrustBlock">' +
+      '<p class="sheet-label">' + icon('sparkle') + '신뢰 배지</p>' +
+      '<div class="sum-row"><span>평균 별점</span><b>' + trust.rating.toFixed(1) + '점 · 후기 ' + trust.reviewCount + '개</b></div>' +
+      '<div class="sum-row"><span>완료 방문</span><b>' + trust.completedVisits + '회</b></div>' +
+      '<div class="sum-row"><span>재방문</span><b>' + esc(trust.rebookLabel) + '</b></div>' +
+      trustTagChipsHtml(trust, 3) +
+      '<div class="t-tags" style="flex-wrap:wrap">' + (trust.badges.length
+        ? trust.badges.map(function (b) { return '<span class="tag">' + icon('check') + esc(b.short || b.label) + '</span>'; }).join('')
+        : '<span class="tag">확인 단계 진행 중</span>') + '</div>' +
+      '<p class="sheet-note">' + esc(trust.note) + '</p>' +
+    '</div>';
 
     $('#teacherSheetBody').innerHTML =
       '<div class="sheet-head">' +
@@ -9695,7 +10033,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<div style="flex:1;min-width:0">' +
           '<p class="sheet-name" id="sheetName">' + esc(t.name) + teacherLicenseChipHtml(t) + '</p>' +
           '<p class="sheet-sub">' + esc(t.license) + ' · 경력 ' + t.years + '년 · ' + esc(t.regions) + '</p>' +
-          '<div class="sheet-rating"><b>' + icon('star', 'ic-fill') + t.rating.toFixed(1) + '</b><span>후기 ' + t.reviews + '개</span><span class="sep"></span><span>재방문 ' + (d.revisit || '—') + '</span></div>' +
+          '<div class="sheet-rating"><b>' + icon('star', 'ic-fill') + t.rating.toFixed(1) + '</b><span>후기 ' + t.reviews + '개</span><span class="sep"></span><span>' + esc(trust.rebookLabel) + '</span></div>' +
         '</div>' +
         heartHtml(t.id, 'sheet-fav') +
       '</div>' +
@@ -9710,6 +10048,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<div class="cert-list">' + certs + '</div>' +
         pendingNote +
       '</div>' +
+      trustHtml +
       '<div class="sheet-block">' +
         '<p class="sheet-label">' + icon('message') + '고객 후기 ' + t.reviews + ' <span style="font-size:10px;color:var(--muted-2);font-weight:600">최근 2건</span></p>' +
         reviews +
@@ -10576,26 +10915,75 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function startBooking(opts) {
     resetWizard();
     opts = opts || {};
+    if (opts.province) {
+      bk.province = opts.province;
+      bookProvince.value = opts.province;
+      fillDistrictSelect(bookDistrict, opts.province, '시·도를 먼저 선택해 주세요');
+      if (opts.district) {
+        bk.district = opts.district;
+        bookDistrict.value = opts.district;
+      }
+      syncProvinceChips();
+    }
     if (opts.teacherId) {
       bk.teacherId = opts.teacherId;
       bookTeacher.value = opts.teacherId;
       renderSlots();
     }
-    if (opts.sym && bk.syms.indexOf(opts.sym) === -1) {
-      bk.syms.push(opts.sym);
+    var symList = Array.isArray(opts.syms) ? opts.syms : (opts.sym ? [opts.sym] : []);
+    symList.forEach(function (sym) {
+      if (bk.syms.indexOf(sym) === -1) bk.syms.push(sym);
       $$('#bookSyms .pick').forEach(function (b) {
-        if (b.getAttribute('data-val') === opts.sym) {
+        if (b.getAttribute('data-val') === sym) {
           b.classList.add('is-on');
           b.setAttribute('aria-pressed', 'true');
         }
       });
-    }
+    });
     if (opts.passId) {
       bk.passId = opts.passId;
       renderPasses();
       updateTotal();
     }
+    var banner = $('#rebookBanner');
+    if (banner) {
+      if (opts.rebook) {
+        banner.hidden = false;
+        banner.textContent = opts.rebookNote || '같은 조건으로 미리 채웠어요. 방문 주소와 날짜·시간만 확인해 주세요.';
+      } else {
+        banner.hidden = true;
+        banner.textContent = '';
+      }
+    }
     showTab('booking');
+  }
+
+  /* v29 · 원클릭 재예약 — 같은 선생님·지역·증상·1회권(90,000원)으로 1단계를 채운다. */
+  function openRebook(no) {
+    var draft = TtModel.buildRebookDraft({ bookings: account.bookings || [], teachers: teachers }, no);
+    try { window.__ttokttokRebook = draft; } catch (e) {}
+    if (!draft.ok) {
+      toast(draft.reason || '다시 예약할 수 없어요.');
+      return draft;
+    }
+    var ms = $('#manageSheet');
+    if (ms && ms.classList.contains('is-open')) closeManage();
+    var as = $('#accountSheet');
+    if (as && as.classList.contains('is-open')) closeSheetEl('#accountSheet');
+    var region = (draft.province + ' ' + draft.district).trim() || draft.region;
+    var syms = draft.syms.length ? draft.syms.join(', ') : '증상 그대로';
+    startBooking({
+      teacherId: draft.teacherId,
+      syms: draft.syms,
+      province: draft.province,
+      district: draft.district,
+      passId: draft.passId,
+      rebook: true,
+      rebookNote: '↻ ' + (draft.teacherName ? draft.teacherName + ' 선생님' : '담당 선생님') + ' · ' + region + ' · ' + syms + ' · ' + draft.passName + ' ' + won(draft.total)
+    });
+    toast('같은 조건으로 예약을 준비했어요. 방문 주소와 날짜·시간만 확인해 주세요.');
+    try { if ($('#screen-booking')) $('#screen-booking').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+    return draft;
   }
 
   $('#doneMypage').addEventListener('click', function () {
@@ -10774,7 +11162,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       date: TtModel.dateLabelOf(iso), day: TtModel.weekdayOf(iso), time: '10:30',
       teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구',
       status: 'completed', passId: '', walletId: '', dateIso: iso,
-      amount: 0, paymentStatus: 'paid', memo: '첫 1:1 방문 평가 (데모 시드)'
+      symptomCodes: ['stroke'],
+      amount: 0, paymentStatus: 'paid', memo: '첫 1:1 방문 평가 (데모 시드) · 뇌졸중·편마비 보행 평가'
     };
   }
 
@@ -10858,7 +11247,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             : '') +
           (canceled || past ? '' : '<button class="br-ics" type="button" data-ics="' + esc(b.no) + '">' + icon('calendar') + '캘린더 추가</button>') +
           (canceled || past
-            ? '<div class="br-btns"><button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '">문의</button><button class="btn btn-ghost" type="button" data-manage="' + esc(b.no) + '">내역</button><span></span></div>'
+            ? '<div class="br-btns">' +
+                '<button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '">문의</button>' +
+                (st === 'completed' ? '<button class="btn btn-outline" type="button" data-rebook="' + esc(b.no) + '">재예약</button>' : '') +
+                '<button class="btn btn-ghost" type="button" data-manage="' + esc(b.no) + '">내역</button>' +
+              '</div>'
             : '<div class="br-btns">' +
                 '<button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '">문의</button>' +
                 '<button class="btn btn-outline" type="button" data-manage="' + esc(b.no) + '">변경</button>' +
@@ -10987,6 +11380,25 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       rh += '<button class="sec-link" type="button" data-summary="report" style="margin-top:8px;padding:8px 0">이번 주 리포트 열기' + summaryChevron() + '</button>' +
         '</div>';
       rp.innerHTML = rh;
+    }
+
+    /* v29 · 완료/최근 방문 → 같은 선생님으로 다시 예약 · 후기 */
+    var rb = $('#homeSummaryRebook');
+    if (rb) {
+      var last = latestCompleted();
+      if (!last) {
+        rb.innerHTML = '';
+      } else {
+        var lt = teacherById(last.teacherId);
+        var lchk = TtModel.canReviewReservation(reviewCtxOf(), last);
+        rb.innerHTML = '<div style="border-top:1px solid #F1F4F9;margin-top:6px;padding-top:8px">' +
+          '<div class="sum-row"><span>최근 방문</span><b>' + esc((last.date || TtModel.dateLabelOf(last.dateIso)) + (lt ? ' · ' + lt.name + ' 선생님' : '')) + '</b></div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
+            '<button class="btn btn-navy btn-sm" type="button" data-rebook="' + esc(last.no) + '">같은 선생님으로 다시 예약</button>' +
+            (lchk.ok ? '<button class="btn btn-outline btn-sm" type="button" data-review-booking="' + esc(last.no) + '">후기 남기기</button>' : '') +
+          '</div>' +
+        '</div>';
+      }
     }
   }
 
@@ -14681,6 +15093,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var chatQuick = e.target.closest('[data-chat-quick]');
     if (chatQuick) { sendChat(chatQuick.getAttribute('data-chat-quick')); return; }
 
+    var reviewBookingBtn = e.target.closest('[data-review-booking]');
+    if (reviewBookingBtn) { openReviewForBooking(reviewBookingBtn.getAttribute('data-review-booking')); return; }
+    var rebookBtn = e.target.closest('[data-rebook]');
+    if (rebookBtn) { openRebook(rebookBtn.getAttribute('data-rebook')); return; }
     var reviewBtn = e.target.closest('[data-review]');
     if (reviewBtn) { openReview(reviewBtn.getAttribute('data-review')); return; }
     var starBtn = e.target.closest('[data-star]');
@@ -15927,7 +16343,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   /* ===================================================================
      후기 작성 (완료된 회차 → 별점 → 선생님 평점·후기 목록 즉시 반영)
      =================================================================== */
-  var reviewCtx = { sessionId: null, stars: 0, tags: [] };
+  var reviewCtx = { sessionId: null, reservationNo: null, teacherId: '', stars: 0, tags: [] };
 
   function defaultSessions() {
     return [
@@ -15941,34 +16357,69 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return account.sessions;
   }
 
+  function myReviews() { return Array.isArray(account.myReviews) ? account.myReviews : []; }
+
+  /* v29 · 방문 완료 예약 + 후기 미작성 여부(1방문 1후기)를 순수 함수에 묻는다. */
+  function reviewCtxOf() {
+    return { bookings: account.bookings || [], reviews: myReviews(), teachers: teachers };
+  }
+  function reviewableList() { return TtModel.reviewableReservations(reviewCtxOf()); }
+  function completedBookings() {
+    return (account.bookings || []).filter(function (b) {
+      return b && TtModel.reservationStatus(b.status) === 'completed';
+    }).sort(function (a, b) {
+      var ai = String(a.dateIso || ''), bi = String(b.dateIso || '');
+      if (ai && bi && ai !== bi) return ai < bi ? 1 : -1;
+      return 0;
+    });
+  }
+  function latestCompleted() { return completedBookings()[0] || null; }
+
+  function reviewAvatarHtml(teacherId) {
+    var t = teacherById(teacherId);
+    return '<span class="chat-av" style="' + (t ? avaStyle(t.id) : 'background:#12325C') + ';width:38px;height:38px;flex:0 0 38px;font-size:14px" aria-hidden="true">' +
+      (t ? avaSvg(t.id) : esc('쌤')) + '</span>';
+  }
+
   function renderReviews() {
-    var list = sessionsDone();
-    var html = list.map(function (s) {
+    var rows = [];
+    /* ① 방문 완료 예약 — 후기 작성 가능/등록됨 */
+    completedBookings().forEach(function (b) {
+      var chk = TtModel.canReviewReservation(reviewCtxOf(), b);
+      var t = teacherById(b.teacherId);
+      var name = (t ? t.name : b.teacher || '선생님');
+      var line = [b.date || TtModel.dateLabelOf(b.dateIso), b.time, '방문 완료', b.region].filter(Boolean).join(' · ');
+      rows.push('<div class="review-session" data-session="' + esc(b.no || b.id) + '">' +
+        reviewAvatarHtml(b.teacherId) +
+        '<span class="rs-main"><b>' + esc(name.indexOf('선생님') === -1 ? name + ' 선생님' : name) + '</b><span>' + esc(line) + '</span></span>' +
+        (chk.ok
+          ? '<button class="btn btn-outline" type="button" data-review-booking="' + esc(b.no) + '">후기</button>'
+          : '<span class="review-done">등록됨</span>') +
+      '</div>');
+    });
+    /* ② 옛 완료 회차(예약 레코드 이전 데이터) — 그대로 유지 */
+    sessionsDone().forEach(function (s) {
       var t = teacherById(s.teacherId);
-      var d = teacherDetails[s.teacherId] || {};
       var name = t ? t.name + ' 선생님' : '선생님';
       var right = s.reviewed
         ? '<span class="review-done">등록됨</span>'
         : '<button class="btn btn-outline" type="button" data-review="' + esc(s.id) + '">후기</button>';
-      return '<div class="review-session" data-session="' + esc(s.id) + '">' +
-        '<span class="chat-av" style="' + (t ? avaStyle(t.id) : 'background:#12325C') + ';width:38px;height:38px;flex:0 0 38px;font-size:14px" aria-hidden="true">' + (t ? avaSvg(t.id) : esc('쌤')) + '</span>' +
+      rows.push('<div class="review-session" data-session="' + esc(s.id) + '">' +
+        reviewAvatarHtml(s.teacherId) +
         '<span class="rs-main"><b>' + esc(name) + '</b><span>' + esc(s.date) + ' · ' + esc(s.round) + ' · ' + esc(s.pass) + '</span></span>' +
         right +
-      '</div>';
-    }).join('');
+      '</div>');
+    });
+    var html = rows.join('');
     ['#reviewList', '#journalReviewList'].forEach(function (sel) {
       var el = $(sel);
       if (el) el.innerHTML = html || '<p class="fine">완료된 방문이 없어요.</p>';
     });
   }
 
-  function openReview(sessionId) {
-    var s = sessionsDone().filter(function (x) { return x.id === sessionId; })[0];
-    if (!s) return;
-    reviewCtx = { sessionId: sessionId, stars: 0, tags: [] };
-    var t = teacherById(s.teacherId);
+  function openReviewSheet(descHtml) {
     var desc = $('#reviewDesc');
-    if (desc) desc.innerHTML = (t ? '<b>' + esc(t.name) + ' 선생님</b> ' : '') + esc(s.date) + ' · ' + esc(s.round) + ' 방문은 어떠셨나요?';
+    if (desc) desc.innerHTML = descHtml;
     var txt = $('#reviewText');
     if (txt) txt.value = '';
     var hint = $('#reviewHint');
@@ -15977,6 +16428,30 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     paintStars();
     var sheet = $('#reviewSheet');
     if (sheet) { sheet.classList.add('is-open'); syncBodyState(); }
+  }
+
+  function openReview(sessionId) {
+    var s = sessionsDone().filter(function (x) { return x.id === sessionId; })[0];
+    if (!s || s.reviewed) { toast('이미 후기를 남긴 방문이에요.'); return; }
+    reviewCtx = { sessionId: sessionId, reservationNo: null, teacherId: s.teacherId, stars: 0, tags: [] };
+    var t = teacherById(s.teacherId);
+    openReviewSheet((t ? '<b>' + esc(t.name) + ' 선생님</b> ' : '') + esc(s.date) + ' · ' + esc(s.round) + ' 방문은 어떠셨나요?');
+  }
+
+  /* v29 · 방문 완료 예약에 대한 후기 — 1방문 1후기 규칙을 먼저 확인한다. */
+  function openReviewForBooking(no) {
+    var chk = TtModel.canReviewReservation(reviewCtxOf(), no);
+    if (!chk.ok) {
+      toast(chk.reason || '후기를 남길 수 없어요.');
+      renderReviews();
+      return chk;
+    }
+    var b = findBooking(no);
+    reviewCtx = { sessionId: null, reservationNo: chk.bookingNo, teacherId: chk.teacherId, stars: 0, tags: [] };
+    var t = teacherById(chk.teacherId);
+    var when = b ? ((b.date || '') + (b.time ? ' ' + b.time : '')) : '';
+    openReviewSheet((t ? '<b>' + esc(t.name) + ' 선생님</b> ' : '') + esc(when) + ' 방문은 어떠셨나요?');
+    return chk;
   }
 
   function paintStars() {
@@ -16007,38 +16482,60 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function submitReview() {
-    if (!reviewCtx.stars) { toast('별점을 먼저 골라주세요.'); return; }
-    var s = sessionsDone().filter(function (x) { return x.id === reviewCtx.sessionId; })[0];
-    if (!s) { closeReview(); return; }
+    if (!reviewCtx.stars) { toast('별점을 먼저 골라주세요.'); return { ok: false, code: 'no_stars' }; }
+    var teacherId = reviewCtx.teacherId || '';
+    var bookingNo = reviewCtx.reservationNo || '';
+    var s = null;
+    if (bookingNo) {
+      var chk = TtModel.canReviewReservation(reviewCtxOf(), bookingNo);
+      if (!chk.ok) { closeReview(); renderReviews(); toast(chk.reason || '이미 후기를 남긴 방문이에요.'); return chk; }
+      teacherId = chk.teacherId;
+    } else {
+      s = sessionsDone().filter(function (x) { return x.id === reviewCtx.sessionId; })[0];
+      if (!s) { closeReview(); return { ok: false, code: 'not_found' }; }
+      if (s.reviewed) { closeReview(); toast('이미 후기를 남긴 방문이에요.'); return { ok: false, code: 'already_reviewed' }; }
+      teacherId = s.teacherId;
+    }
     var textEl = $('#reviewText');
     var text = (textEl ? textEl.value : '').trim();
     if (!text) text = reviewCtx.tags.length ? reviewCtx.tags.join(' · ') : '만족스러운 방문이었어요.';
-    var t = teacherById(s.teacherId);
-    var d = teacherDetails[s.teacherId];
+    var tags = reviewCtx.tags.map(function (x) { return TtModel.reviewTagLabel(x); });
+    var t = teacherById(teacherId);
+    var d = teacherDetails[teacherId];
     var nowTs = TtModel.nowIso();
     var reviewId = TtModel.newId('review');
     if (d) {
       d.reviews = d.reviews || [];
-      d.reviews.unshift({ id: reviewId, who: '나 (보호자)', when: todayLabel(), stars: reviewCtx.stars, text: text, status: 'published', createdAt: nowTs });
+      d.reviews.unshift({ id: reviewId, who: '나 (보호자)', when: todayLabel(), stars: reviewCtx.stars, text: text, tags: tags.slice(), status: 'published', createdAt: nowTs });
     }
     if (t) {
       var sum = t.rating * t.reviews;
       t.reviews = t.reviews + 1;
       t.rating = Math.round(((sum + reviewCtx.stars) / t.reviews) * 10) / 10;
     }
-    s.reviewed = true;
-    s.status = 'reviewed';
-    s.updatedAt = nowTs;
+    if (bookingNo) {
+      var b = findBooking(bookingNo);
+      if (b) {
+        b.reviewed = true;
+        b.reviewId = reviewId;
+        b.reviewedAt = nowTs;
+        b.updatedAt = nowTs;
+      }
+    } else if (s) {
+      s.reviewed = true;
+      s.status = 'reviewed';
+      s.updatedAt = nowTs;
+    }
     account.myReviews = account.myReviews || [];
     account.myReviews.push(TtModel.normalizeReview({
       id: reviewId,
       userId: (account.profile && account.profile.id) || 'usr-demo',
-      teacherId: s.teacherId,
-      reservationId: s.reservationId || null,
+      teacherId: teacherId,
+      reservationId: bookingNo || null,
       rating: reviewCtx.stars,
       body: text,
       text: text,
-      tags: reviewCtx.tags.slice(),
+      tags: tags,
       who: '나 (보호자)',
       at: todayLabel(),
       status: 'published',
@@ -16049,11 +16546,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderReviews();
     renderTeachers();
     updateTrustStrip();
-    if (sheetTeacherId === s.teacherId) {
+    try { renderAccount(); } catch (e) {}
+    if (sheetTeacherId === teacherId) {
       var ts = $('#teacherSheet');
-      if (ts && ts.classList.contains('is-open')) openTeacherSheet(s.teacherId);
+      if (ts && ts.classList.contains('is-open')) openTeacherSheet(teacherId);
     }
     toast('후기 등록 완료 · ' + (t ? t.name + ' 선생님 ' + t.rating.toFixed(1) + '점' : '감사합니다'));
+    return { ok: true, code: 'ok', reviewId: reviewId, teacherId: teacherId, bookingNo: bookingNo || null };
   }
 
   function applySavedReviews() {
@@ -16067,7 +16566,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       }
       if (d) {
         d.reviews = d.reviews || [];
-        d.reviews.unshift({ id: r.id, who: '나 (보호자)', when: r.at, stars: r.stars, text: r.text, status: r.status || 'published', createdAt: r.createdAt });
+        d.reviews.unshift({ id: r.id, who: '나 (보호자)', when: r.at, stars: r.stars, text: r.text, tags: (r.tags || []).slice(), status: r.status || 'published', createdAt: r.createdAt });
       }
     });
   }
@@ -16168,6 +16667,27 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       body.innerHTML = head + '<div class="refund-box" style="margin-top:14px">취소된 예약입니다. 환불은 결제 수단으로 3~5영업일 내 처리됩니다.</div>' +
         '<div class="reject-foot"><button class="btn btn-ghost" type="button" data-manage-close>닫기</button>' +
         '<button class="btn btn-outline" type="button" data-intake-copy="' + esc(b.no) + '">접수 내용 복사</button></div>';
+      return;
+    }
+
+    /* v29 · 방문 완료 — 후기 남기기 / 같은 선생님으로 다시 예약 */
+    if (TtModel.reservationStatus(b.status) === 'completed') {
+      var chkDone = TtModel.canReviewReservation(reviewCtxOf(), b.no);
+      var doneTrust = teacherTrustOf(b.teacherId);
+      body.innerHTML = head +
+        '<div class="refund-box" style="margin-top:14px">방문 완료된 회차예요. 같은 선생님 · 같은 지역 · 같은 증상으로 다시 예약할 수 있어요.</div>' +
+        '<div class="tp-detail" style="margin-top:10px">' +
+          '<div class="row"><span>선생님 신뢰</span><b>' + esc(doneTrust.summary) + '</b></div>' +
+          '<div class="row"><span>재방문</span><b>' + esc(doneTrust.rebookLabel) + '</b></div>' +
+        '</div>' +
+        (chkDone.ok
+          ? '<button class="btn btn-outline" type="button" data-review-booking="' + esc(b.no) + '" style="width:100%;margin-top:10px">후기 남기기</button>'
+          : '<p class="sheet-note">후기 등록됨 · 감사합니다.</p>') +
+        '<button class="btn btn-navy" type="button" data-rebook="' + esc(b.no) + '" style="width:100%;margin-top:8px">같은 선생님으로 다시 예약</button>' +
+        '<div class="reject-foot">' +
+          '<button class="btn btn-ghost" type="button" data-manage-close>닫기</button>' +
+          '<button class="btn btn-outline" type="button" data-intake-copy="' + esc(b.no) + '">접수 내용 복사</button>' +
+        '</div>';
       return;
     }
 
@@ -17884,9 +18404,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       storageRead: function (key) { return TtStorage.get(key, null); },
       storageWrite: function (key, value) { return TtStorage.set(key, value); },
       /* v24 · 모바일·접근성·성능 QA */
-      qaVersion: 'v28',
+      qaVersion: 'v29',
       a11y: {
-        version: 'v28',
+        version: 'v29',
         dialogOrder: DIALOG_ORDER.slice(),
         openDialog: function () { return topOpenDialog(); },
         focusInside: function (sel) {
@@ -18164,6 +18684,61 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       },
       copyAdminMetricsText: function () { return copyAdminMetricsText(); },
       copyAdminMetricsCsv: function () { return copyAdminMetricsCsv(); },
+      /* v29 · 고객 후기 신뢰 배지·원클릭 재예약 */
+      trustVersion: TtModel.trustVersion,
+      reviewTagMaster: TtModel.reviewTagMaster,
+      reviewRuleNote: TtModel.reviewRuleNote,
+      trustLocalNote: TtModel.trustLocalNote,
+      rebookDefaultPassId: TtModel.rebookDefaultPassId,
+      reviewTagLabel: TtModel.reviewTagLabel,
+      canReviewReservation: function (ctx, no) { return TtModel.canReviewReservation(ctx || reviewCtxOf(), no); },
+      reviewableReservations: function (ctx) { return TtModel.reviewableReservations(ctx || reviewCtxOf()); },
+      buildTeacherTrustSummary: function (ctx, id) { return TtModel.buildTeacherTrustSummary(ctx || {}, id); },
+      buildRebookDraft: function (ctx, no, opts) { return TtModel.buildRebookDraft(ctx || {}, no, opts); },
+      trustOf: function (id) { return teacherTrustOf(id); },
+      teacherTrustText: function (id) { return teacherTrustOf(id).summary; },
+      rebookDraft: function (no) { return TtModel.buildRebookDraft({ bookings: account.bookings || [], teachers: teachers }, no); },
+      openRebook: function (no) { return openRebook(no); },
+      openReviewForBooking: function (no) { return openReviewForBooking(no); },
+      submitReviewNow: function () { return submitReview(); },
+      reviewState: function () {
+        var sheet = $('#reviewSheet');
+        var hint = $('#reviewHint');
+        var rule = $('#reviewRuleNote');
+        var desc = $('#reviewDesc');
+        return {
+          open: !!(sheet && sheet.classList.contains('is-open')),
+          stars: reviewCtx.stars, tags: reviewCtx.tags.slice(),
+          reservationNo: reviewCtx.reservationNo || null, teacherId: reviewCtx.teacherId || '',
+          hint: hint ? String(hint.textContent || '') : '',
+          rule: rule ? String(rule.textContent || '') : '',
+          desc: desc ? String(desc.textContent || '').replace(/\s+/g, ' ').trim() : '',
+          chips: document.querySelectorAll('#reviewTags [data-rtag]').length,
+          chipText: [].slice.call(document.querySelectorAll('#reviewTags [data-rtag]')).map(function (b) { return b.getAttribute('data-rtag'); }),
+          onChips: document.querySelectorAll('#reviewTags [data-rtag].is-on').length
+        };
+      },
+      reviewListState: function () {
+        return [].slice.call(document.querySelectorAll('#reviewList .review-session')).map(function (row) {
+          var rv = row.querySelector('[data-review]');
+          var rb2 = row.querySelector('[data-review-booking]');
+          return {
+            session: row.getAttribute('data-session'),
+            reviewed: !!row.querySelector('.review-done'),
+            booking: rb2 ? rb2.getAttribute('data-review-booking') : null,
+            legacy: rv ? rv.getAttribute('data-review') : null,
+            text: String(row.textContent || '').replace(/\s+/g, ' ').trim()
+          };
+        });
+      },
+      lastRebook: function () { return window.__ttokttokRebook || null; },
+      bookingFormState: function () {
+        return {
+          province: bk.province, district: bk.district, teacherId: bk.teacherId,
+          syms: bk.syms.slice(), passId: bk.passId,
+          banner: (function () { var el = $('#rebookBanner'); return el && !el.hidden ? String(el.textContent || '') : ''; })()
+        };
+      },
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
