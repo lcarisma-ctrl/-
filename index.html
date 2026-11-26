@@ -11039,6 +11039,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var resetTp = e.target.closest('[data-tp-reset]');
     if (resetTp) {
       partner = seedPartner();
+      tpAvail = null;
       savePartner();
       renderPartner();
       showTab(role === 'therapist' ? 'tp-home' : 'mypage');
@@ -12448,6 +12449,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   setRole('customer', 'home');
   applySavedReviews();
   syncProvinceChips();
+  /* v19 · 선생님이 직접 등록한 가능 시간·활동 지역을 매칭 엔진 입력(teachers)에 되살린다.
+     선생님 카드·매칭 후보가 이 값을 읽으므로 첫 렌더 전에 적용한다. */
+  applySavedTeacherProfile();
   renderTeachers();
   renderHomeTeachers();
   renderDates();
