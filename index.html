@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v29">
+<meta name="app-version" content="v31">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2957,7 +2957,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
               <div id="qlPhotoPreview" hidden style="margin-top:8px"></div>
             </div>
           </div>
-          <button class="btn btn-teal" type="button" id="qlSave" style="margin-top:12px">2분 일지 저장하고 보호자에게 공유</button>
+          <button class="btn btn-teal" type="button" id="qlSave" style="margin-top:12px">일지 저장 · 보호자 공유</button>
           <p class="fine" id="qlHint">필수: 통증 · 컨디션 · 수행 동작 1개</p>
         </div>
 
@@ -15531,6 +15531,208 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     dialogs.forEach(function (el) { mo.observe(el, { attributes: true, attributeFilter: ['class'] }); });
   })();
 
+  /* ================= v31 · 터치 영역 44px·인접 간격 마감 ================= */
+  /* <style> 블록은 이 버전에서 고치지 않는다(디자인 토큰 정리는 v35 범위).
+     그래서 조작 요소의 터치 영역을 인라인 스타일로 채운다 — 버튼·링크·칩·아이콘 버튼·
+     목록 행·체크박스 라벨까지 최소 44×44px, 인접 컨트롤 사이는 최소 8px,
+     작은 글자 링크(더 보기·전체 읽음·자세히)는 알약형 버튼으로 승격한다.
+     계산 비용을 줄이려고 getComputedStyle 없이 규칙만으로 스타일을 채운다
+     (min-height는 바닥값이라 52px 버튼처럼 이미 큰 요소의 모양은 그대로다). */
+  var TOUCH_MIN = 44;
+  var TOUCH_GAP_MIN = 8;
+  var TOUCH_SEL = [
+    'button', 'a[href]', '[role="button"]', 'summary',
+    'input:not([type="hidden"])', 'select',
+    'label.check', 'label.consent',
+    '.chip', '.pick', '.tabbtn', '.teacher', '.list-item', '.mp-row', '.m-row',
+    '.home-program-card', '.home-link-card', '.report-cta', '.h-mini-card',
+    '.pass', '.pay', '.price-row', '.quick-tile', '.sym-tile', '.tile',
+    '.role-card', '.notif', '.faq-q', '.admin-card', '.date-chip', '.slot',
+    '.week-chip', '.metric-tabs button', '.role-switch button'
+  ].join(',');
+  /* 작은 글자 링크 → 알약형 버튼 승격 */
+  var TOUCH_PILL_SEL = '.sec-link, #notifReadAll, .mp-guide-link, #mpBookLink, #mpPassLink, .back-link, .gate-link, .admin-docs-all, .sheet-beta-link';
+  /* 인접 컨트롤 사이 최소 간격을 맞출 컨테이너 */
+  var TOUCH_GAP_SEL = '.chips, .segmented, .sym-chips, .req-btns, .admin-actions, .cf-actions, .wiz-nav, .week-chips, .time-chips, .filter-row, .mp-meta';
+  /* 좁은 카드 안 CTA: 문구가 두 줄로 접히지 않게(행은 접히게) */
+  var TOUCH_NOWRAP_SEL = '.admin-actions .btn, .req-btns .btn, .cf-actions .btn, .tp-sched .act .btn, .booking-row .br-btns .btn, .review-session .btn, .dday-empty .btn, .gate-link, .sec-link, .sheet-foot .btn';
+
+  function touchPill(el) {
+    if (el.__ttPill) return;
+    el.__ttPill = true;
+    el.style.display = 'inline-flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+    el.style.minHeight = TOUCH_MIN + 'px';
+    el.style.minWidth = TOUCH_MIN + 'px';
+    el.style.padding = '0 13px';
+    el.style.borderRadius = '999px';
+    el.style.border = '1px solid var(--line-strong)';
+    el.style.background = '#fff';
+    el.style.textDecoration = 'none';
+    el.style.whiteSpace = 'nowrap';
+  }
+
+  function touchLabelOf(el) {
+    var lab = el.closest('label');
+    if (lab) return lab;
+    if (el.id) {
+      try { return document.querySelector('label[for="' + el.id + '"]'); } catch (e) { return null; }
+    }
+    return null;
+  }
+
+  function touchBox(el) {
+    if (!el || el.nodeType !== 1) return;
+    if (el.__ttSeen) return; /* 이미 계산한 요소는 건너뛴다(렌더마다 반복 계산 방지) */
+    el.__ttSeen = true;
+    var tag = el.tagName;
+    var type = (el.getAttribute('type') || '').toLowerCase();
+    /* 체크박스·라디오는 라벨 전체를 터치 영역으로 */
+    if (tag === 'INPUT' && (type === 'checkbox' || type === 'radio')) {
+      var lab = touchLabelOf(el);
+      if (lab) {
+        if (!el.closest('label')) lab.style.flex = '1';
+        lab.style.display = lab.style.display || 'block';
+        lab.style.alignItems = 'center';
+        lab.style.minHeight = TOUCH_MIN + 'px';
+        var row = lab.parentElement;
+        if (row && row.classList && row.classList.contains('check')) row.style.minHeight = TOUCH_MIN + 'px';
+      }
+      return;
+    }
+    if (tag === 'INPUT' && type === 'range') {
+      el.style.height = TOUCH_MIN + 'px';
+      return;
+    }
+    el.style.minHeight = TOUCH_MIN + 'px';
+    el.style.minWidth = TOUCH_MIN + 'px';
+    if (tag === 'A' || tag === 'BUTTON' || el.getAttribute('role') === 'button') {
+      if (!el.style.display) el.style.display = '';
+    }
+    if (el.matches && el.matches(TOUCH_NOWRAP_SEL)) el.style.whiteSpace = 'nowrap';
+  }
+
+  function touchGap(el) {
+    if (!el || el.nodeType !== 1 || el.__ttGap) return;
+    el.__ttGap = true;
+    el.style.gap = TOUCH_GAP_MIN + 'px';
+  }
+
+  function toucApplyAll(root) {
+    var base = (root && root.nodeType === 1) ? root : document;
+    var list = base.querySelectorAll(TOUCH_SEL);
+    for (var i = 0; i < list.length; i++) touchBox(list[i]);
+    var pills = base.querySelectorAll(TOUCH_PILL_SEL);
+    for (var j = 0; j < pills.length; j++) touchPill(pills[j]);
+    var gaps = base.querySelectorAll(TOUCH_GAP_SEL);
+    for (var k = 0; k < gaps.length; k++) touchGap(gaps[k]);
+    /* CTA 문구를 한 줄로 두면 좁은 폭에서 행이 넘칠 수 있다 → 행은 접히게 */
+    var noWrapRows = base.querySelectorAll('.admin-actions, .req-btns, .cf-actions, .booking-row .br-btns, .gate-links, .card-head, .sheet-head-row');
+    for (var w = 0; w < noWrapRows.length; w++) noWrapRows[w].style.flexWrap = 'wrap';
+    var seps = base.querySelectorAll('.gate-links .gate-sep');
+    for (var sp = 0; sp < seps.length; sp++) seps[sp].style.display = 'none';
+    var banners = base.querySelectorAll('.mp-banner, .home-notice, .hh-cta');
+    for (var bn = 0; bn < banners.length; bn++) banners[bn].style.wordBreak = 'keep-all';
+    /* 내 정보 머리의 '·' 구분자는 알약 버튼 사이에서 숨긴다 */
+    var meta = base.querySelectorAll('.mp-meta');
+    for (var mt = 0; mt < meta.length; mt++) {
+      meta[mt].style.display = 'flex';
+      meta[mt].style.flexWrap = 'wrap';
+      meta[mt].style.alignItems = 'center';
+      meta[mt].style.gap = TOUCH_GAP_MIN + 'px';
+    }
+    var metaSeps = base.querySelectorAll('.mp-meta .sep');
+    for (var q = 0; q < metaSeps.length; q++) metaSeps[q].style.display = 'none';
+  }
+
+  /* 검증용: 화면에 보이는 조작 요소 중 44×44 미만을 돌려준다(터치 영역 감사) */
+  function touchViolations() {
+    var out = [];
+    var list = document.querySelectorAll(TOUCH_SEL);
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i];
+      if (el.disabled) continue;
+      var cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      var r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1) continue;
+      var type = (el.getAttribute('type') || '').toLowerCase();
+      if (el.tagName === 'INPUT' && (type === 'checkbox' || type === 'radio')) {
+        var lab = touchLabelOf(el);
+        if (lab) { var lr = lab.getBoundingClientRect(); r = lr.width ? lr : r; }
+      }
+      var mw = r.width || el.offsetWidth;
+      var mh = r.height || el.offsetHeight;
+      if (mw < TOUCH_MIN - 0.5 || mh < TOUCH_MIN - 0.5) {
+        out.push({
+          id: el.id || '', cls: (typeof el.className === 'string' ? el.className : ''),
+          text: String(el.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 24),
+          w: Math.round(mw), h: Math.round(mh)
+        });
+      }
+    }
+    return out;
+  }
+  function touchGapViolations() {
+    var out = [];
+    var containers = document.querySelectorAll(TOUCH_GAP_SEL);
+    for (var c = 0; c < containers.length; c++) {
+      var box = containers[c];
+      var kids = [];
+      for (var i = 0; i < box.children.length; i++) {
+        var k = box.children[i];
+        if (!k.matches || !k.matches(TOUCH_SEL)) continue;
+        var r = k.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1) continue;
+        kids.push({ el: k, r: r });
+      }
+      for (var a = 0; a < kids.length - 1; a++) {
+        var A = kids[a], B = kids[a + 1];
+        var vOverlap = Math.min(A.r.bottom, B.r.bottom) - Math.max(A.r.top, B.r.top);
+        var hOverlap = Math.min(A.r.right, B.r.right) - Math.max(A.r.left, B.r.left);
+        if (hOverlap <= 0 || vOverlap < Math.min(A.r.height, B.r.height) * 0.6) continue;
+        var gap = B.r.left - A.r.right;
+        if (gap < TOUCH_GAP_MIN - 0.5) {
+          out.push({
+            parent: (box.id ? '#' + box.id + ' ' : '') + (typeof box.className === 'string' ? box.className : ''),
+            a: A.el.id || (typeof A.el.className === 'string' ? A.el.className : A.el.tagName),
+            b: B.el.id || (typeof B.el.className === 'string' ? B.el.className : B.el.tagName),
+            gap: Math.round(gap * 10) / 10
+          });
+        }
+      }
+    }
+    return out.slice(0, 40);
+  }
+
+  (function initTouchTargets() {
+    /* 목록·시트는 클릭 뒤 다시 그려지므로, 클릭 처리(버블 단계)가 끝난 다음 틱에
+       문서 전체를 한 번 더 훑는다. MutationObserver 대신 이 방식이라 메모리를
+       오래 붙잡지 않고, getComputedStyle도 쓰지 않아 jsdom 테스트가 느려지지 않는다. */
+    var queued = false;
+    function schedule() {
+      if (queued) return;
+      queued = true;
+      setTimeout(function () { queued = false; toucApplyAll(document); }, 0);
+    }
+    toucApplyAll(document);
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', schedule, { once: true });
+    }
+    document.addEventListener('click', schedule, true);
+    document.addEventListener('change', schedule, true);
+    document.addEventListener('input', schedule, true);
+    /* 부트 직후 첫 렌더(목록·시트)가 끝나는 시점까지 몇 번 더 훑는다 */
+    [0, 120, 400, 900, 1600, 2600].forEach(function (ms) { setTimeout(schedule, ms); });
+    window.__ttokttokTouch = {
+      version: 'v31', min: TOUCH_MIN, gapMin: TOUCH_GAP_MIN,
+      selectors: TOUCH_SEL.split(', '), pillSelectors: TOUCH_PILL_SEL.split(', '),
+      apply: function (root) { toucApplyAll(root || document); },
+      violations: touchViolations, gapViolations: touchGapViolations
+    };
+  })();
+
   function syncHomeRegion() {
     var el = $('#homeRegionText');
     if (!el) return;
@@ -18407,9 +18609,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       storageRead: function (key) { return TtStorage.get(key, null); },
       storageWrite: function (key, value) { return TtStorage.set(key, value); },
       /* v24 · 모바일·접근성·성능 QA */
-      qaVersion: 'v29',
+      qaVersion: 'v31',
       a11y: {
-        version: 'v29',
+        version: 'v31',
         dialogOrder: DIALOG_ORDER.slice(),
         openDialog: function () { return topOpenDialog(); },
         focusInside: function (sel) {
@@ -18765,6 +18967,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function runMain() {
     try {
       TTMain();        /* 성공 — 버튼 바인딩 완료 */
+      try { toucApplyAll(document); } catch (e) {} /* v31 · 첫 렌더 뒤 터치 영역 한 번 더 */
       window.__ttokttokBooted = true;
     } catch (e) {
       reportError(e);
