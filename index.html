@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v24">
+<meta name="app-version" content="v25">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2221,6 +2221,17 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       </button>
 
       <div class="home-body">
+        <!-- v25 · 보호자 홈 통합 요약(다음 방문 · 보유 회차권 · 최근 4주 리포트) -->
+        <section class="card" id="homeSummaryCard" aria-labelledby="homeSummaryTitle" style="margin-top:14px">
+          <div class="card-head" style="margin-bottom:6px">
+            <h2 id="homeSummaryTitle">한눈에 보기</h2>
+            <span style="font-size:10px;color:var(--muted-2)" id="homeSummaryDate"></span>
+          </div>
+          <div id="homeSummaryNext"></div>
+          <div id="homeSummaryPass"></div>
+          <div id="homeSummaryReport"></div>
+        </section>
+
         <section class="home-hero" aria-labelledby="homeHeroTitle">
           <p class="hh-greet"><b id="homeGreetName">현수</b>님, 반가워요</p>
           <h1 class="hh-title" id="homeHeroTitle">똑똑쌤과 <span class="hh-hl">건강한 회복</span>을 시작해요</h1>
@@ -3686,6 +3697,30 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <div class="step-item"><span class="step-n">02</span><div><b>집에서 1:1 평가</b><span>걸음·관절·통증을 선생님이 직접 확인해요.</span></div></div>
         <div class="step-item"><span class="step-n">03</span><div><b>회차권 선택 후 시작</b><span>잔여 회차는 앱에서 확인하고 한 번씩 차감돼요.</span></div></div>
       </div>
+      <p class="sheet-label" style="margin-top:22px">첫 방문 준비 3가지</p>
+      <div class="card" id="onboardPrepCard" style="padding:6px 16px">
+        <div class="check"><input type="checkbox" id="obPrep-dress" data-onboard="dress"><label for="obPrep-dress" style="color:#33415A;text-decoration:none"><b>편한 복장</b> · 움직이기 편한 옷과 미끄러지지 않는 양말</label></div>
+        <div class="check"><input type="checkbox" id="obPrep-space" data-onboard="space"><label for="obPrep-space" style="color:#33415A;text-decoration:none"><b>실내 공간 2m</b> · 누워서 다리를 펼 수 있는 자리를 비워 주세요</label></div>
+        <div class="check"><input type="checkbox" id="obPrep-docs" data-onboard="docs"><label for="obPrep-docs" style="color:#33415A;text-decoration:none"><b>진단서·복약 메모</b> · 없으면 말씀만 해 주셔도 돼요</label></div>
+      </div>
+      <p class="sheet-note" id="onboardPrepNote" role="status" aria-live="polite">준비물은 3가지예요. 체크한 내용은 이 기기에만 저장돼요.</p>
+      <p class="sheet-label" style="margin-top:22px">첫 방문 평가는 이렇게 진행돼요</p>
+      <div class="steps" id="onboardFlow">
+        <div class="step-item"><span class="step-n">01</span><div><b>15분 평가</b><span>걸음·관절·통증과 집 안 동선을 선생님이 직접 확인해요.</span></div></div>
+        <div class="step-item"><span class="step-n">02</span><div><b>맞춤 계획</b><span>주 몇 회, 어떤 동작부터 할지 함께 정해요.</span></div></div>
+        <div class="step-item"><span class="step-n">03</span><div><b>60분 본 수업 또는 상담</b><span>바로 시작해도, 계획만 듣고 결정해도 괜찮아요.</span></div></div>
+      </div>
+      <p class="sheet-label" style="margin-top:22px">이런 걱정은 없어도 돼요</p>
+      <div class="promise-card" id="onboardAssurance" style="margin-top:0">
+        <div class="promise-row">
+          <span class="p-ico" aria-hidden="true"><svg class="ic"><use href="#i-shield-check"/></svg></span>
+          <div><b>강제 결제 없음</b><p>평가만 받고 결정하지 않아도 괜찮아요. 결제는 원하실 때만 진행해요.</p></div>
+        </div>
+        <div class="promise-row">
+          <span class="p-ico" aria-hidden="true"><svg class="ic"><use href="#i-refresh"/></svg></span>
+          <div><b>선생님 교체 가능</b><p>맞지 않으면 1:1 문의로 언제든 바꿀 수 있어요.</p></div>
+        </div>
+      </div>
       <p class="sheet-label" style="margin-top:22px">똑똑쌤의 약속</p>
       <div class="promise-card">
         <div class="promise-row">
@@ -3835,7 +3870,24 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="faqTitle">자주 묻는 질문 · 약관</h2>
       <p class="sheet-desc">궁금한 점을 먼저 확인해 보세요.</p>
-      <div class="faq-list" id="faqList"></div>
+      <!-- v25 · FAQ 키워드 검색 + 카테고리 필터 -->
+      <div class="chips" id="faqCatChips" role="tablist" aria-label="자주 묻는 질문 분류">
+        <button class="chip is-on" type="button" data-faqcat="all" role="tab" aria-selected="true">전체</button>
+        <button class="chip" type="button" data-faqcat="reserve" role="tab" aria-selected="false">예약/변경</button>
+        <button class="chip" type="button" data-faqcat="refund" role="tab" aria-selected="false">비용/환불</button>
+        <button class="chip" type="button" data-faqcat="safety" role="tab" aria-selected="false">선생님/안전</button>
+      </div>
+      <p class="sheet-label" style="margin-top:6px">궁금한 점 검색</p>
+      <input class="input" id="faqSearch" type="search" placeholder="예: 환불, 선생님 교체, 준비물" autocomplete="off" aria-label="자주 묻는 질문 검색">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px">
+        <p class="fine" id="faqCount" role="status" aria-live="polite" style="margin:0"></p>
+        <button class="sec-link" type="button" id="faqReset" hidden>검색 초기화</button>
+      </div>
+      <div class="faq-list" id="faqList" style="margin-top:8px"></div>
+      <div class="empty" id="faqEmpty" hidden style="margin-top:8px">
+        <p>검색 결과가 없어요.<br>다른 말로 찾아보시거나 1:1 상담을 남겨 주세요.</p>
+        <a class="btn btn-outline btn-sm" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer" style="text-decoration:none">1:1 상담 연결</a>
+      </div>
       <div class="terms-tabs" id="faqTabs" role="tablist" aria-label="약관 보기">
         <button type="button" class="is-on" data-terms="terms" role="tab" aria-selected="true">이용약관</button>
         <button type="button" data-terms="policy" role="tab" aria-selected="false">서비스·환불</button>
@@ -6226,6 +6278,24 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var VISIT_LOG_VERSION = 20;
     var REEVAL_INTERVAL_DAYS = 28;   /* 4주 */
     var REEVAL_SOON_DAYS = 3;        /* 도래 3일 전부터 미리 알린다 */
+    /* v25 · 보호자 홈 통합 요약·첫 방문 온보딩 */
+    var GUARDIAN_SUMMARY_VERSION = 'v25';
+    var GUARDIAN_REPORT_DAYS = 28;   /* 최근 4주 리포트 */
+    var GUARDIAN_PASS_GUIDE = ['1회권 · 4회권 · 8회권 · 12회권 중에서 골라요', '방문할 때마다 1회씩 차감되고 잔여 회차는 앱에서 확인해요'];
+    var ONBOARDING_PREP = [
+      { code: 'dress', label: '편한 복장', desc: '움직이기 편한 옷과 미끄러지지 않는 양말' },
+      { code: 'space', label: '실내 공간 2m', desc: '누워서 다리를 펼 수 있는 자리를 비워 주세요' },
+      { code: 'docs', label: '진단서·복약 메모', desc: '없으면 말씀만 해 주셔도 돼요' }
+    ];
+    var ONBOARDING_FLOW = [
+      { n: '01', title: '15분 평가', desc: '걸음·관절·통증과 집 안 동선을 선생님이 직접 확인해요.' },
+      { n: '02', title: '맞춤 계획', desc: '주 몇 회, 어떤 동작부터 할지 함께 정해요.' },
+      { n: '03', title: '60분 본 수업 또는 상담', desc: '바로 시작해도, 계획만 듣고 결정해도 괜찮아요.' }
+    ];
+    var ONBOARDING_ASSURANCE = [
+      { title: '강제 결제 없음', desc: '평가만 받고 결정하지 않아도 괜찮아요. 결제는 원하실 때만 진행해요.' },
+      { title: '선생님 교체 가능', desc: '맞지 않으면 1:1 문의로 언제든 바꿀 수 있어요.' }
+    ];
 
     /* 통증·컨디션 1~5. 5가 가장 좋은 상태(통증 없음·아주 좋음).
        기존 측정값(통증 NRS 0~10, 보행 m/s, 무릎 ROM)은 그대로 둔다. */
@@ -6597,6 +6667,162 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         todayIso: todayIso, intervalDays: REEVAL_INTERVAL_DAYS, soonDays: REEVAL_SOON_DAYS,
         total: items.length, due: countOf('due'), soon: countOf('soon'), items: items
       };
+    }
+
+    /* --- ⑤ 보호자 홈 통합 요약·첫 방문 온보딩(v25) ----------------------- */
+    /* 다음 방문·보유 회차권·최근 4주 리포트·4주 재평가를 한 번에 계산한다(계산만).
+       ctx: { bookings, passes, journals, todayIso } — 저장·발송·DOM 접근 없음. */
+    function buildGuardianSummary(ctx) {
+      var c = ctx || {};
+      var todayIso = c.todayIso || todayIsoKst();
+      var bookings = Array.isArray(c.bookings) ? c.bookings : [];
+      var passList = Array.isArray(c.passes) ? c.passes : [];
+      var journals = Array.isArray(c.journals) ? c.journals : [];
+      var today = dateObjOf(todayIso);
+
+      /* ① 다음 방문 — 취소·노쇼·완료 제외, 오늘 이후 가장 가까운 순 */
+      var live = [];
+      bookings.forEach(function (b) {
+        if (!b || typeof b !== 'object') return;
+        var st = reservationCode(b.status);
+        if (st === 'canceled' || st === 'no_show' || st === 'completed') return;
+        var iso = String(b.dateIso || '').slice(0, 10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) iso = dateLabelToIso(b.date);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return;
+        var d = dateObjOf(iso);
+        if (!d || !today) return;
+        var days = Math.round((d.getTime() - today.getTime()) / 86400000);
+        if (days < 0) return;
+        live.push({ b: b, iso: iso, days: days, status: st });
+      });
+      live.sort(function (x, y) {
+        if (x.days !== y.days) return x.days - y.days;
+        return String(x.b.time || '') < String(y.b.time || '') ? -1 : (String(x.b.time || '') > String(y.b.time || '') ? 1 : 0);
+      });
+      var nextVisit = null;
+      if (live.length) {
+        var nv = live[0], nb = nv.b;
+        var nvPass = null;
+        passList.forEach(function (p) {
+          if (!p || p.remaining <= 0) return;
+          if (nb.walletId && p.id === nb.walletId) nvPass = p;
+          else if (!nvPass && nb.passId && (p.passId === nb.passId || p.id === nb.passId)) nvPass = p;
+        });
+        nextVisit = {
+          bookingNo: String(nb.no || nb.id || ''),
+          dateIso: nv.iso, dateLabel: dateLabelOf(nv.iso), weekday: String(nb.day || weekdayOf(nv.iso) || ''),
+          time: String(nb.time || ''), teacher: String(nb.teacher || ''), teacherId: String(nb.teacherId || ''),
+          region: String(nb.region || ''),
+          status: reservationStatus(nb.status), statusLabel: reservationLabel(nb.status),
+          dday: nv.days, ddayLabel: nv.days === 0 ? 'D-DAY' : 'D-' + nv.days,
+          passName: nvPass ? String(nvPass.name || '') : '',
+          upcomingCount: live.length
+        };
+      }
+
+      /* ② 보유 회차권 — 잔여가 남은 것만, 만료 임박 순 */
+      var passItems = [], passTotal = 0, nearestExpire = '', nearestName = '';
+      passList.forEach(function (p) {
+        if (!p) return;
+        var remain = num(p.remaining, 0);
+        var tot = num(p.total, remain);
+        if (remain <= 0) return;
+        passTotal += remain;
+        var expire = String(p.expire || '');
+        if (expire && (!nearestExpire || dateLabelToIso(expire) < dateLabelToIso(nearestExpire))) {
+          nearestExpire = expire;
+          nearestName = String(p.name || '');
+        }
+        passItems.push({
+          id: String(p.id || ''), name: String(p.name || '이용권'),
+          remaining: remain, total: tot,
+          percent: tot > 0 ? Math.round((remain / tot) * 100) : 0,
+          expire: expire
+        });
+      });
+      passItems.sort(function (x, y) {
+        var xe = dateLabelToIso(x.expire) || '9999-99-99';
+        var ye = dateLabelToIso(y.expire) || '9999-99-99';
+        if (xe !== ye) return xe < ye ? -1 : 1;
+        return y.remaining - x.remaining;
+      });
+      var passSummary = {
+        total: passTotal, count: passItems.length,
+        nearestExpire: nearestExpire, nearestName: nearestName,
+        items: passItems.slice(0, 3), guide: GUARDIAN_PASS_GUIDE.slice()
+      };
+
+      /* ③ 최근 4주(28일) 리포트 — 방문 일지·컨디션/통증 추이·4주 재평가 */
+      var reportFrom = today ? isoDateOf(new Date(today.getTime() - (GUARDIAN_REPORT_DAYS - 1) * 86400000)) : '';
+      var inRange = journals.filter(function (j) {
+        if (!j || typeof j !== 'object' || j.status === 'archived') return false;
+        var iso = journalIsoOf(j);
+        return !!iso && !!reportFrom && iso >= reportFrom && iso <= todayIso;
+      }).sort(function (x, y) {
+        var xi = journalIsoOf(x), yi = journalIsoOf(y);
+        return xi < yi ? -1 : (xi > yi ? 1 : 0);
+      });
+      var condSeries = [], painSeries = [], days = {}, acts = {};
+      inRange.forEach(function (j) {
+        var iso = journalIsoOf(j);
+        days[iso] = 1;
+        if (num(j.condition5, 0)) condSeries.push({ date: iso, dateLabel: dateLabelOf(iso), score: num(j.condition5, 0) });
+        if (num(j.pain5, 0)) painSeries.push({ date: iso, dateLabel: dateLabelOf(iso), score: num(j.pain5, 0) });
+        (Array.isArray(j.activities) ? j.activities : []).forEach(function (a) {
+          var code = quickActivityOf(a);
+          if (code) acts[code] = (acts[code] || 0) + 1;
+        });
+      });
+      var lastEntry = inRange.length ? inRange[inRange.length - 1] : null;
+      var nextFocus = '';
+      for (var i = inRange.length - 1; i >= 0; i--) {
+        if (inRange[i].nextFocus) { nextFocus = String(inRange[i].nextFocus); break; }
+      }
+      var reeval = null;
+      var anchor = firstVisitIsoOf(bookings);
+      if (anchor) {
+        var rst = reevalStateOf(anchor, todayIso);
+        if (rst) {
+          reeval = {
+            anchorIso: rst.anchorIso, dueIso: rst.dueIso, cycle: rst.cycle,
+            daysLeft: rst.daysLeft, overdueDays: rst.overdueDays, status: rst.status,
+            badge: reevalBadgeOf(rst)
+          };
+        }
+      }
+      var report = {
+        fromIso: reportFrom, toIso: todayIso, days: GUARDIAN_REPORT_DAYS,
+        rounds: inRange.length, visitedDays: Object.keys(days).length,
+        condition: trendOf(condSeries, 'up'), pain: trendOf(painSeries, 'down'),
+        activities: Object.keys(acts).map(function (k) { return { code: k, label: quickActivityLabel(k), count: acts[k] }; })
+          .sort(function (x, y) { return y.count - x.count; }),
+        lastDateIso: lastEntry ? journalIsoOf(lastEntry) : '',
+        lastDateLabel: lastEntry ? dateLabelOf(journalIsoOf(lastEntry)) : '',
+        lastLine: lastEntry ? quickJournalLine(lastEntry) : '',
+        nextFocus: nextFocus, reeval: reeval, hasJournal: inRange.length > 0
+      };
+
+      return {
+        version: GUARDIAN_SUMMARY_VERSION, todayIso: todayIso,
+        nextVisit: nextVisit, passes: passSummary, report: report
+      };
+    }
+    /* 첫 방문 온보딩(준비물 3·진행 3단계·불안 해소 2) — 저장 값 정규화만 담당한다. */
+    function normalizeOnboarding(raw) {
+      var src = (raw && typeof raw === 'object') ? raw : {};
+      var out = {};
+      ONBOARDING_PREP.forEach(function (p) { out[p.code] = src[p.code] === true; });
+      return out;
+    }
+    function onboardingDoneCount(raw) {
+      var st = normalizeOnboarding(raw), n = 0;
+      ONBOARDING_PREP.forEach(function (p) { if (st[p.code]) n += 1; });
+      return n;
+    }
+    function onboardingNote(raw) {
+      var n = onboardingDoneCount(raw);
+      if (n === ONBOARDING_PREP.length) return '준비물 3가지를 모두 확인했어요. 방문 당일만 확인하면 돼요.';
+      return '준비물 3가지 중 ' + n + '가지 확인했어요. 체크한 내용은 이 기기에만 저장돼요.';
     }
 
     /* --- ④ 신뢰·안전 장치 --------------------------------------------- */
@@ -7237,6 +7463,17 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       reevalBadgeOf: reevalBadgeOf,
       firstVisitIsoOf: firstVisitIsoOf,
       buildReevalAlerts: buildReevalAlerts,
+      /* v25 · 보호자 홈 통합 요약·첫 방문 온보딩 */
+      guardianSummaryVersion: GUARDIAN_SUMMARY_VERSION,
+      guardianReportDays: GUARDIAN_REPORT_DAYS,
+      passGuide: GUARDIAN_PASS_GUIDE.slice(),
+      onboardingPrep: ONBOARDING_PREP.map(function (p) { return { code: p.code, label: p.label, desc: p.desc }; }),
+      onboardingFlow: ONBOARDING_FLOW.map(function (s) { return { n: s.n, title: s.title, desc: s.desc }; }),
+      onboardingAssurance: ONBOARDING_ASSURANCE.map(function (a) { return { title: a.title, desc: a.desc }; }),
+      buildGuardianSummary: buildGuardianSummary,
+      normalizeOnboarding: normalizeOnboarding,
+      onboardingDoneCount: onboardingDoneCount,
+      onboardingNote: onboardingNote,
       startVisit: startVisit,
       endVisit: endVisit,
       visitWindowOf: visitWindowOf,
@@ -7495,7 +7732,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var rpText = $('#rolePillText');
     if (rpText) rpText.textContent = name === 'admin' ? '관리자 모드' : (role === 'therapist' ? '선생님 모드' : '고객 모드');
     if (name === 'mypage') renderAccount();
-    if (name === 'home' || name === 'mypage') renderCustomerHeader();
+    if (name === 'home' || name === 'mypage') { renderCustomerHeader(); if (name === 'home') { try { renderHomeSummary(); } catch (e) {} } }
     if (name === 'journal') { renderChart(currentMetric); renderJournalTimeline(); renderDday(); try { renderJournalV20(); } catch (e) {} }
     if (name === 'teachers') renderTeachers();
     if (name === 'admin') renderAdmin();
@@ -9405,6 +9642,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
     renderCustomerHeader();
     renderDday();
+    try { renderHomeSummary(); } catch (e) {}
   }
 
   /* 홈·내 정보 상단(이름 · 예약 건수 · 잔여 회차 · 지역)을 계정 상태와 맞춘다 */
@@ -9427,6 +9665,111 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (pl) pl.textContent = String(left);
 
     syncHomeRegion();
+  }
+
+  /* ===================================================================
+     v25 · 보호자 홈 통합 요약(다음 방문 · 보유 회차권 · 최근 4주 리포트)
+     ─ 계산은 TtModel.buildGuardianSummary 한 곳, 화면은 기존 클래스만 재사용.
+     =================================================================== */
+  function guardianSummaryData() {
+    return TtModel.buildGuardianSummary({
+      bookings: account.bookings || [],
+      passes: account.passes || [],
+      journals: sharedJournals(),
+      todayIso: TtModel.todayIsoKst()
+    });
+  }
+
+  function summaryChevron() {
+    return '<svg class="ic" aria-hidden="true"><use href="#i-chev-r"/></svg>';
+  }
+
+  function renderHomeSummary() {
+    var card = $('#homeSummaryCard');
+    if (!card) return;
+    var s = guardianSummaryData();
+    var dateEl = $('#homeSummaryDate');
+    if (dateEl) dateEl.textContent = TtModel.dateLabelOf(s.todayIso) + ' 기준';
+
+    var nx = $('#homeSummaryNext');
+    if (nx) {
+      var nv = s.nextVisit;
+      if (!nv) {
+        nx.innerHTML =
+          '<div class="sum-row"><span>다음 방문</span><b>예정 없음</b></div>' +
+          '<p class="fine" style="margin-top:6px">첫 방문 평가는 무료예요. 지역과 증상만 고르면 1분이면 끝나요.</p>' +
+          '<button class="btn btn-navy btn-sm" type="button" data-summary="book" style="width:100%;margin-top:8px">무료 평가 예약</button>';
+      } else {
+        nx.innerHTML =
+          '<div class="sum-row"><span>다음 방문</span><b>' + esc(nv.dateLabel + (nv.weekday ? ' (' + nv.weekday + ') ' : ' ') + nv.time) + '</b></div>' +
+          '<div class="sum-row"><span>선생님</span><b>' + esc(nv.teacher || '배정 중') + '</b></div>' +
+          '<div class="sum-row"><span>예약번호</span><b>' + esc(nv.bookingNo || '-') + '</b></div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">' +
+            '<span class="status' + (nv.status === 'confirmed' ? ' is-on' : '') + '">' + esc(nv.ddayLabel + ' · ' + nv.statusLabel) + '</span>' +
+            (nv.passName ? '<span class="tag">' + esc(nv.passName) + '</span>' : '') +
+          '</div>' +
+          '<button class="sec-link" type="button" data-summary="visit" style="margin-top:10px;padding:8px 0">방문 일정 보기' + summaryChevron() + '</button>';
+      }
+    }
+
+    var ps = $('#homeSummaryPass');
+    if (ps) {
+      var p = s.passes;
+      var ph = '<div style="border-top:1px solid #F1F4F9;margin-top:6px;padding-top:8px">' +
+        '<div class="sum-row"><span>보유 회차권</span><b>' + (p.total > 0 ? '잔여 ' + p.total + '회' : '아직 없음') + '</b></div>';
+      p.items.forEach(function (it) {
+        ph += '<div class="sum-row"><span>' + esc(it.name) + '</span><b>' + it.remaining + '회 / ' + it.total + '회</b></div>';
+      });
+      if (p.nearestExpire) {
+        ph += '<div class="sum-row"><span>만료 예정</span><b>' + esc(p.nearestExpire) + (p.nearestName ? ' · ' + esc(p.nearestName) : '') + '</b></div>';
+      }
+      ph += '<p class="fine" style="margin-top:6px">' + esc(p.guide.join(' · ')) + '</p>' +
+        '<button class="sec-link" type="button" data-summary="pass" style="margin-top:8px;padding:8px 0">이용권·잔여 회차 보기' + summaryChevron() + '</button>' +
+        '</div>';
+      ps.innerHTML = ph;
+    }
+
+    var rp = $('#homeSummaryReport');
+    if (rp) {
+      var r = s.report;
+      var rh = '<div style="border-top:1px solid #F1F4F9;margin-top:6px;padding-top:8px">' +
+        '<div class="sum-row"><span>최근 4주 방문</span><b>' + r.rounds + '회' + (r.visitedDays ? ' · ' + r.visitedDays + '일' : '') + '</b></div>';
+      rh += trendRowHtml('컨디션 (1~5)', r.condition, '점');
+      rh += trendRowHtml('통증 (1~5)', r.pain, '점');
+      if (r.reeval && r.reeval.badge) {
+        rh += '<div class="sum-row"><span>4주 재평가</span><b>' + esc(r.reeval.badge) + '</b></div>';
+      }
+      if (r.lastDateLabel) {
+        rh += '<p class="fine" style="margin-top:6px">최근 일지 ' + esc(r.lastDateLabel) + ' · ' + esc(r.lastLine || '기록') + '</p>';
+      } else {
+        rh += '<p class="fine" style="margin-top:6px">최근 4주 방문 일지가 아직 없어요. 방문 후 선생님이 2분 일지를 남기면 여기에 쌓입니다.</p>';
+      }
+      rh += '<button class="sec-link" type="button" data-summary="report" style="margin-top:8px;padding:8px 0">이번 주 리포트 열기' + summaryChevron() + '</button>' +
+        '</div>';
+      rp.innerHTML = rh;
+    }
+  }
+
+  /* ----- v25 · 첫 방문 준비 체크리스트(이 기기에만 저장) ----- */
+  var ONBOARD_KEY = 'ttokttok_onboarding_v1';
+  function loadOnboardingState() {
+    var raw = null;
+    try { raw = JSON.parse(SafeStorage.getItem(ONBOARD_KEY) || 'null'); } catch (e) { raw = null; }
+    return TtModel.normalizeOnboarding(raw);
+  }
+  var onboardState = loadOnboardingState();
+
+  function saveOnboardingState() {
+    try { SafeStorage.setItem(ONBOARD_KEY, JSON.stringify(onboardState)); } catch (e) {}
+  }
+
+  function renderOnboarding() {
+    TtModel.onboardingPrep.forEach(function (p) {
+      var el = document.getElementById('obPrep-' + p.code);
+      if (el) el.checked = onboardState[p.code] === true;
+    });
+    var note = $('#onboardPrepNote');
+    if (note) note.textContent = TtModel.onboardingNote(onboardState);
   }
 
   /* ===================================================================
@@ -9621,12 +9964,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   });
 
   function updateChecklist() {
-    var boxes = $$('.check input[type="checkbox"]');
+    /* v25: 홈 요약·온보딩에도 .check가 생겨 화면 안(방문 일지)으로 범위를 좁힌다 */
+    var boxes = $$('#screen-journal .check input[type="checkbox"]');
     var done = boxes.filter(function (b) { return b.checked; }).length;
     $('#checkCount').textContent = done + '/' + boxes.length + ' 완료';
     $('#checkBar').style.width = Math.round((done / boxes.length) * 100) + '%';
   }
-  $$('.check input[type="checkbox"]').forEach(function (b) {
+  $$('#screen-journal .check input[type="checkbox"]').forEach(function (b) {
     b.addEventListener('change', function () {
       updateChecklist();
       if (b.checked) toast('운동 하나를 완료했어요.');
@@ -10599,6 +10943,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderVisitTimeLine();
     renderJournalLatest();
     syncReevalNotifs();
+    try { renderHomeSummary(); } catch (e) {}
   }
 
   /* v22 · 최근 방문 일지 상세(보호자 화면) — 선생님이 2분 일지에 올린 사진 1장을 보여준다. */
@@ -13184,6 +13529,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return;
     }
     if (e.target.closest('#homeBookBtn')) { startBooking({ passId: 'eval' }); return; }
+    /* v25 · 홈 통합 요약 바로가기 */
+    var summaryBtn = e.target.closest('[data-summary]');
+    if (summaryBtn) {
+      var summaryKind = summaryBtn.getAttribute('data-summary');
+      if (summaryKind === 'book') { startBooking({ passId: 'eval' }); return; }
+      if (summaryKind === 'visit' || summaryKind === 'pass') { openAccountSheet(); return; }
+      if (summaryKind === 'report') { showTab('journal'); openWeeklyReport(); return; }
+    }
     if (e.target.closest('#homeRegionBtn') || e.target.closest('#mpRegionRow')) { openRegionSheet(); return; }
     if (e.target.closest('#homeTicketBtn') || e.target.closest('#mpBookLink') || e.target.closest('#mpPassLink')) {
       openAccountSheet();
@@ -14719,29 +15072,54 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   /* ----- FAQ · 약관 ----- */
   var FAQ_ITEMS = [
     {
-      id: 'faq-diff',
+      id: 'faq-diff', cat: 'reserve', keys: '병원 차이 방문재활',
       q: '방문재활과 병원 치료는 어떻게 다른가요?',
       a: '병원 치료는 진단·검사·처치 중심이고, 방문재활은 이미 받은 진단을 바탕으로 <b>집에서 이어가는 기능 회복</b>에 집중해요. 선생님이 직접 방문해 걷기·계단·관절 가동범위를 확인하고, 집 구조에 맞는 운동을 알려드립니다. 통증이 심해지거나 새 증상이 생기면 병원 진료를 먼저 권해드려요.'
     },
     {
-      id: 'faq-license',
-      q: '선생님 면허는 어떻게 검증하나요?',
-      a: '물리치료사·작업치료사 국가면허 원본, 경력증명서, 범죄경력조회 동의서, 신분증까지 <b>서류 4종</b>을 모두 확인한 선생님만 활동해요. 면허번호는 보건복지부 조회로 대조하고, 승인 뒤에도 후기와 방문 기록을 계속 확인합니다.'
+      id: 'faq-first', cat: 'reserve', keys: '첫 방문 무료 평가 15분 60분',
+      q: '첫 방문 무료 평가는 어떻게 진행되나요?',
+      a: '평가는 무료예요. 방문하면 <b>15분 동안</b> 걸음·관절·통증과 집 안 동선을 확인하고, 그 자리에서 주 몇 회·어떤 동작부터 할지 <b>맞춤 계획</b>을 함께 정해요. 이어서 <b>60분 본 수업</b>을 바로 시작할 수도 있고, 계획만 듣고 상담으로 마무리해도 됩니다. 평가만 받고 결정하지 않아도 결제는 없어요.'
     },
     {
-      id: 'faq-refund',
+      id: 'faq-prepare', cat: 'reserve', keys: '준비물 복장 공간 진단서 복약',
+      q: '방문 전에 무엇을 준비해야 하나요?',
+      a: '편한 옷과 미끄러지지 않는 양말, 누워서 다리를 펼 수 있는 <b>실내 공간 2m</b>, 최근 복용약 목록을 준비해 주세요. 기존 진단서가 있으면 평가 기록이 더 정확해지고, 없으면 말씀만 해 주셔도 됩니다. 밴드·공 같은 운동 도구는 선생님이 가져갑니다.'
+    },
+    {
+      id: 'faq-change', cat: 'reserve', keys: '일정 변경 취소 예약 시간',
+      q: '예약 시간을 바꾸고 싶어요.',
+      a: '방문 <b>24시간 전까지는 무료</b>로 일정 변경·취소가 됩니다. 앱의 방문 일정에서 <b>변경</b>을 누르면 새 날짜·시간을 고를 수 있어요. 24시간 이내에는 회차 1회가 차감되거나 단건 결제의 50%만 환불되고, 자세한 기준은 아래 <b>서비스·환불</b> 탭에 있어요.'
+    },
+    {
+      id: 'faq-region', cat: 'reserve', keys: '지역 언제 열리나 오픈',
+      q: '우리 지역은 언제 열리나요?',
+      a: '현재 서울·경기·인천·부산·대구 등 <b>17개 시·도</b>에서 연결되고 있어요. 준비 중인 지역은 내 정보 &gt; 서비스 지역에서 오픈 알림을 신청하면 가장 먼저 안내드립니다. 선생님 모집이 끝난 지역부터 순서대로 열려요.'
+    },
+    {
+      id: 'faq-pass', cat: 'refund', keys: '회차권 잔여 횟수 이용권 만료',
+      q: '회차권은 어떻게 쓰나요?',
+      a: '1회권·4회권·8회권·12회권 중에서 고를 수 있어요. 방문할 때마다 <b>1회씩 차감</b>되고, 잔여 회차와 만료 예정일은 홈의 <b>한눈에 보기</b>와 내 정보에서 확인할 수 있습니다. 남은 회차는 환불 규정에 따라 돌려받을 수 있어요.'
+    },
+    {
+      id: 'faq-refund', cat: 'refund', keys: '환불 취소 노쇼',
       q: '환불과 일정 변경은 어떻게 하나요?',
       a: '방문 <b>24시간 전까지 무료</b>로 일정 변경·취소가 가능해요. 취소하면 이용권 잔여 회차가 그대로 복구되고, 카드 결제는 영업일 기준 3~5일 안에 환불됩니다. 방문 24시간 이내에는 회차 1회가 차감되거나 단건 결제의 50%가 환불되고, 방문 시각 이후·노쇼(방문 시각 +30분까지 연락 두절)는 환불이 어려워요. 자세한 기준은 아래 <b>서비스·환불</b> 탭(운영 기준 초안)에서 확인할 수 있어요.'
     },
     {
-      id: 'faq-prepare',
-      q: '방문 전에 무엇을 준비해야 하나요?',
-      a: '편한 옷과 미끄러지지 않는 양말, 최근 복용약 목록을 준비해 주세요. 평가 기록이 더 정확해지도록 보호자님이 함께 계시면 좋아요. 밴드·공 같은 운동 도구는 선생님이 가져갑니다.'
+      id: 'faq-license', cat: 'safety', keys: '면허 검증 자격 선생님',
+      q: '선생님 면허는 어떻게 검증하나요?',
+      a: '물리치료사·작업치료사 국가면허 원본, 경력증명서, 범죄경력조회 동의서, 신분증까지 <b>서류 4종</b>을 모두 확인한 선생님만 활동해요. 면허번호는 보건복지부 조회로 대조하고, 승인 뒤에도 후기와 방문 기록을 계속 확인합니다.'
     },
     {
-      id: 'faq-region',
-      q: '우리 지역은 언제 열리나요?',
-      a: '현재 서울·경기·인천·부산·대구 등 <b>17개 시·도</b>에서 연결되고 있어요. 준비 중인 지역은 내 정보 &gt; 서비스 지역에서 오픈 알림을 신청하면 가장 먼저 안내드립니다. 선생님 모집이 끝난 지역부터 순서대로 열려요.'
+      id: 'faq-teacher-change', cat: 'safety', keys: '선생님 교체 바꾸기 불편',
+      q: '선생님을 바꿀 수 있나요?',
+      a: '네. 맞지 않으면 1:1 문의로 <b>언제든 교체를 요청</b>할 수 있어요. 새 선생님이 배정될 때까지 남은 회차는 그대로 유지되고, 교체 때문에 추가 결제가 생기지 않습니다.'
+    },
+    {
+      id: 'faq-safety', cat: 'safety', keys: '응급 다치면 119 안전',
+      q: '방문 중 다치거나 몸이 나빠지면 어떻게 하나요?',
+      a: '먼저 <b>119</b>에 연락하고, 이어서 센터(031-919-8577)로 알려 주세요. 앱의 <b>긴급 연락 · 안전 안내</b>에 응급 4단계와 연락처가 있어요. 선생님은 진단·처치가 아니라 운동 지도만 하고, 통증이 심해지면 병원 진료를 먼저 권합니다.'
     }
   ];
 
@@ -14768,11 +15146,34 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   };
 
   var faqOpenId = '';
+  var faqQuery = '';
+  var faqCat = 'all';
+  var FAQ_CATS = [
+    { key: 'all', label: '전체' },
+    { key: 'reserve', label: '예약/변경' },
+    { key: 'refund', label: '비용/환불' },
+    { key: 'safety', label: '선생님/안전' }
+  ];
+
+  function faqNorm(s) { return String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ''); }
+  function faqPlainText(html) { return String(html || '').replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' '); }
+
+  /* 검색어·카테고리로 FAQ를 걸러낸다(계산만). */
+  function filterFaqItems(query, cat) {
+    var q = faqNorm(query);
+    var c = cat || 'all';
+    return FAQ_ITEMS.filter(function (f) {
+      if (c !== 'all' && f.cat !== c) return false;
+      if (!q) return true;
+      return faqNorm(f.q + ' ' + faqPlainText(f.a) + ' ' + (f.keys || '')).indexOf(q) !== -1;
+    });
+  }
 
   function renderFaq() {
     var wrap = $('#faqList');
     if (!wrap) return;
-    wrap.innerHTML = FAQ_ITEMS.map(function (f, i) {
+    var list = filterFaqItems(faqQuery, faqCat);
+    wrap.innerHTML = list.map(function (f, i) {
       var on = faqOpenId === f.id;
       return '<div class="faq-item' + (on ? ' is-open' : '') + '">' +
         '<button class="faq-q" type="button" data-faq="' + f.id + '" aria-expanded="' + (on ? 'true' : 'false') + '">' +
@@ -14782,6 +15183,29 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<div class="faq-a">' + f.a + '</div>' +
       '</div>';
     }).join('');
+    if (!list.length) faqOpenId = '';
+    $$('#faqCatChips [data-faqcat]').forEach(function (b) {
+      var on = b.getAttribute('data-faqcat') === faqCat;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    var filtering = !!faqQuery || faqCat !== 'all';
+    var cnt = $('#faqCount');
+    if (cnt) cnt.textContent = filtering
+      ? '검색 결과 ' + list.length + '건'
+      : '자주 묻는 질문 ' + list.length + '개';
+    var empty = $('#faqEmpty');
+    if (empty) empty.hidden = list.length !== 0;
+    var reset = $('#faqReset');
+    if (reset) reset.hidden = !filtering;
+  }
+
+  function resetFaqFilter() {
+    faqQuery = '';
+    faqCat = 'all';
+    var input = $('#faqSearch');
+    if (input) input.value = '';
+    renderFaq();
   }
 
   function toggleFaq(id) {
@@ -14813,7 +15237,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   function openFaqSheet() {
-    renderFaq();
+    resetFaqFilter();
     renderTerms('terms');
     openSheetEl('#faqSheet');
   }
@@ -14855,6 +15279,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
     if (e.target.closest('#mpFaqRow')) { openFaqSheet(); return; }
     if (e.target.closest('[data-faq-close]') || e.target.id === 'faqSheet') { closeSheetEl('#faqSheet'); return; }
+    var faqCatBtn = e.target.closest('[data-faqcat]');
+    if (faqCatBtn) { faqCat = faqCatBtn.getAttribute('data-faqcat') || 'all'; renderFaq(); return; }
+    if (e.target.closest('#faqReset')) { resetFaqFilter(); return; }
     var fq = e.target.closest('[data-faq]');
     if (fq) { toggleFaq(fq.getAttribute('data-faq')); return; }
     var termBtn = e.target.closest('[data-terms]');
@@ -14872,6 +15299,22 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var code = $('#couponCode');
     if (code) code.addEventListener('keydown', function (ev) {
       if (ev.key === 'Enter') { ev.preventDefault(); registerCoupon(); }
+    });
+  })();
+
+  /* v25 · FAQ 검색 입력 · 첫 방문 준비 체크리스트 */
+  (function bindV25Inputs() {
+    var faqSearch = $('#faqSearch');
+    if (faqSearch) faqSearch.addEventListener('input', function () {
+      faqQuery = faqSearch.value || '';
+      renderFaq();
+    });
+    document.addEventListener('change', function (e) {
+      var cb = e.target.closest('[data-onboard]');
+      if (!cb) return;
+      onboardState[cb.getAttribute('data-onboard')] = !!cb.checked;
+      saveOnboardingState();
+      renderOnboarding();
     });
   })();
 
@@ -14893,6 +15336,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   renderPasses();
   updateTotal();
   renderAccount();
+  renderHomeSummary();
+  renderOnboarding();
   renderReviews();
   renderNotifs();
   renderCoupons();
@@ -15347,9 +15792,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       storageRead: function (key) { return TtStorage.get(key, null); },
       storageWrite: function (key, value) { return TtStorage.set(key, value); },
       /* v24 · 모바일·접근성·성능 QA */
-      qaVersion: 'v24',
+      qaVersion: 'v25',
       a11y: {
-        version: 'v24',
+        version: 'v25',
         dialogOrder: DIALOG_ORDER.slice(),
         openDialog: function () { return topOpenDialog(); },
         focusInside: function (sel) {
@@ -15397,7 +15842,75 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
               el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title'));
           }).map(function (el) { return el.id || el.name || el.tagName; });
         }
-      }
+      },
+      /* v25 · 보호자 홈 통합 요약 · 첫 방문 온보딩 · FAQ 검색 */
+      guardianVersion: TtModel.guardianSummaryVersion,
+      guardianReportDays: TtModel.guardianReportDays,
+      buildGuardianSummary: function (ctx) { return TtModel.buildGuardianSummary(ctx || {}); },
+      normalizeOnboarding: function (raw) { return TtModel.normalizeOnboarding(raw); },
+      guardianSummary: function (ctx) {
+        var c = ctx || { bookings: account.bookings, passes: account.passes, journals: sharedJournals(), todayIso: TtModel.todayIsoKst() };
+        return TtModel.buildGuardianSummary(c);
+      },
+      summaryText: function () {
+        return ['#homeSummaryNext', '#homeSummaryPass', '#homeSummaryReport'].map(function (s) {
+          var el = $(s);
+          return el ? String(el.textContent || '').replace(/\s+/g, ' ').trim() : '';
+        }).join(' | ');
+      },
+      openSummary: function (kind) {
+        var btn = document.querySelector('#homeSummaryCard [data-summary="' + String(kind) + '"]');
+        if (!btn) return false;
+        btn.click();
+        return true;
+      },
+      onboarding: function () {
+        return {
+          version: TtModel.guardianSummaryVersion,
+          prep: TtModel.onboardingPrep, flow: TtModel.onboardingFlow, assurance: TtModel.onboardingAssurance,
+          done: TtModel.normalizeOnboarding(onboardState), count: TtModel.onboardingDoneCount(onboardState),
+          note: TtModel.onboardingNote(onboardState)
+        };
+      },
+      setOnboarding: function (code, value) {
+        var key = String(code || '');
+        if (!TtModel.onboardingPrep.some(function (p) { return p.code === key; })) return null;
+        onboardState[key] = !!value;
+        saveOnboardingState();
+        renderOnboarding();
+        return window.__ttokttokModel.onboarding();
+      },
+      resetOnboarding: function () {
+        onboardState = TtModel.normalizeOnboarding(null);
+        saveOnboardingState();
+        renderOnboarding();
+        return window.__ttokttokModel.onboarding();
+      },
+      faqCategories: FAQ_CATS.map(function (c) { return c.key; }),
+      faqFilter: function (q, cat) { return filterFaqItems(q, cat).map(function (f) { return f.id; }); },
+      faqState: function () {
+        var empty = $('#faqEmpty');
+        return {
+          query: faqQuery, cat: faqCat, total: FAQ_ITEMS.length,
+          shown: filterFaqItems(faqQuery, faqCat).length,
+          emptyVisible: !!empty && !empty.hidden,
+          countText: $('#faqCount') ? String($('#faqCount').textContent || '') : '',
+          resetVisible: $('#faqReset') ? !$('#faqReset').hidden : false
+        };
+      },
+      setFaqQuery: function (q) {
+        faqQuery = String(q == null ? '' : q);
+        var input = $('#faqSearch');
+        if (input) input.value = faqQuery;
+        renderFaq();
+        return window.__ttokttokModel.faqState();
+      },
+      setFaqCat: function (cat) {
+        faqCat = String(cat || 'all');
+        renderFaq();
+        return window.__ttokttokModel.faqState();
+      },
+      resetFaq: function () { resetFaqFilter(); return window.__ttokttokModel.faqState(); }
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
