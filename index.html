@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v23">
+<meta name="app-version" content="v24">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2563,7 +2563,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           <p>방문 전에 선생님이 연락드립니다.</p>
           <div class="done-tracker" id="doneTracker" aria-live="polite"></div>
           <div class="summary" id="doneSummary"></div>
-          <p class="done-beta" id="doneSaved" aria-live="polite"></p>
+          <p class="done-beta" id="doneSaved" role="status" aria-live="polite"></p>
           <div class="done-btns">
             <button class="btn btn-outline" type="button" id="doneCopy">
               <svg class="ic" aria-hidden="true"><use href="#i-clipboard"/></svg>접수 내용 복사
@@ -3326,7 +3326,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
             <button class="btn btn-outline btn-sm" type="button" id="adminBackupExport">운영 데이터 백업(JSON)</button>
             <button class="btn btn-outline btn-sm" type="button" id="adminBackupPick">백업 파일 복원</button>
-            <input type="file" id="adminBackupFile" accept="application/json,.json" style="display:none">
+            <input type="file" id="adminBackupFile" accept="application/json,.json" aria-label="복원할 백업 파일 선택" style="display:none">
           </div>
           <div id="adminBackupConfirmBox" hidden style="margin-top:12px">
             <p class="fine" id="adminBackupConfirmText" style="margin:0 0 8px"></p>
@@ -3514,7 +3514,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   </div>
 </div>
 
-<div class="sheet-backdrop" id="teacherSheet" role="dialog" aria-modal="true" aria-labelledby="sheetName">
+<div class="sheet-backdrop" id="teacherSheet" role="dialog" aria-modal="true" aria-labelledby="sheetName" aria-label="선생님 정보">
   <div class="sheet" id="teacherSheetPanel">
     <div class="sheet-handle" aria-hidden="true"></div>
     <button class="sheet-close sheet-close-top" type="button" data-sheet-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
@@ -3528,7 +3528,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   </div>
 </div>
 
-<div class="sheet-backdrop" id="appSheet" role="dialog" aria-modal="true" aria-labelledby="appSheetName">
+<div class="sheet-backdrop" id="appSheet" role="dialog" aria-modal="true" aria-labelledby="appSheetName" aria-label="지원서 상세">
   <div class="sheet">
     <div class="sheet-handle" aria-hidden="true"></div>
     <button class="sheet-close sheet-close-top" type="button" data-app-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
@@ -3537,7 +3537,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   </div>
 </div>
 
-<div class="sheet-backdrop is-front" id="rejectSheet" role="dialog" aria-modal="true" aria-labelledby="rejectTitle">
+<div class="sheet-backdrop is-front" id="rejectSheet" role="dialog" aria-modal="true" aria-labelledby="rejectTitle" aria-label="보완 요청 사유">
   <div class="sheet">
     <div class="sheet-handle" aria-hidden="true"></div>
     <div class="sheet-scroll">
@@ -3550,7 +3550,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <button class="reject-reason" type="button" data-reason="신분증 사본 식별 불가">신분증 식별 불가</button>
         <button class="reject-reason" type="button" data-reason="활동 지역 확인 필요">활동 지역 확인</button>
       </div>
-      <textarea class="reject-memo" id="rejectMemo" rows="3" placeholder="보완할 내용을 직접 적어주세요 (선택)"></textarea>
+      <textarea class="reject-memo" id="rejectMemo" rows="3" aria-label="보완 요청 내용(선택)" placeholder="보완할 내용을 직접 적어주세요 (선택)"></textarea>
       <div class="reject-foot">
         <button class="btn btn-ghost" type="button" id="rejectCancel">취소</button>
         <button class="btn btn-navy" type="button" id="rejectConfirm">보완 요청 보내기</button>
@@ -3570,7 +3570,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   </div>
 </div>
 
-<div class="sheet-backdrop is-front" id="chatSheet" role="dialog" aria-modal="true" aria-labelledby="chatName">
+<div class="sheet-backdrop is-front" id="chatSheet" role="dialog" aria-modal="true" aria-labelledby="chatName" aria-label="1:1 문의">
   <div class="sheet">
     <div class="sheet-handle" aria-hidden="true"></div>
     <button class="sheet-close sheet-close-top" type="button" data-chat-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
@@ -3598,8 +3598,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <button type="button" data-rtag="설명이 쉬워요">설명이 쉬워요</button>
         <button type="button" data-rtag="시간 약속을 잘 지켜요">시간 약속</button>
       </div>
-      <textarea class="review-in" id="reviewText" rows="3" maxlength="120" placeholder="한 줄이면 충분해요"></textarea>
-      <p class="sheet-note" id="reviewHint">별점을 먼저 골라주세요.</p>
+      <textarea class="review-in" id="reviewText" rows="3" maxlength="120" aria-label="후기 내용(한 줄)" placeholder="한 줄이면 충분해요"></textarea>
+      <p class="sheet-note" id="reviewHint" role="status" aria-live="polite">별점을 먼저 골라주세요.</p>
       <div class="reject-foot">
         <button class="btn btn-ghost" type="button" data-review-close>나중에</button>
         <button class="btn btn-navy" type="button" id="reviewSubmit">등록</button>
@@ -3608,7 +3608,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   </div>
 </div>
 
-<div class="sheet-backdrop is-front" id="manageSheet" role="dialog" aria-modal="true" aria-labelledby="manageTitle">
+<div class="sheet-backdrop is-front" id="manageSheet" role="dialog" aria-modal="true" aria-label="방문 내역·일정 변경">
   <div class="sheet">
     <div class="sheet-handle" aria-hidden="true"></div>
     <button class="sheet-close sheet-close-top" type="button" data-manage-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
@@ -8418,10 +8418,6 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
   });
 
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && $('#teacherSheet') && $('#teacherSheet').classList.contains('is-open')) closeTeacherSheet();
-  });
-
   /* ================= 이용권 상품 ================= */
   var passes = [
     {
@@ -9567,9 +9563,6 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   $('#receiptClose').addEventListener('click', closeReceipt);
   $('#receiptModal').addEventListener('click', function (e) {
     if (e.target === this) closeReceipt();
-  });
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') closeReceipt();
   });
 
   /* ================= 일지 (고객) ================= */
@@ -10784,8 +10777,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       '<p class="sheet-label" style="margin-top:14px">전문분야</p><div class="sym-chips">' + fieldHtml + '</div>' +
       '<div class="field" style="margin-top:14px"><label for="tpMaxWeekly">주당 최대 방문 수</label>' +
         '<input class="input num" id="tpMaxWeekly" type="number" inputmode="numeric" min="1" max="21" step="1" value="' + esc(s.maxWeekly) + '"></div>' +
-      '<p class="sheet-label" style="margin-top:14px">활동 시·도</p>' +
-      '<div class="field"><select id="tpProvince">' + provOpts + '</select></div>' +
+      '<p class="sheet-label" style="margin-top:14px" id="tpProvinceLabel">활동 시·도</p>' +
+      '<div class="field"><select id="tpProvince" aria-labelledby="tpProvinceLabel">' + provOpts + '</select></div>' +
       '<p class="sheet-label" style="margin-top:12px">활동 시·군·구</p><div class="sym-chips">' + distHtml + '</div>' +
       dongBlocks +
       '<p class="admin-meta" data-tp-avail-summary style="margin-top:12px;color:#475569">현재 등록: ' +
@@ -12703,10 +12696,6 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (e.target.id === 'rejectSheet') closeRejectSheet();
   });
 
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && $('#rejectSheet') && $('#rejectSheet').classList.contains('is-open')) closeRejectSheet();
-  });
-
   /* v17 · 배정 후보 선생님 선택값 기억(카드가 다시 그려져도 유지) */
   document.addEventListener('change', function (e) {
     var pick = e.target.closest('[data-admin-resv-teacher]');
@@ -12796,17 +12785,32 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
   });
 
+  /* v24 · 모든 시트·모달을 Escape로 닫는다(맨 위 레이어부터 하나씩) */
+  var DIALOG_ORDER = ['#receiptModal', '#chatSheet', '#rejectSheet', '#appSheet', '#reviewSheet', '#manageSheet',
+    '#weeklySheet', '#reportSheet', '#safetySheet', '#faqSheet', '#paySheet', '#notifSheet', '#couponSheet',
+    '#accountSheet', '#roleSheet', '#guideSheet', '#teacherSheet', '#gateSheet', '#regionSheet'];
+  function topOpenDialog() {
+    for (var i = 0; i < DIALOG_ORDER.length; i++) {
+      var el = $(DIALOG_ORDER[i]);
+      if (el && el.classList.contains('is-open')) return DIALOG_ORDER[i];
+    }
+    return null;
+  }
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
-    var reg = $('#regionSheet');
-    if (reg && reg.classList.contains('is-open')) { closeRegionSheet(); return; }
-    var gs = $('#gateSheet');
-    if (gs && gs.classList.contains('is-open')) { closeGateSheet(); return; }
-    if (chatSheetOpen()) { closeChat(); return; }
-    var rs = $('#reviewSheet');
-    if (rs && rs.classList.contains('is-open')) { closeReview(); return; }
-    var ms = $('#manageSheet');
-    if (ms && ms.classList.contains('is-open')) { closeManage(); }
+    var id = topOpenDialog();
+    if (!id) return;
+    if (id === '#receiptModal') closeReceipt();
+    else if (id === '#chatSheet') closeChat();
+    else if (id === '#rejectSheet') closeRejectSheet();
+    else if (id === '#appSheet') closeAppSheet();
+    else if (id === '#reviewSheet') closeReview();
+    else if (id === '#manageSheet') closeManage();
+    else if (id === '#teacherSheet') closeTeacherSheet();
+    else if (id === '#regionSheet') closeRegionSheet();
+    else if (id === '#gateSheet') closeGateSheet();
+    else closeSheetEl(id);
+    e.preventDefault();
   });
 
   /* ================= 로그인 게이트 ================= */
@@ -13075,6 +13079,87 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function openAccountSheet() { renderAccount(); renderReviews(); openSheetEl('#accountSheet'); }
   function openPaySheet() { renderAccount(); renderCards(); openSheetEl('#paySheet'); }
   function openRoleSheet() { openSheetEl('#roleSheet'); }
+
+  /* ================= v24 접근성: 시트 포커스 이동·복귀 =================
+     시트/모달이 열리면 그 안으로 초점을 옮겨 키보드·스크린리더가 내용을 읽게 하고,
+     닫히면 눌렀던 버튼으로 초점을 돌려준다. 어떤 경로로 열든(class is-open) 동일하게 동작한다. */
+  var a11yFocusStack = [];
+  var a11yTriggerHistory = [];   /* 최근 누른 버튼 {el, sel} — 닫힌 시트 안의 버튼은 건너뛰고 되돌리기 위해 */
+  var a11yLastTrigger = null;
+  function a11yUsableTrigger(el) {
+    if (!el || !el.focus || !document.contains(el)) return null;
+    var box = el.closest('.sheet-backdrop, .backdrop, .gate');
+    if (box && !box.classList.contains('is-open')) return null;
+    return el;
+  }
+  function a11ySelectorOf(el) {
+    if (!el) return '';
+    if (el.id) return '#' + el.id;
+    var dt = el.getAttribute && el.getAttribute('data-teacher');
+    if (dt) return '[data-teacher="' + dt + '"]';
+    var c = (typeof el.className === 'string') ? el.className.trim() : '';
+    if (c) return el.tagName.toLowerCase() + '.' + c.split(/\s+/).join('.');
+    return el.tagName ? el.tagName.toLowerCase() : '';
+  }
+  function a11yResolveTrigger(rec) {
+    if (!rec) return null;
+    if (rec.el && document.contains(rec.el)) return rec.el;
+    if (rec.sel) { try { return $(rec.sel); } catch (e) { return null; } }
+    return null;
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest ? e.target.closest('button,[href],[role="button"],.teacher,.list-item') : null;
+    if (!t) return;
+    a11yLastTrigger = { el: t, sel: a11ySelectorOf(t) };
+    a11yTriggerHistory.push(a11yLastTrigger);
+    if (a11yTriggerHistory.length > 6) a11yTriggerHistory.shift();
+  }, true);
+  function a11yRestoreFocus(rec) {
+    var pick = a11yResolveTrigger(rec);
+    if (!a11yUsableTrigger(pick)) pick = null;
+    for (var i = a11yTriggerHistory.length - 1; i >= 0 && !pick; i--) {
+      var cand = a11yResolveTrigger(a11yTriggerHistory[i]);
+      if (a11yUsableTrigger(cand)) pick = cand;
+    }
+    try { if (pick) pick.focus({ preventScroll: true }); } catch (e) {}
+  }
+  function a11yFirstFocusable(root) {
+    var sel = 'button:not([disabled]),[href],input:not([type="hidden"]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    var list = root.querySelectorAll(sel);
+    for (var i = 0; i < list.length; i++) {
+      var n = list[i];
+      var r = n.getBoundingClientRect();
+      var st = window.getComputedStyle(n);
+      if (r.width > 0 && r.height > 0 && st.visibility !== 'hidden' && st.display !== 'none') return n;
+    }
+    return null;
+  }
+  function a11ySyncDialog(el) {
+    if (!el || !el.classList) return;
+    var isSheet = el.classList.contains('sheet-backdrop') || el.classList.contains('backdrop');
+    if (!isSheet) return;
+    var open = el.classList.contains('is-open');
+    if (open) {
+      if (el.__a11yFrom) return; /* 이미 열려 있음 */
+      el.__a11yFrom = (a11yLastTrigger && a11yResolveTrigger(a11yLastTrigger)) ? a11yLastTrigger : { el: document.activeElement, sel: '' };
+      if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+      var target = a11yFirstFocusable(el) || el;
+      try { target.focus({ preventScroll: true }); } catch (e) {}
+    } else if (el.__a11yFrom) {
+      var from = el.__a11yFrom;
+      el.__a11yFrom = null;
+      a11yRestoreFocus(from);
+    }
+  }
+  (function initA11yDialogs() {
+    var dialogs = [].slice.call(document.querySelectorAll('.sheet-backdrop, .backdrop'));
+    dialogs.forEach(function (el) { if (el.classList.contains('is-open')) a11ySyncDialog(el); });
+    if (!window.MutationObserver) return;
+    var mo = new MutationObserver(function (muts) {
+      muts.forEach(function (m) { a11ySyncDialog(m.target); });
+    });
+    dialogs.forEach(function (el) { mo.observe(el, { attributes: true, attributeFilter: ['class'] }); });
+  })();
 
   function syncHomeRegion() {
     var el = $('#homeRegionText');
@@ -15260,7 +15345,59 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       memoryAdapter: function (seed) { return TtStorage.memoryAdapter(seed); },
       resetStorageAdapter: function () { return TtStorage.reset(); },
       storageRead: function (key) { return TtStorage.get(key, null); },
-      storageWrite: function (key, value) { return TtStorage.set(key, value); }
+      storageWrite: function (key, value) { return TtStorage.set(key, value); },
+      /* v24 · 모바일·접근성·성능 QA */
+      qaVersion: 'v24',
+      a11y: {
+        version: 'v24',
+        dialogOrder: DIALOG_ORDER.slice(),
+        openDialog: function () { return topOpenDialog(); },
+        focusInside: function (sel) {
+          var el = sel ? $(sel) : null;
+          return !!(el && el.contains(document.activeElement));
+        },
+        labelledDialogs: function () {
+          return [].slice.call(document.querySelectorAll('[role="dialog"]')).filter(function (el) {
+            if (!el.getAttribute('aria-modal')) return false;
+            var lb = el.getAttribute('aria-labelledby');
+            if (lb) {
+              var ids = lb.split(/\s+/);
+              var txt = '';
+              var all = true;
+              for (var i = 0; i < ids.length; i++) {
+                var t = document.getElementById(ids[i]);
+                if (!t) { all = false; break; }
+                txt += String(t.textContent || '');
+              }
+              if (all && txt.trim()) return true;
+            }
+            return !!String(el.getAttribute('aria-label') || '').trim();
+          }).length;
+        },
+        dialogCount: function () { return document.querySelectorAll('[role="dialog"]').length; },
+        unnamedControls: function () {
+          var sel = 'button,[role="button"],a[href],input[type="submit"],input[type="button"]';
+          return [].slice.call(document.querySelectorAll(sel)).filter(function (el) {
+            var r = el.getBoundingClientRect();
+            if (r.width < 1 || r.height < 1) return false;
+            var n = String(el.getAttribute('aria-label') || '').trim();
+            if (!n && el.getAttribute('aria-labelledby')) {
+              n = el.getAttribute('aria-labelledby').split(/\s+/).map(function (id) { var t = document.getElementById(id); return t ? t.textContent : ''; }).join('').trim();
+            }
+            if (!n) n = String(el.getAttribute('title') || '').trim();
+            if (!n) n = String(el.textContent || '').replace(/\s+/g, ' ').trim();
+            return !n;
+          }).map(function (el) { return el.id || el.className || el.tagName; });
+        },
+        unlabeledFields: function () {
+          return [].slice.call(document.querySelectorAll('input:not([type="hidden"]),select,textarea')).filter(function (el) {
+            var r = el.getBoundingClientRect();
+            if (r.width < 1 || r.height < 1) return false;
+            return !((el.id && document.querySelector('label[for="' + el.id + '"]')) || el.closest('label') ||
+              el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || el.getAttribute('title'));
+          }).map(function (el) { return el.id || el.name || el.tagName; });
+        }
+      }
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
