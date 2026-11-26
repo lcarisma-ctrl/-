@@ -10945,6 +10945,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       renderPasses();
       updateTotal();
     }
+    /* 재예약은 이미 첫 방문을 마쳤으므로 '첫 방문 평가 무료' 띠를 감춘다. */
+    var bkNotice = $('#bookingNotice');
+    if (bkNotice) bkNotice.hidden = !!opts.rebook;
     var banner = $('#rebookBanner');
     if (banner) {
       if (opts.rebook) {
