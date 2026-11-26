@@ -2907,7 +2907,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       <!-- v19 · 선생님이 직접 등록하는 가능 시간·활동 지역 (관리자 수기 입력 금지) -->
       <section class="sec" style="margin-top:20px" id="tpAvailSec" aria-label="가능 시간·활동 지역">
         <div class="sec-head" style="margin-bottom:8px">
-          <h2 class="sec-title" style="font-size:15px">가능 시간 · 활동 지역</h2>
+          <h2 class="sec-title" style="font-size:15px">가능 시간 · 활동 지역 · 전문분야</h2>
           <span class="tag-example">직접 등록</span>
         </div>
         <div class="card" id="tpAvailForm"></div>
@@ -8836,7 +8836,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         (esc(availabilitySummaryOf(s.days, s.times)) || '미등록') + ' · 주 ' + esc(s.maxWeekly) + '회 · ' +
         (s.province ? esc(s.province) + (s.districts.length ? ' ' + esc(s.districts.join('·')) : '') : '지역 미등록') +
         ((s.fields || []).length ? ' · ' + esc(s.fields.join('·')) : '') + '</p>' +
-      '<button class="btn btn-navy" type="button" id="tpAvailSave" style="margin-top:12px">가능 시간·지역 저장</button>';
+      '<button class="btn btn-navy" type="button" id="tpAvailSave" style="margin-top:12px">이 내용으로 저장</button>';
   }
   function applyPartnerProfileToTeacher() {
     var t = teacherById(partner.teacherId || 'park');
