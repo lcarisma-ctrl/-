@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v18">
+<meta name="app-version" content="v19">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2790,6 +2790,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       <div id="tpStatusCard" style="margin-top:10px"></div>
       <div id="tpSettle" style="margin-top:10px"></div>
 
+      <!-- v19 · 선생님 전용 알림함 (audience: teacher) -->
+      <section class="sec" style="margin-top:20px" id="tpNotifSec" aria-label="선생님 알림함">
+        <div class="sec-head" style="margin-bottom:8px">
+          <h2 class="sec-title" style="font-size:15px">알림함 <span id="tpNotifCount" style="font-size:11px;font-weight:700;color:var(--blue)"></span></h2>
+          <button class="sec-link" type="button" data-tp-notif-all>모두 읽음</button>
+        </div>
+        <div class="notif-list" id="tpNotifList"></div>
+        <p class="fine" style="margin-top:8px">* 앱 안 알림입니다. 문자·카카오 발송은 아직 연결되지 않았어요.</p>
+      </section>
+
       <section class="sec" style="margin-top:20px">
         <div class="sec-head" style="margin-bottom:8px">
           <h2 class="sec-title" style="font-size:15px">신규 방문 요청 <span id="tpReqCount" style="font-size:11px;font-weight:700;color:var(--blue)"></span></h2>
@@ -2893,6 +2903,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       </div>
 
       <div id="tpProfile" style="margin-top:14px"></div>
+
+      <!-- v19 · 선생님이 직접 등록하는 가능 시간·활동 지역 (관리자 수기 입력 금지) -->
+      <section class="sec" style="margin-top:20px" id="tpAvailSec" aria-label="가능 시간·활동 지역">
+        <div class="sec-head" style="margin-bottom:8px">
+          <h2 class="sec-title" style="font-size:15px">가능 시간 · 활동 지역</h2>
+          <span class="tag-example">직접 등록</span>
+        </div>
+        <div class="card" id="tpAvailForm"></div>
+        <p class="fine">* 저장하면 매칭 후보(활동 지역 ∩ 가능 시간)에 바로 반영됩니다. 관리자가 대신 입력하지 않습니다.</p>
+      </section>
 
       <section class="sec" style="margin-top:20px">
         <div class="sec-head" style="margin-bottom:8px">
@@ -3168,6 +3188,20 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         <p>제출 서류 4종을 확인한 뒤 승인 또는 보완 요청을 처리합니다. 처리 결과는 선생님 모드에 즉시 반영됩니다.</p>
         <div class="admin-stats" id="adminStats"></div>
       </div>
+
+      <!-- v19 · 매칭 대기열 & 운영 예외 요약 보드 (로컬 데모) -->
+      <section class="sec" style="margin-top:20px" id="adminOpsSec" aria-label="오늘 처리할 일">
+        <div class="sec-head" style="margin-bottom:10px">
+          <div>
+            <h2 class="sec-title">오늘 처리할 일</h2>
+            <p class="sec-sub" id="adminOpsSub">미배정·재확정 대기 건과 사람이 봐야 하는 예외를 먼저 모았습니다.</p>
+          </div>
+          <span class="tag-example">DEMO</span>
+        </div>
+        <div id="adminOpsCounts" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+        <div class="admin-queue" id="adminMatchQueue" style="margin-top:10px" aria-label="매칭 대기열"></div>
+        <div class="admin-queue" id="adminExceptionBoard" style="margin-top:12px" aria-label="운영 예외"></div>
+      </section>
 
       <!-- v17 · 예약 접수 큐 & 상태 관리 (로컬 데모) -->
       <section class="sec" style="margin-top:20px" id="adminResvSec" aria-label="예약 접수 큐">
@@ -7855,6 +7889,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             '<span class="chev" aria-hidden="true">' + icon('chev-r') + '</span>' +
           '</button>' +
           (canceled ? '' : matchBlockHtml(b)) +
+          (TtModel.reservationStatus(b.status) === 'rescheduled'
+            ? '<button class="btn btn-teal" type="button" data-reconfirm="' + esc(b.no) + '" style="width:100%;margin-top:8px">일정 변경 확인 · 재확정</button>'
+            : '') +
           (canceled ? '' : '<button class="br-ics" type="button" data-ics="' + esc(b.no) + '">' + icon('calendar') + '캘린더 추가</button>') +
           (canceled
             ? '<div class="br-btns"><button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '">문의</button><button class="btn btn-ghost" type="button" data-manage="' + esc(b.no) + '">내역</button><span></span></div>'
@@ -8626,13 +8663,322 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderTpHero();
     renderTpStatus();
     renderTpSettle();
+    renderTpNotifs();
     renderTpRequests();
     renderTpSchedule();
     renderTpJournals();
     renderTpProfile();
+    renderTpAvail();
     renderTpSettleDetail();
     renderTpDocs();
   }
+
+  /* ===================================================================
+     v19 · 선생님 전용 알림함 (audience: 'teacher')
+     ─ v13부터 notifStore에 쌓이던 선생님 알림을 파트너 화면에서 열어보고 읽음 처리한다.
+     ─ 문자·카카오 발송은 하지 않는다(앱 안 알림).
+     =================================================================== */
+  function teacherNotifs() {
+    return notifStore.filter(function (n) { return n && n.audience === 'teacher'; });
+  }
+  function unreadTeacherNotifs() {
+    return teacherNotifs().filter(function (n) { return !n.read; }).length;
+  }
+  function renderTpNotifs() {
+    var wrap = $('#tpNotifList');
+    var countEl = $('#tpNotifCount');
+    var allBtn = $('#tpNotifSec [data-tp-notif-all]');
+    var u = unreadTeacherNotifs();
+    if (countEl) countEl.textContent = u ? '안 읽음 ' + u + '건' : '';
+    if (allBtn) allBtn.disabled = u === 0;
+    if (!wrap) return;
+    var list = teacherNotifs();
+    if (!list.length) {
+      wrap.innerHTML = '<div class="empty" style="box-shadow:none"><p>아직 선생님 알림이 없어요.<br>방문 요청이 배정되면 여기에 쌓입니다.</p></div>';
+      return;
+    }
+    wrap.innerHTML = list.slice(0, 8).map(function (n) {
+      var m = NOTIF_META[n.kind] || NOTIF_META.visit;
+      return '<button class="notif' + (n.read ? ' is-read' : '') + (m.cls ? ' ' + m.cls : '') + '" type="button" data-tp-notif="' + esc(n.id) + '">' +
+        '<span class="n-ico" aria-hidden="true">' + icon(m.ico) + '</span>' +
+        '<span class="notif-main"><b>' + esc(n.title) + '</b><p>' + esc(n.body) + '</p><span class="notif-when">' + esc(n.when) + '</span></span>' +
+        (n.read ? '' : '<span class="notif-dot" aria-hidden="true"></span>') +
+      '</button>';
+    }).join('');
+  }
+  function readTeacherNotif(id) {
+    var n = notifStore.filter(function (x) { return x.id === id && x.audience === 'teacher'; })[0];
+    if (!n) return null;
+    if (!n.read) {
+      n.read = true;
+      n.status = 'read';
+      n.readAt = TtModel.nowIso();
+      n.updatedAt = n.readAt;
+      saveJson(NOTIF_KEY, notifStore);
+      renderTpNotifs();
+      renderNotifs();
+    }
+    try { window.__ttokttokPartnerNotif = { id: id, read: true, title: n.title, at: Date.now() }; } catch (e) {}
+    return n;
+  }
+  function readAllTeacherNotifs() {
+    var u = unreadTeacherNotifs();
+    if (!u) { toast('이미 모든 알림을 읽었어요.'); return 0; }
+    var ts = TtModel.nowIso();
+    teacherNotifs().forEach(function (n) {
+      n.read = true;
+      n.status = 'read';
+      n.readAt = n.readAt || ts;
+      n.updatedAt = ts;
+    });
+    saveJson(NOTIF_KEY, notifStore);
+    renderTpNotifs();
+    renderNotifs();
+    toast('선생님 알림 ' + u + '건을 읽음으로 표시했어요.');
+    return u;
+  }
+
+  /* ===================================================================
+     v19 · 선생님이 직접 등록하는 가능 시간·활동 지역
+     ─ SCALING-ARCHITECTURE 원칙: 관리자 수기 입력 금지, 선생님이 직접 등록.
+     ─ 저장하면 teachers의 같은 선생님 레코드(매칭 엔진 입력)에 바로 반영하고,
+       기기에 남겨(teacher profile override) 새로 열어도 유지한다.
+     =================================================================== */
+  var TEACHER_PROFILE_KEY = 'ttokttok_teacher_profile_v1';
+  var TP_DAYS = ['월', '화', '수', '목', '금', '토', '일'];
+  var TP_TIMES = ['오전', '오후', '저녁'];
+  var tpAvail = null;
+
+  function numOf(v, dflt) { var n = Number(v); return isFinite(n) ? n : (dflt || 0); }
+
+  function availabilitySummaryOf(days, times) {
+    var d = (days || []).join('·');
+    var t = (times || []).join('·');
+    if (!d && !t) return '';
+    return d + (d && t ? ' ' : '') + t;
+  }
+  function tpAvailFromPartner() {
+    var p = partner || {};
+    return {
+      days: (p.days || p.availableDays || []).slice(),
+      times: (p.availableTimes || []).slice(),
+      maxWeekly: numOf(p.maxWeeklyVisits, 0) || 12,
+      province: p.province || '',
+      districts: (p.districts || []).slice(),
+      dongs: (p.dongs || []).slice()
+    };
+  }
+  function tpAvailState() {
+    if (!tpAvail) tpAvail = tpAvailFromPartner();
+    return tpAvail;
+  }
+  function readTpAvailInputs() {
+    var el = $('#tpMaxWeekly');
+    if (!el) return;
+    var v = parseInt(String(el.value || '').replace(/[^0-9]/g, ''), 10);
+    if (isFinite(v) && v > 0) tpAvailState().maxWeekly = Math.min(21, v);
+  }
+  function renderTpAvail() {
+    var el = $('#tpAvailForm');
+    if (!el) return;
+    var s = tpAvailState();
+    var districts = REGIONS[s.province] || [];
+    var dayHtml = TP_DAYS.map(function (d) {
+      var on = s.days.indexOf(d) !== -1;
+      return '<button class="pick' + (on ? ' is-on' : '') + '" type="button" data-tp-day="' + d + '" aria-pressed="' + on + '">' + d + '</button>';
+    }).join('');
+    var timeHtml = TP_TIMES.map(function (t) {
+      var on = s.times.indexOf(t) !== -1;
+      return '<button class="pick' + (on ? ' is-on' : '') + '" type="button" data-tp-time="' + t + '" aria-pressed="' + on + '">' + t + '</button>';
+    }).join('');
+    var provOpts = ['<option value="">시·도 선택</option>'].concat(PROVINCES.map(function (pv) {
+      return '<option value="' + esc(pv) + '"' + (pv === s.province ? ' selected' : '') + '>' + esc(pv) + '</option>';
+    })).join('');
+    var distHtml = districts.length ? districts.map(function (d) {
+      var on = s.districts.indexOf(d) !== -1;
+      return '<button class="pick' + (on ? ' is-on' : '') + '" type="button" data-tp-district="' + esc(d) + '" aria-pressed="' + on + '">' + esc(d) + '</button>';
+    }).join('') : '<p class="fine" style="margin:0">시·도를 먼저 선택해 주세요.</p>';
+    var dongBlocks = s.districts.map(function (d) {
+      var kids = REGION_DONGS[s.province + ' ' + d] || [];
+      if (!kids.length) return '';
+      return '<p class="sheet-label" style="margin-top:12px">' + esc(d) + ' 동네 <span style="font-weight:600;color:var(--muted-2)">(선택)</span></p>' +
+        '<div class="sym-chips">' + kids.map(function (x) {
+          var id = 'reg-' + s.province + '-' + d + '-' + x;
+          var on = s.dongs.indexOf(id) !== -1;
+          return '<button class="pick' + (on ? ' is-on' : '') + '" type="button" data-tp-dong="' + esc(id) + '" aria-pressed="' + on + '">' + esc(x) + '</button>';
+        }).join('') + '</div>';
+    }).join('');
+    el.innerHTML =
+      '<p class="sheet-label">가능 요일</p><div class="sym-chips">' + dayHtml + '</div>' +
+      '<p class="sheet-label" style="margin-top:14px">가능 시간대</p><div class="sym-chips">' + timeHtml + '</div>' +
+      '<div class="field" style="margin-top:14px"><label for="tpMaxWeekly">주당 최대 방문 수</label>' +
+        '<input class="input num" id="tpMaxWeekly" type="number" inputmode="numeric" min="1" max="21" step="1" value="' + esc(s.maxWeekly) + '"></div>' +
+      '<p class="sheet-label" style="margin-top:14px">활동 시·도</p>' +
+      '<div class="field"><select id="tpProvince">' + provOpts + '</select></div>' +
+      '<p class="sheet-label" style="margin-top:12px">활동 시·군·구</p><div class="sym-chips">' + distHtml + '</div>' +
+      dongBlocks +
+      '<p class="admin-meta" data-tp-avail-summary style="margin-top:12px;color:#475569">현재 등록: ' +
+        (esc(availabilitySummaryOf(s.days, s.times)) || '미등록') + ' · 주 ' + esc(s.maxWeekly) + '회 · ' +
+        (s.province ? esc(s.province) + (s.districts.length ? ' ' + esc(s.districts.join('·')) : '') : '지역 미등록') + '</p>' +
+      '<button class="btn btn-navy" type="button" id="tpAvailSave" style="margin-top:12px">가능 시간·지역 저장</button>';
+  }
+  function applyPartnerProfileToTeacher() {
+    var t = teacherById(partner.teacherId || 'park');
+    if (!t) return null;
+    var days = (partner.days || partner.availableDays || []).slice();
+    var times = (partner.availableTimes || []).slice();
+    var province = partner.province || '';
+    var districts = (partner.districts || []).slice();
+    var dongs = (partner.dongs || []).slice();
+    var dongNames = [];
+    dongs.forEach(function (id) {
+      var node = (REGION_MASTER || []).filter(function (r) { return r.id === id; })[0];
+      if (node && node.name) dongNames.push(node.name);
+    });
+    t.availableDays = days;
+    t.availableTimes = times;
+    t.maxWeeklyVisits = numOf(partner.maxWeeklyVisits, t.maxWeeklyVisits);
+    t.availableSummary = availabilitySummaryOf(days, times);
+    t.province = province;
+    t.districts = districts;
+    t.dongs = dongs;
+    /* 매칭 엔진은 regions(시·도 + 시·군·구 목록)로 지역 교집합을 계산한다. */
+    t.regions = (province ? province + ' ' : '') + districts.join(' · ');
+    var dongFull = dongs.map(function (id) {
+      var node = (REGION_MASTER || []).filter(function (r) { return r.id === id; })[0];
+      return node ? node.fullName : '';
+    }).filter(Boolean);
+    t.regionDetail = dongFull.length
+      ? dongFull.join(' · ')
+      : districts.map(function (d) { return (province ? province + ' ' : '') + d; }).join(' · ');
+    var override = {
+      teacherId: t.id, availableDays: days.slice(), availableTimes: times.slice(),
+      maxWeeklyVisits: t.maxWeeklyVisits, availableSummary: t.availableSummary,
+      regions: t.regions, regionDetail: t.regionDetail,
+      province: province, districts: districts.slice(), dongs: dongs.slice(),
+      updatedAt: TtModel.nowIso()
+    };
+    try { SafeStorage.setItem(TEACHER_PROFILE_KEY, JSON.stringify(override)); } catch (e) {}
+    return override;
+  }
+  function applySavedTeacherProfile() {
+    var raw = null;
+    try { raw = SafeStorage.getItem(TEACHER_PROFILE_KEY); } catch (e) { return null; }
+    if (!raw) return null;
+    var o = null;
+    try { o = JSON.parse(raw); } catch (e) { return null; }
+    if (!o || !o.teacherId) return null;
+    var t = teacherById(o.teacherId);
+    if (!t) return null;
+    if (Array.isArray(o.availableDays)) t.availableDays = o.availableDays.slice();
+    if (Array.isArray(o.availableTimes)) t.availableTimes = o.availableTimes.slice();
+    if (o.maxWeeklyVisits != null) t.maxWeeklyVisits = numOf(o.maxWeeklyVisits, t.maxWeeklyVisits);
+    if (o.availableSummary != null) t.availableSummary = String(o.availableSummary);
+    if (o.regions != null) t.regions = String(o.regions);
+    if (o.regionDetail != null) t.regionDetail = String(o.regionDetail);
+    if (o.province != null) t.province = String(o.province);
+    if (Array.isArray(o.districts)) t.districts = o.districts.slice();
+    if (Array.isArray(o.dongs)) t.dongs = o.dongs.slice();
+    return o;
+  }
+  function saveTpAvailability() {
+    readTpAvailInputs();
+    var s = tpAvailState();
+    if (!s.days.length || !s.times.length) {
+      toast('가능 요일과 시간대를 하나 이상 골라 주세요.');
+      return { ok: false, error: 'availability_required' };
+    }
+    if (!s.province || !s.districts.length) {
+      toast('활동 시·도와 시·군·구를 골라 주세요.');
+      return { ok: false, error: 'region_required' };
+    }
+    partner.days = s.days.slice();
+    partner.availableDays = s.days.slice();
+    partner.availableTimes = s.times.slice();
+    partner.maxWeeklyVisits = s.maxWeekly;
+    partner.province = s.province;
+    partner.districts = s.districts.slice();
+    partner.dongs = s.dongs.slice();
+    partner.availableSummary = availabilitySummaryOf(s.days, s.times);
+    partner.updatedAt = TtModel.nowIso();
+    savePartner();
+    var ov = applyPartnerProfileToTeacher();
+    tpAvail = null;
+    renderPartner();
+    try { renderAdminResv(); } catch (e) {}
+    try { renderTeachers(); } catch (e) {}
+    try {
+      window.__ttokttokPartnerProfile = {
+        ok: true, teacherId: partner.teacherId, availableDays: s.days.slice(), availableTimes: s.times.slice(),
+        maxWeeklyVisits: s.maxWeekly, province: s.province, districts: s.districts.slice(), dongs: s.dongs.slice(),
+        regions: ov ? ov.regions : '', regionDetail: ov ? ov.regionDetail : '', saved: true
+      };
+    } catch (e) {}
+    toast('가능 시간·활동 지역을 저장했어요. 매칭 후보에 바로 반영됩니다.');
+    return { ok: true };
+  }
+
+  /* 선생님 알림함 · 가능 시간/지역 편집 이벤트 */
+  document.addEventListener('click', function (e) {
+    var tpNotifBtn = e.target.closest('[data-tp-notif]');
+    if (tpNotifBtn) { readTeacherNotif(tpNotifBtn.getAttribute('data-tp-notif')); return; }
+    if (e.target.closest('[data-tp-notif-all]')) { readAllTeacherNotifs(); return; }
+
+    var s = tpAvailState();
+    var dayBtn = e.target.closest('[data-tp-day]');
+    if (dayBtn) {
+      readTpAvailInputs();
+      var d = dayBtn.getAttribute('data-tp-day');
+      var di = s.days.indexOf(d);
+      if (di === -1) s.days.push(d); else s.days.splice(di, 1);
+      renderTpAvail();
+      return;
+    }
+    var timeBtn = e.target.closest('[data-tp-time]');
+    if (timeBtn) {
+      readTpAvailInputs();
+      var tm = timeBtn.getAttribute('data-tp-time');
+      var ti = s.times.indexOf(tm);
+      if (ti === -1) s.times.push(tm); else s.times.splice(ti, 1);
+      renderTpAvail();
+      return;
+    }
+    var distBtn = e.target.closest('[data-tp-district]');
+    if (distBtn) {
+      readTpAvailInputs();
+      var dd = distBtn.getAttribute('data-tp-district');
+      var dj = s.districts.indexOf(dd);
+      if (dj === -1) {
+        s.districts.push(dd);
+      } else {
+        s.districts.splice(dj, 1);
+        var did = 'reg-' + s.province + '-' + dd;
+        s.dongs = s.dongs.filter(function (id) { return String(id).indexOf(did + '-') !== 0; });
+      }
+      renderTpAvail();
+      return;
+    }
+    var dongBtn = e.target.closest('[data-tp-dong]');
+    if (dongBtn) {
+      readTpAvailInputs();
+      var dongId = dongBtn.getAttribute('data-tp-dong');
+      var xi = s.dongs.indexOf(dongId);
+      if (xi === -1) s.dongs.push(dongId); else s.dongs.splice(xi, 1);
+      renderTpAvail();
+      return;
+    }
+    if (e.target.closest('#tpAvailSave')) { saveTpAvailability(); return; }
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'tpProvince') {
+      var s = tpAvailState();
+      s.province = e.target.value;
+      s.districts = [];
+      s.dongs = [];
+      renderTpAvail();
+    }
+  });
+
 
   function renderTpHero() {
     var el = $('#tpHero');
@@ -9394,6 +9740,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
   function renderAdmin() {
     renderAdminResv();
+    renderAdminOpsBoard();
     var stats = $('#adminStats');
     if (stats) stats.innerHTML = adminStatsHtml();
     var queue = $('#adminQueue');
@@ -9446,6 +9793,30 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   var ADMIN_RESV_LIVE = { received: 0, assigned: 1, confirmed: 2, rescheduled: 3 };
   var adminResvFilter = 'all';
   var adminAssignPick = {};
+  /* v19 · 관리자 취소 사유 — 보호자 요청(규정 견적) / 센터·선생님 사정(100% 환불·회차 복구).
+     금액은 REFUND_RULES.reasons의 pct를 그대로 쓴다(운영자가 우회하지 못한다). */
+  var ADMIN_CANCEL_REASONS = [
+    ['customer', '보호자 요청 취소 · 규정 견적'],
+    ['center', '센터 사정 취소 · 100% 환불'],
+    ['teacher', '선생님 사정 취소 · 100% 환불·대체 배정']
+  ];
+  var adminCancelPick = {};
+
+  function adminCancelReasonOf(no) {
+    var v = adminCancelPick[no];
+    try {
+      var sel = document.querySelector('[data-admin-cancel-reason="' + no + '"]');
+      if (sel && sel.value) v = sel.value;
+    } catch (e) {}
+    return ['customer', 'center', 'teacher'].indexOf(v) !== -1 ? v : 'customer';
+  }
+  function adminCancelQuoteText(b, reason) {
+    var q = cancelQuoteFor(b, reason || 'customer');
+    var label = q.label || '';
+    var amt = refundAmountText(q);
+    if (!amt || label.indexOf(amt) !== -1) return label;
+    return label + ' · ' + amt;
+  }
 
   function adminResvList() {
     return (account.bookings || []).filter(function (b) { return !!(b && (b.no || b.id)); });
@@ -9584,13 +9955,29 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '</select></div>';
     }
 
+    /* v19 · 취소 사유 — 보호자 요청(규정 견적) / 센터·선생님 사정(100% 환불·복구) */
+    var cancelPick = '';
+    if (next.indexOf('canceled') !== -1) {
+      var curReason = adminCancelReasonOf(b.no);
+      cancelPick = '<div class="field" style="margin:9px 0 0">' +
+        '<select data-admin-cancel-reason="' + esc(b.no) + '" aria-label="취소 사유 선택">' +
+          ADMIN_CANCEL_REASONS.map(function (o) {
+            return '<option value="' + o[0] + '"' + (curReason === o[0] ? ' selected' : '') + '>' + esc(o[1]) + '</option>';
+          }).join('') +
+        '</select>' +
+        '<p class="admin-meta" data-admin-cancel-quote="' + esc(b.no) + '" style="margin:6px 0 0">취소 시: ' + esc(adminCancelQuoteText(b, curReason)) + '</p>' +
+      '</div>';
+    }
+
     var actions = '';
     if (next.length) {
       actions = '<div class="admin-actions" style="flex-wrap:wrap">' + next.map(function (to) {
         var cls = (to === 'canceled' || to === 'no_show') ? 'btn btn-ghost'
           : ((to === 'completed' || to === 'confirmed') ? 'btn btn-teal' : 'btn btn-outline');
         return '<button class="' + cls + '" type="button" data-admin-resv="' + esc(b.no) + '" data-admin-resv-to="' + esc(to) + '">' +
-          esc(ADMIN_RESV_ACTION[to] || TtModel.reservationLabel(to)) + '</button>';
+          esc(to === 'confirmed' && st === 'rescheduled' ? '일정 재확정'
+            : (to === 'assigned' && st === 'received' ? '선생님 배정'
+              : (ADMIN_RESV_ACTION[to] || TtModel.reservationLabel(to)))) + '</button>';
       }).join('') + '</div>';
     } else {
       actions = '<div class="admin-approved" style="background:var(--surface-2);border-color:var(--line);color:var(--muted);margin-top:11px">' +
@@ -9607,6 +9994,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       '</div>' +
       '<div class="admin-facts">' + facts + '</div>' +
       picker +
+      cancelPick +
       '<div class="admin-docs">' +
         '<div class="admin-docs-head"><span>최근 이력 1건</span>' +
           '<button class="admin-docs-all" type="button" data-admin-notice="' + esc(b.no) + '">안내 문구 복사</button></div>' +
@@ -9641,8 +10029,124 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
   }
 
-  /* 보호자·선생님 안내 문구(복사용). 실제 발송은 하지 않는다. */
-  function adminResvNoticeKey(b) {
+  /* ===================================================================
+     v19 · 매칭 대기열 & 운영 예외 요약 보드
+     ─ v18 엔진(buildMatchingQueue · classifyOperationalExceptions) 결과를 그대로 화면에 연결한다.
+     ─ 계산만 하고 저장·발송은 하지 않는다. 배정·재확정도 adminTransitionBooking 한 곳을 지난다.
+     =================================================================== */
+  function adminOpsQueueData() {
+    try {
+      return TtModel.buildMatchingQueue(account.bookings || [], { teachers: teachers });
+    } catch (e) { return { total: 0, counts: {}, waiting: [] }; }
+  }
+  function adminOpsExceptionData() {
+    try {
+      return TtModel.classifyOperationalExceptions(account.bookings || [], { teachers: teachers });
+    } catch (e) { return { total: 0, counts: {}, groups: [] }; }
+  }
+  function adminQueueWhenText(w) {
+    return (w.date || '') + (w.day ? ' (' + w.day + ')' : '') + ' ' + (w.time || '');
+  }
+  function adminQueueItemHtml(w) {
+    var badgeCls = w.reason === 'reconfirm' ? 'is-on' : 'is-wait';
+    var candText = w.candidateCount
+      ? '교집합 후보 ' + w.candidateCount + '명 · 1순위 ' + (w.topCandidate ? w.topCandidate.name + ' 선생님' : '')
+      : '교집합 후보 0명 · 사람이 직접 확인';
+    var action = '';
+    if (w.reason === 'reconfirm') {
+      action = '<button class="btn btn-teal" type="button" data-admin-quick="' + esc(w.no) + '" data-quick-to="confirmed">일정 재확정</button>';
+    } else if (w.topCandidate) {
+      action = '<button class="btn btn-navy" type="button" data-admin-quick="' + esc(w.no) + '" data-quick-to="assigned" data-quick-teacher="' + esc(w.topCandidate.teacherId) + '">1순위 ' + esc(w.topCandidate.name) + ' 배정</button>';
+    }
+    action += '<button class="btn btn-ghost" type="button" data-admin-focus="' + esc(w.no) + '">큐에서 보기</button>';
+    return '<div class="admin-card" data-queue="' + esc(w.no) + '" data-queue-reason="' + esc(w.reason) + '">' +
+      '<div class="admin-top" style="cursor:default">' +
+        '<div class="admin-av" aria-hidden="true">' + esc(w.reason === 'reconfirm' ? '재' : '배') + '</div>' +
+        '<div style="min-width:0">' +
+          '<p class="admin-name">' + esc(w.no) + ' <span class="status-badge ' + badgeCls + '">' + esc(w.statusLabel) + '</span>' +
+            (w.hoursUntil != null && w.hoursUntil <= 24 ? ' <span class="status-badge is-warn">24시간 내</span>' : '') + '</p>' +
+          '<p class="admin-meta">' + esc(w.regionText || '지역 미기재') + ' · ' + esc(adminQueueWhenText(w)) + '</p>' +
+          '<p class="admin-meta" style="color:#475569;margin-top:5px">' + esc(candText) + '</p>' +
+        '</div>' +
+      '</div>' +
+      '<div class="admin-actions" style="flex-wrap:wrap">' + action + '</div>' +
+    '</div>';
+  }
+  function adminExceptionGroupHtml(g) {
+    var items = (g.items || []).slice(0, 3).map(function (it) {
+      return '<p class="admin-meta" style="margin-top:7px;color:#334155">' + esc(it.no) + ' · ' + esc(it.regionText || '지역 미기재') +
+        ' · ' + esc(adminQueueWhenText(it)) + '<br>' + esc(it.detail) +
+        ' <button class="admin-docs-all" type="button" data-admin-focus="' + esc(it.no) + '">' + esc(it.action || '큐에서 보기') + ' →</button></p>';
+    }).join('');
+    var more = (g.items || []).length > 3 ? '<p class="admin-meta" style="margin-top:6px">외 ' + ((g.items || []).length - 3) + '건</p>' : '';
+    return '<div class="admin-card" data-exception="' + esc(g.code) + '">' +
+      '<div class="admin-top" style="cursor:default">' +
+        '<div class="admin-av" aria-hidden="true" style="background:var(--amber-50);color:#9A5B12">!</div>' +
+        '<div style="min-width:0">' +
+          '<p class="admin-name">' + esc(g.label) + ' <span class="status-badge is-warn">' + g.count + '건</span></p>' +
+          '<p class="admin-meta">' + esc(g.desc) + '</p>' +
+          '<p class="admin-meta" style="color:#9A5B12;margin-top:4px">담당 ' + esc(g.owner || '사람') + ' · ' + esc(g.sla || '') + '</p>' +
+        '</div>' +
+      '</div>' + items + more +
+    '</div>';
+  }
+  function renderAdminOpsBoard() {
+    var q = adminOpsQueueData();
+    var ex = adminOpsExceptionData();
+    var countsEl = $('#adminOpsCounts');
+    if (countsEl) {
+      var chips = [
+        ['미배정', q.counts.unassigned || 0], ['재확정 대기', q.counts.reconfirm || 0],
+        ['후보 0명', q.counts.noCandidate || 0], ['24시간 내', q.counts.urgent || 0],
+        ['운영 예외', ex.total || 0]
+      ];
+      countsEl.innerHTML = chips.map(function (c) {
+        return '<span class="admin-fact" data-ops-count="' + esc(c[0]) + '">' + esc(c[0]) + ' ' + c[1] + '</span>';
+      }).join('');
+    }
+    var sub = $('#adminOpsSub');
+    if (sub) {
+      sub.textContent = '대기 ' + (q.total || 0) + '건 · 예외 ' + (ex.total || 0) + '건 — 1순위 후보가 있으면 한 번에 배정할 수 있어요.';
+    }
+    var queueEl = $('#adminMatchQueue');
+    if (queueEl) {
+      queueEl.innerHTML = (q.waiting && q.waiting.length)
+        ? q.waiting.map(adminQueueItemHtml).join('')
+        : '<div class="empty" style="box-shadow:none"><p>미배정·재확정 대기 예약이 없어요.<br>모두 배정·확정됐습니다.</p></div>';
+    }
+    var exEl = $('#adminExceptionBoard');
+    if (exEl) {
+      var groups = (ex.groups || []).filter(function (g) { return g.count > 0; });
+      exEl.innerHTML = groups.length ? groups.map(adminExceptionGroupHtml).join('')
+        : '<div class="admin-approved" style="margin-top:0">' + icon('check-circle') + '지금 처리할 운영 예외가 없어요.</div>';
+    }
+    try { window.__ttokttokAdminOps = { counts: { queue: q.counts, exceptions: ex.counts }, total: { queue: q.total, exceptions: ex.total }, at: Date.now() }; } catch (e) {}
+  }
+  /* 예약 카드로 이동 — 상태에 맞는 필터를 고르고 그 카드를 화면 가운데로 */
+  function adminFocusReservation(no) {
+    var b = findBooking(no);
+    if (!b) { toast('예약을 찾을 수 없어요.'); return false; }
+    var st = adminResvStatusOf(b);
+    var def = ADMIN_RESV_FILTERS.filter(function (f) { return f.statuses && f.statuses.indexOf(st) !== -1; })[0];
+    if (def) adminResvFilter = def.key;
+    renderAdminResv();
+    var card = null;
+    try { card = document.querySelector('#adminResvQueue [data-resv="' + no + '"]'); } catch (e) {}
+    if (card) {
+      try { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e2) {}
+      card.classList.add('is-new');
+      setTimeout(function () { try { card.classList.remove('is-new'); } catch (e3) {} }, 2400);
+    }
+    toast((b.no || no) + ' 예약을 큐에서 열었어요.');
+    return true;
+  }
+  /* 1순위 후보 원클릭 배정 / 재확정 — 상태기계 한 곳(adminTransitionBooking)만 지난다. */
+  function adminQuickTransition(no, to, teacherId) {
+    if (teacherId) adminAssignPick[no] = teacherId;
+    return adminTransitionBooking(no, to);
+  }
+
+  /* 보호자·선생님 안내 문구(복사용). 실제 발송은 하지 않는다. */  function adminResvNoticeKey(b) {
     var st = adminResvStatusOf(b);
     var h = (Array.isArray(b && b.statusHistory) && b.statusHistory.length)
       ? b.statusHistory[b.statusHistory.length - 1] : null;
@@ -9700,10 +10204,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     } else if (target === 'received') {
       meta.reason = '운영자 배정 해제 — 재배정 대기';
     } else if (target === 'canceled') {
-      q = cancelQuoteFor(b);
+      var cancelReason = adminCancelReasonOf(b.no);
+      q = cancelQuoteFor(b, cancelReason);
       meta.refund = q.refund;
       meta.refundText = q.note;
+      meta.cancelReason = cancelReason;
       meta.reason = '운영자 취소 · ' + q.label;
+    } else if (target === 'confirmed') {
+      meta.reason = cur === 'rescheduled' ? '운영자 일정 재확정' : '운영자 방문 확정';
     } else if (target === 'completed') {
       meta.reason = '운영자 방문 완료 처리';
     } else if (target === 'no_show') {
@@ -9719,6 +10227,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (target === 'assigned') b.assignedAt = tr.at;
     saveAccount();
     renderAdminResv();
+    try { renderAdminOpsBoard(); } catch (e) {}
     try { renderAccount(); } catch (e) {}
     try { renderPartner(); } catch (e) {}
     try { renderSlots(); } catch (e) {}
@@ -9904,6 +10413,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       adminTransitionBooking(resvToBtn.getAttribute('data-admin-resv'), resvToBtn.getAttribute('data-admin-resv-to'));
       return;
     }
+    /* v19 · 오늘 처리할 일 보드 — 1순위 원클릭 배정/재확정 · 카드로 이동 */
+    var quickBtn = e.target.closest('[data-admin-quick]');
+    if (quickBtn) {
+      adminQuickTransition(quickBtn.getAttribute('data-admin-quick'),
+        quickBtn.getAttribute('data-quick-to') || 'assigned',
+        quickBtn.getAttribute('data-quick-teacher') || '');
+      return;
+    }
+    var focusBtn = e.target.closest('[data-admin-focus]');
+    if (focusBtn) { adminFocusReservation(focusBtn.getAttribute('data-admin-focus')); return; }
 
     var appOpen = e.target.closest('[data-app-open]');
     if (appOpen) { openAppSheet(appOpen.getAttribute('data-app-open')); return; }
@@ -9959,6 +10478,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (pick) {
       adminAssignPick[pick.getAttribute('data-admin-resv-teacher')] = pick.value;
     }
+    /* v19 · 취소 사유를 바꾸면 예상 환불 견적을 바로 다시 보여준다(저장은 [취소]를 누를 때). */
+    var cReason = e.target.closest('[data-admin-cancel-reason]');
+    if (cReason) {
+      var cNo = cReason.getAttribute('data-admin-cancel-reason');
+      adminCancelPick[cNo] = cReason.value;
+      var b = findBooking(cNo);
+      var quoteEl = document.querySelector('[data-admin-cancel-quote="' + cNo + '"]');
+      if (b && quoteEl) quoteEl.textContent = '취소 시: ' + adminCancelQuoteText(b, cReason.value);
+    }
   });
 
   /* ================= 신규 기능 이벤트 (채팅 · 후기 · 예약 변경/취소 · 주간 필터) ================= */
@@ -9997,6 +10525,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
     var mngBtn = e.target.closest('[data-manage]');
     if (mngBtn) { openManage(mngBtn.getAttribute('data-manage')); return; }
+    /* v19 · 일정 변경(rescheduled) → 재확정(confirmed): 보호자가 새 일정을 직접확인 */
+    var reconfirmBtn = e.target.closest('[data-reconfirm]');
+    if (reconfirmBtn) { reconfirmBooking(reconfirmBtn.getAttribute('data-reconfirm')); return; }
     if (e.target.closest('[data-manage-back]')) { manageCtx.step = 'main'; renderManage(); return; }
     if (e.target.closest('[data-manage-confirm]')) { cancelBookingNow(); return; }
     if (e.target.closest('[data-manage-save]')) { saveManageChange(); return; }
@@ -11176,7 +11707,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (p && p.sessions > 1) return Math.round(p.price / p.sessions);
     var r = receiptOf(b.no);
     if (r && r.amount) return r.amount;
-    return p ? p.price : 0;
+    if (p && p.price) return p.price;
+    /* v19 · 결제 영수증·이용권이 없어도 예약에 기록된 금액을 쓴다(관리자 취소 견적이 0원이 되지 않도록). */
+    return Math.max(0, Math.round(Number(b.amount) || 0));
   }
 
   function openManage(no) {
@@ -11261,6 +11794,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         '<button class="btn btn-navy" type="button" data-manage-save>이 시간으로 변경</button>' +
       '</div>' +
       '<button class="btn btn-outline" type="button" data-chat="' + esc(b.teacherId || 'park') + '" style="margin-top:8px">선생님께 문의</button>' +
+      (TtModel.reservationStatus(b.status) === 'rescheduled'
+        ? '<button class="btn btn-teal" type="button" data-reconfirm="' + esc(b.no) + '" style="margin-top:8px">이 일정으로 재확정</button>'
+        : '') +
       '<button class="btn btn-outline" type="button" data-intake-copy="' + esc(b.no) + '" style="margin-top:8px">접수 내용 복사</button>' +
       '<a class="sheet-beta-link" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">복사한 내용을 상담 폼에 붙여 넣기<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg></a>';
   }
@@ -11325,6 +11861,24 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       }));
     }
     return refund;
+  }
+
+  /* v19 · 일정 변경(rescheduled) → 재확정(confirmed). 보호자·관리자 모두 같은 전이(T11)를 쓴다. */
+  function reconfirmBooking(no) {
+    var b = findBooking(no);
+    if (!b) { toast('예약을 찾을 수 없어요.'); return { ok: false, error: 'not_found' }; }
+    if (!TtModel.canTransitionReservation(b.status, 'confirmed', 'customer')) {
+      toast('지금 상태(' + TtModel.reservationLabel(b.status) + ')에서는 재확정할 수 없어요.');
+      return { ok: false, error: 'transition_not_allowed', from: TtModel.reservationStatus(b.status) };
+    }
+    var tr = TtModel.transitionReservation(b, 'confirmed', { actor: 'customer', reason: '보호자 일정 재확정' });
+    if (!tr.ok) { toast(tr.message); return tr; }
+    saveAccount();
+    renderAccount();
+    try { renderManage(); } catch (e) {}
+    try { renderAdminResv(); } catch (e) {}
+    toast((b.no || no) + ' 방문 일정을 재확정했어요. 선생님 알림함에 확정 안내가 쌓입니다.');
+    return tr;
   }
 
   function cancelBookingNow() {
@@ -11518,6 +12072,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       '</button>';
     }).join('');
     renderNotifBadge();
+    /* v19 · 선생님 알림함도 같은 저장소를 쓴다 — 보호자 알림함이 갱신될 때 함께 다시 그린다. */
+    try { renderTpNotifs(); } catch (e) {}
   }
 
   function openNotifSheet() { renderNotifs(); openSheetEl('#notifSheet'); }
@@ -11910,6 +12466,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   updateTrustStrip();
   renderChart('gait');
   updateChecklist();
+  /* v19 · 선생님이 직접 등록한 가능 시간·활동 지역을 매칭 엔진 입력(teachers)에 되살린다. */
+  applySavedTeacherProfile();
   renderPartner();
   renderAdmin();
   renderChatEntryState();
@@ -12116,6 +12674,58 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       adminMatchCandidates: function (target) {
         var b = (typeof target === 'string') ? findBooking(target) : target;
         return b ? adminMatchCandidates(b).map(function (c) { return { teacherId: c.teacherId, name: c.name, score: c.score, matchedBy: c.matchedBy, reasons: c.reasons }; }) : [];
+      },
+      /* v19 · 운영·파트너 화면 완성팩(검증·운영 도구용) */
+      opsVersion: 'v19',
+      cancelReasons: ADMIN_CANCEL_REASONS.map(function (o) { return { key: o[0], label: o[1] }; }),
+      opsBoard: function () {
+        var q = adminOpsQueueData();
+        var ex = adminOpsExceptionData();
+        return {
+          version: 'v19',
+          queue: { total: q.total, counts: q.counts, waiting: q.waiting },
+          exceptions: { total: ex.total, counts: ex.counts, groups: ex.groups.filter(function (g) { return g.count > 0; }) }
+        };
+      },
+      adminCancelQuote: function (no, reason) {
+        var b = findBooking(no);
+        return b ? cancelQuoteFor(b, reason || 'customer') : null;
+      },
+      adminSetCancelReason: function (no, reason) {
+        if (['customer', 'center', 'teacher'].indexOf(reason) === -1) return null;
+        adminCancelPick[no] = reason;
+        return reason;
+      },
+      adminQuickAssign: function (no, to, teacherId) { return adminQuickTransition(no, to || 'assigned', teacherId || ''); },
+      adminFocus: function (no) { return adminFocusReservation(no); },
+      reconfirm: function (no) { return reconfirmBooking(no); },
+      teacherNotifs: function () { return teacherNotifs().map(function (n) { return { id: n.id, title: n.title, body: n.body, read: !!n.read, audience: n.audience }; }); },
+      teacherUnread: function () { return unreadTeacherNotifs(); },
+      readTeacherNotif: function (id) { return !!readTeacherNotif(id); },
+      readAllTeacherNotifs: function () { return readAllTeacherNotifs(); },
+      partnerAvailability: function () {
+        return {
+          teacherId: partner.teacherId, days: (partner.days || []).slice(), times: (partner.availableTimes || []).slice(),
+          maxWeeklyVisits: numOf(partner.maxWeeklyVisits, 0), province: partner.province || '',
+          districts: (partner.districts || []).slice(), dongs: (partner.dongs || []).slice(),
+          summary: partner.availableSummary || ''
+        };
+      },
+      partnerTeacherRecord: function () {
+        var t = teacherById(partner.teacherId || 'park');
+        return t ? { id: t.id, regions: t.regions, regionDetail: t.regionDetail, availableDays: (t.availableDays || []).slice(), availableTimes: (t.availableTimes || []).slice(), maxWeeklyVisits: t.maxWeeklyVisits } : null;
+      },
+      savePartnerAvailability: function (input) {
+        var s = tpAvailState();
+        var i = input || {};
+        if (Array.isArray(i.days)) s.days = i.days.slice();
+        if (Array.isArray(i.times)) s.times = i.times.slice();
+        if (i.maxWeekly != null) s.maxWeekly = numOf(i.maxWeekly, s.maxWeekly);
+        if (i.province != null) s.province = String(i.province);
+        if (Array.isArray(i.districts)) s.districts = i.districts.slice();
+        if (Array.isArray(i.dongs)) s.dongs = i.dongs.slice();
+        renderTpAvail();
+        return saveTpAvailability();
       }
     };
   } catch (e) {}
