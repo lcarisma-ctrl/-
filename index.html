@@ -8747,6 +8747,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   var TEACHER_PROFILE_KEY = 'ttokttok_teacher_profile_v1';
   var TP_DAYS = ['월', '화', '수', '목', '금', '토', '일'];
   var TP_TIMES = ['오전', '오후', '저녁'];
+  /* 전문분야 라벨 → 매칭 엔진의 cats 코드(증상 교집합·순위에 쓰인다). */
+  var TP_FIELDS = ['뇌졸중·편마비', '무릎·고관절', '신경계', '어르신 보행', '통증·관절'];
+  var TP_FIELD_CATS = {
+    '뇌졸중·편마비': ['stroke'],
+    '무릎·고관절': ['ortho'],
+    '신경계': ['nerve'],
+    '어르신 보행': ['gait'],
+    '통증·관절': ['ortho', 'spine']
+  };
   var tpAvail = null;
 
   function numOf(v, dflt) { var n = Number(v); return isFinite(n) ? n : (dflt || 0); }
@@ -8762,6 +8771,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     return {
       days: (p.days || p.availableDays || []).slice(),
       times: (p.availableTimes || []).slice(),
+      fields: (p.fields || p.specialties || []).slice(),
       maxWeekly: numOf(p.maxWeeklyVisits, 0) || 12,
       province: p.province || '',
       districts: (p.districts || []).slice(),
@@ -8791,6 +8801,10 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var on = s.times.indexOf(t) !== -1;
       return '<button class="pick' + (on ? ' is-on' : '') + '" type="button" data-tp-time="' + t + '" aria-pressed="' + on + '">' + t + '</button>';
     }).join('');
+    var fieldHtml = TP_FIELDS.map(function (fv) {
+      var on = (s.fields || []).indexOf(fv) !== -1;
+      return '<button class="pick' + (on ? ' is-on' : '') + '" type="button" data-tp-field="' + esc(fv) + '" aria-pressed="' + on + '">' + esc(fv) + '</button>';
+    }).join('');
     var provOpts = ['<option value="">시·도 선택</option>'].concat(PROVINCES.map(function (pv) {
       return '<option value="' + esc(pv) + '"' + (pv === s.province ? ' selected' : '') + '>' + esc(pv) + '</option>';
     })).join('');
@@ -8811,6 +8825,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     el.innerHTML =
       '<p class="sheet-label">가능 요일</p><div class="sym-chips">' + dayHtml + '</div>' +
       '<p class="sheet-label" style="margin-top:14px">가능 시간대</p><div class="sym-chips">' + timeHtml + '</div>' +
+      '<p class="sheet-label" style="margin-top:14px">전문분야</p><div class="sym-chips">' + fieldHtml + '</div>' +
       '<div class="field" style="margin-top:14px"><label for="tpMaxWeekly">주당 최대 방문 수</label>' +
         '<input class="input num" id="tpMaxWeekly" type="number" inputmode="numeric" min="1" max="21" step="1" value="' + esc(s.maxWeekly) + '"></div>' +
       '<p class="sheet-label" style="margin-top:14px">활동 시·도</p>' +
@@ -8819,7 +8834,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       dongBlocks +
       '<p class="admin-meta" data-tp-avail-summary style="margin-top:12px;color:#475569">현재 등록: ' +
         (esc(availabilitySummaryOf(s.days, s.times)) || '미등록') + ' · 주 ' + esc(s.maxWeekly) + '회 · ' +
-        (s.province ? esc(s.province) + (s.districts.length ? ' ' + esc(s.districts.join('·')) : '') : '지역 미등록') + '</p>' +
+        (s.province ? esc(s.province) + (s.districts.length ? ' ' + esc(s.districts.join('·')) : '') : '지역 미등록') +
+        ((s.fields || []).length ? ' · ' + esc(s.fields.join('·')) : '') + '</p>' +
       '<button class="btn btn-navy" type="button" id="tpAvailSave" style="margin-top:12px">가능 시간·지역 저장</button>';
   }
   function applyPartnerProfileToTeacher() {
@@ -8839,6 +8855,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     t.availableTimes = times;
     t.maxWeeklyVisits = numOf(partner.maxWeeklyVisits, t.maxWeeklyVisits);
     t.availableSummary = availabilitySummaryOf(days, times);
+    /* 전문분야 → 매칭 엔진의 cats 코드(증상 교집합·순위). */
+    var tFields = (partner.fields || partner.specialties || []).slice();
+    if (tFields.length) {
+      var cats = [];
+      tFields.forEach(function (fv) {
+        (TP_FIELD_CATS[fv] || []).forEach(function (c) { if (cats.indexOf(c) === -1) cats.push(c); });
+      });
+      t.cats = cats;
+      t.specialties = tFields.slice();
+    }
     t.province = province;
     t.districts = districts;
     t.dongs = dongs;
@@ -8856,6 +8882,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       maxWeeklyVisits: t.maxWeeklyVisits, availableSummary: t.availableSummary,
       regions: t.regions, regionDetail: t.regionDetail,
       province: province, districts: districts.slice(), dongs: dongs.slice(),
+      specialties: (t.specialties || []).slice(), cats: (t.cats || []).slice(),
       updatedAt: TtModel.nowIso()
     };
     try { SafeStorage.setItem(TEACHER_PROFILE_KEY, JSON.stringify(override)); } catch (e) {}
@@ -8879,6 +8906,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     if (o.province != null) t.province = String(o.province);
     if (Array.isArray(o.districts)) t.districts = o.districts.slice();
     if (Array.isArray(o.dongs)) t.dongs = o.dongs.slice();
+    if (Array.isArray(o.cats) && o.cats.length) t.cats = o.cats.slice();
+    if (Array.isArray(o.specialties) && o.specialties.length) t.specialties = o.specialties.slice();
     return o;
   }
   function saveTpAvailability() {
@@ -8900,6 +8929,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     partner.districts = s.districts.slice();
     partner.dongs = s.dongs.slice();
     partner.availableSummary = availabilitySummaryOf(s.days, s.times);
+    /* 전문분야는 선택된 게 있을 때만 바꿉니다(빈 선택으로 기존 값을 지우지 않음). */
+    if ((s.fields || []).length) {
+      partner.fields = s.fields.slice();
+      partner.specialties = s.fields.slice();
+    }
     partner.updatedAt = TtModel.nowIso();
     savePartner();
     var ov = applyPartnerProfileToTeacher();
@@ -8911,6 +8945,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       window.__ttokttokPartnerProfile = {
         ok: true, teacherId: partner.teacherId, availableDays: s.days.slice(), availableTimes: s.times.slice(),
         maxWeeklyVisits: s.maxWeekly, province: s.province, districts: s.districts.slice(), dongs: s.dongs.slice(),
+        fields: (partner.fields || []).slice(),
         regions: ov ? ov.regions : '', regionDetail: ov ? ov.regionDetail : '', saved: true
       };
     } catch (e) {}
@@ -8964,6 +8999,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var dongId = dongBtn.getAttribute('data-tp-dong');
       var xi = s.dongs.indexOf(dongId);
       if (xi === -1) s.dongs.push(dongId); else s.dongs.splice(xi, 1);
+      renderTpAvail();
+      return;
+    }
+    var fieldBtn = e.target.closest('[data-tp-field]');
+    if (fieldBtn) {
+      readTpAvailInputs();
+      var fv = fieldBtn.getAttribute('data-tp-field');
+      var fi = s.fields.indexOf(fv);
+      if (fi === -1) s.fields.push(fv); else s.fields.splice(fi, 1);
       renderTpAvail();
       return;
     }
@@ -12712,12 +12756,13 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           teacherId: partner.teacherId, days: (partner.days || []).slice(), times: (partner.availableTimes || []).slice(),
           maxWeeklyVisits: numOf(partner.maxWeeklyVisits, 0), province: partner.province || '',
           districts: (partner.districts || []).slice(), dongs: (partner.dongs || []).slice(),
+          fields: (partner.fields || partner.specialties || []).slice(),
           summary: partner.availableSummary || ''
         };
       },
       partnerTeacherRecord: function () {
         var t = teacherById(partner.teacherId || 'park');
-        return t ? { id: t.id, regions: t.regions, regionDetail: t.regionDetail, availableDays: (t.availableDays || []).slice(), availableTimes: (t.availableTimes || []).slice(), maxWeeklyVisits: t.maxWeeklyVisits } : null;
+        return t ? { id: t.id, regions: t.regions, regionDetail: t.regionDetail, availableDays: (t.availableDays || []).slice(), availableTimes: (t.availableTimes || []).slice(), maxWeeklyVisits: t.maxWeeklyVisits, cats: (t.cats || []).slice(), specialties: (t.specialties || []).slice() } : null;
       },
       savePartnerAvailability: function (input) {
         var s = tpAvailState();
@@ -12728,6 +12773,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         if (i.province != null) s.province = String(i.province);
         if (Array.isArray(i.districts)) s.districts = i.districts.slice();
         if (Array.isArray(i.dongs)) s.dongs = i.dongs.slice();
+        if (Array.isArray(i.fields)) s.fields = i.fields.slice();
         renderTpAvail();
         return saveTpAvailability();
       }
