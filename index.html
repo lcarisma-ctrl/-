@@ -10133,7 +10133,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var win = TtModel.visitWindowOf(s);
     var timeLine = '';
     if (win.state === 'in_progress') timeLine = '방문 중 · ' + win.startClock + ' 시작';
-    else if (win.state === 'done') timeLine = '방문 완료 · ' + win.startClock + '~' + win.endClock + (win.minutes != null ? ' (' + win.minutes + '분)' : '');
+    else if (win.state === 'done') timeLine = '방문 완료 · ' + win.startClock + '~' + win.endClock + (win.minutes != null ? (win.minutes > 0 ? ' (' + win.minutes + '분)' : ' (1분 미만)') : '');
     var act = '';
     if (withBtn) {
       act += '<button class="btn ' + (s.checked ? 'btn-ghost' : 'btn-outline') + '" type="button" data-tp-checkin="' + esc(s.id) + '">' + (s.checked ? '방문 중' : '체크인') + '</button>';
@@ -10141,8 +10141,6 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         act += '<button class="btn btn-teal" type="button" data-tp-visit-start="' + esc(s.id) + '">방문 시작</button>';
       } else if (win.state === 'in_progress') {
         act += '<button class="btn btn-teal" type="button" data-tp-visit-end="' + esc(s.id) + '">방문 종료</button>';
-      } else {
-        act += '<span class="status-badge is-on">완료</span>';
       }
     } else {
       act = '<span class="status-badge ' + (s.checked ? 'is-on' : '') + '">' +
