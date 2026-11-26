@@ -6955,8 +6955,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         var text = value.trim();
         if (!text) { bad('json_parse', '백업 파일이 비어 있어요.'); return done(); }
         if (text.length > maxChars) { bad('too_large', '백업 파일이 너무 커요(8MB 이하만 복원할 수 있어요).'); return done(); }
-        /* 프로토타입 오염 시도는 파싱 전에 막는다. */
-        if (/"?__proto__"?\s*:|\bconstructor\s*:|\bprototype\b/.test(text)) {
+        /* 프로토타입 오염 시도는 파싱 전에 막는다(JSON 키는 항상 따옴표이므로 키 모양으로만 잡는다 —
+           일지 메모의 영단어 'constructor' 같은 정상 데이터를 잘못 거부하지 않게). */
+        if (/"__proto__"\s*:|"constructor"\s*:|"prototype"\s*:|"__defineGetter__"\s*:/.test(text)) {
           bad('unsafe_key', '안전하지 않은 키(__proto__ 등)가 들어 있어 복원하지 않았어요.');
           return done();
         }
