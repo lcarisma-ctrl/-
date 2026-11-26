@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v17">
+<meta name="app-version" content="v18">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -4292,9 +4292,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     }
 
     /* ------------------ 지역 마스터 ------------------ */
-    function buildRegionMaster(regions) {
+    /* v18 · 3단계 지역 마스터. regions(시·도→시·군·구)와 dongs('시·도 시·군·구'→[동])는 둘 다 데이터다.
+       지역·동을 늘리는 일은 코드 수정이 아니라 데이터(REGIONS·REGION_DONGS) INSERT다. */
+    function buildRegionMaster(regions, dongs) {
       var ts = nowIso();
       var out = [];
+      var dongMap = (dongs && typeof dongs === 'object') ? dongs : {};
       Object.keys(regions || {}).forEach(function (province, pi) {
         var pid = 'reg-' + province;
         out.push({
@@ -4302,10 +4305,19 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           code: null, sortOrder: pi + 1, status: 'active', createdAt: ts, updatedAt: ts
         });
         (regions[province] || []).forEach(function (district, di) {
+          var did = pid + '-' + district;
           out.push({
-            id: pid + '-' + district, level: 'district', parentId: pid, name: district,
+            id: did, level: 'district', parentId: pid, name: district,
             fullName: province + ' ' + district, code: null, sortOrder: di + 1,
             status: 'active', createdAt: ts, updatedAt: ts
+          });
+          var kids = dongMap[province + ' ' + district] || dongMap[did] || [];
+          kids.forEach(function (dong, xi) {
+            out.push({
+              id: did + '-' + dong, level: 'dong', parentId: did, name: dong,
+              fullName: province + ' ' + district + ' ' + dong, code: null, sortOrder: xi + 1,
+              status: 'active', createdAt: ts, updatedAt: ts
+            });
           });
         });
       });
@@ -4340,34 +4352,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
     /* 선생님 활동 지역 문자열('서울 강남 · 서초') → TeacherRegion 행 */
     function teacherRegionRows(teachersList, master) {
-      var list = master || masterRef;
       var rows = [];
       var seen = {};
       (teachersList || []).forEach(function (t) {
-        var segs = String(t.regions == null ? '' : t.regions).split('·');
-        var province = '';
-        var tokens = [];
-        segs.forEach(function (seg, idx) {
-          var words = String(seg).trim().split(/\s+/).filter(Boolean);
-          if (!words.length) return;
-          if (idx === 0 && isProvince(words[0], list)) {
-            province = words.shift();
-          } else if (!province && isProvince(words[0], list)) {
-            province = words.shift();
-          }
-          if (words.length) tokens.push(words.join(' '));
-        });
+        var tokens = teacherRegionTokens(t, master);
         var priority = 1;
-        tokens.forEach(function (token) {
-          var rid = matchDistrict(province, token, list);
-          var key = t.id + '|' + (rid || ('raw:' + token));
+        tokens.forEach(function (x) {
+          var rid = x.regionId;
+          var key = t.id + '|' + (rid || ('raw:' + x.token));
           if (seen[key]) return;
           seen[key] = true;
           rows.push({
             id: 'trg-' + t.id + '-' + priority,
             teacherId: t.id,
             regionId: rid || null,
-            rawName: token,
+            rawName: x.token,
             priority: priority,
             status: 'active',
             createdAt: nowIso(),
@@ -4439,6 +4438,479 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         return b;
       }
       return null;
+    }
+
+    /* ==================================================================
+       v18 · 규모 확장 · 자동 매칭 엔진 (SCALING-ARCHITECTURE.md)
+       ─ 지역 마스터 3단계(시·도/시·군·구/동) + 교집합 후보 + 매칭 대기열 + 예외 분류 + 리마인드 문구.
+       ─ 전부 데이터 기반이고 DOM을 모른다. 실패해도 기본값(빈 목록)으로 돌아간다.
+       ─ 여기서는 아무것도 저장·발송하지 않는다(계산만).
+       ================================================================== */
+    var SCALING_VERSION = 'v18';
+    var WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+    var TIME_BUCKETS = [
+      { code: 'morning', label: '오전', fromHour: 0, toHour: 12 },
+      { code: 'afternoon', label: '오후', fromHour: 12, toHour: 18 },
+      { code: 'evening', label: '저녁', fromHour: 18, toHour: 24 }
+    ];
+    /* 증상 코드 → 선생님 전문분야(cats). 교집합 판정에만 쓴다. */
+    var SYMPTOM_SPECIALTY = {
+      stroke: ['stroke', 'nerve'],
+      knee_postop: ['ortho'],
+      senior_mobility: ['gait', 'ortho'],
+      neuro: ['nerve', 'stroke'],
+      pain_joint: ['ortho', 'spine'],
+      etc: []
+    };
+    var MATCH_WEIGHTS = { region: 40, symptom: 30, time: 20, priority: 3, rating: 1 };
+    var MATCH_REASONS = {
+      region: '지역 일치', symptom: '전문분야 일치', time: '시간 가능',
+      priority: '대표 지역', rating: '평점'
+    };
+    var MATCH_BLOCKERS = {
+      region: '활동 지역 아님', time: '가능 시간 아님', slot_conflict: '같은 시간 방문 있음',
+      first_available: '활동 시작일 이전', weekly_limit: '주간 방문 한도 초과', status: '활동 중지·미승인'
+    };
+    var EXCEPTION_TYPES = [
+      { code: 'teacher_declined', label: '선생님 거절', desc: '배정된 선생님이 거절해 재배정이 필요해요.', owner: '사람', sla: '2시간 내 재배정' },
+      { code: 'same_day_change', label: '당일 일정 변경', desc: '방문 당일 변경·취소 접수 — 슬롯과 정산을 다시 확인해요.', owner: '사람', sla: '즉시' },
+      { code: 'no_show', label: '노쇼', desc: '방문이 진행되지 않았어요 — 재예약 안내와 정산 제외를 확인해요.', owner: '사람', sla: '당일' },
+      { code: 'complaint', label: '컴플레인', desc: '보호자 불만·이슈 접수 — 기록하고 담당자가 응대해요.', owner: '사람', sla: '24시간 내' },
+      { code: 'no_candidate', label: '후보 0명 지역', desc: '지역·시간 교집합 후보가 없어요 — 대체 시간 제안이나 선생님 확보가 필요해요.', owner: '사람', sla: '24시간 내' }
+    ];
+    var REMINDER_KINDS = {
+      d_minus_1: {
+        label: 'D-1 안내',
+        customer: { title: '내일 {time} 방문이 예정돼 있어요', body: '{no} · {date} ({day}) {time} · {name} 선생님이 방문합니다. 집 안 동선과 준비물을 확인해 주세요.' },
+        teacher: { title: '내일 방문 일정 알림', body: '{date} ({day}) {time} · {no} · {region} 방문입니다. 출발 전 도착 예정 시간을 알려 주세요.' }
+      },
+      before_30m: {
+        label: '30분 전 안내',
+        customer: { title: '30분 뒤에 선생님이 도착해요', body: '{no} · {time} 방문이 30분 남았어요. 출입 방법을 확인해 주세요.' },
+        teacher: { title: '30분 뒤 방문 시작', body: '{no} · {time} 방문이 30분 남았어요. 도착 예정 시간을 보호자에게 알려 주세요.' }
+      }
+    };
+
+    /* 오늘 날짜(KST, YYYY-MM-DD) */
+    function todayIsoKst(when) {
+      var p = kstParts(when);
+      return p.y + '-' + pad(p.m) + '-' + pad(p.d);
+    }
+    function isoDateOf(d) {
+      return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+    }
+    function dateObjOf(dateIso) {
+      var s = String(dateIso == null ? '' : dateIso).slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+      var d = new Date(s + 'T12:00:00Z');
+      return isNaN(d.getTime()) ? null : d;
+    }
+    /* 2026-11-28 → '토'. 날짜 라벨이 없을 때만 쓴다. */
+    function weekdayOf(dateIso) {
+      var d = dateObjOf(dateIso);
+      return d ? (WEEKDAY_LABELS[d.getUTCDay()] || '') : '';
+    }
+    function timeBucketOf(time) {
+      var m = /^(\d{1,2}):(\d{2})$/.exec(String(time == null ? '' : time).trim());
+      if (!m) return null;
+      var h = Number(m[1]);
+      if (!isFinite(h) || h < 0 || h > 23) return null;
+      for (var i = 0; i < TIME_BUCKETS.length; i++) {
+        if (h >= TIME_BUCKETS[i].fromHour && h < TIME_BUCKETS[i].toHour) return TIME_BUCKETS[i];
+      }
+      return null;
+    }
+    function timeBucketLabel(time) { var b = timeBucketOf(time); return b ? b.label : ''; }
+    /* 월~일 주간 범위(같은 주 방문 한도 계산용) */
+    function weekRangeOf(dateIso) {
+      var d = dateObjOf(dateIso);
+      if (!d) return null;
+      var dow = d.getUTCDay();
+      var back = (dow === 0) ? -6 : (1 - dow);
+      var mon = new Date(d.getTime() + back * 86400000);
+      var sun = new Date(mon.getTime() + 6 * 86400000);
+      return { from: isoDateOf(mon), to: isoDateOf(sun) };
+    }
+    function hoursUntil(dateIso, time, now) {
+      var d = dateObjOf(dateIso);
+      var m = /^(\d{1,2}):(\d{2})$/.exec(String(time == null ? '' : time).trim());
+      if (!d || !m) return null;
+      var at = Date.parse(dateIso + 'T' + pad(Number(m[1])) + ':' + m[2] + ':00+09:00');
+      if (isNaN(at)) return null;
+      var base = now ? new Date(now).getTime() : Date.now();
+      if (isNaN(base)) base = Date.now();
+      return Math.round(((at - base) / 3600000) * 10) / 10;
+    }
+
+    /* 지역 마스터 계층 조회 — 동 → 시·군·구 → 시·도 */
+    function regionPath(regionId) {
+      var node = findRegion(regionId);
+      if (!node) return null;
+      var out = { id: node.id, level: node.level, name: node.name, fullName: node.fullName, province: '', district: '', dong: '' };
+      var cur = node, guard = 0;
+      while (cur && guard++ < 6) {
+        if (cur.level === 'province') out.province = cur.name;
+        else if (cur.level === 'district') out.district = cur.name;
+        else if (cur.level === 'dong') out.dong = cur.name;
+        cur = cur.parentId ? findRegion(cur.parentId) : null;
+      }
+      out.text = [out.province, out.district].filter(Boolean).join(' ');
+      out.fullText = [out.province, out.district, out.dong].filter(Boolean).join(' ');
+      return out;
+    }
+    function regionAncestorIds(regionId) {
+      var ids = [], cur = String(regionId == null ? '' : regionId), guard = 0;
+      while (cur && guard++ < 6) {
+        ids.push(cur);
+        var n = findRegion(cur);
+        cur = n ? String(n.parentId || '') : '';
+      }
+      return ids;
+    }
+    function regionChildren(regionId, level) {
+      return masterRef.filter(function (r) {
+        return r.parentId === regionId && (!level || r.level === level);
+      });
+    }
+    /* 요청 지역(동/시·군·구)을 교집합 비교용 id 집합으로. 동이면 구까지, 구면 그 아래 동까지 포함한다. */
+    function matchRegionIdSet(input) {
+      var raw = '';
+      if (input && typeof input === 'object') {
+        raw = String(input.regionId || '');
+        if (!raw && input.dongId) raw = String(input.dongId);
+        if (!raw && input.region) raw = String(regionIdFromText(input.region) || '');
+      } else {
+        raw = String(input || '');
+      }
+      var node = findRegion(raw);
+      var ids = [];
+      if (!node) return ids;
+      ids.push(node.id);
+      if (node.level === 'dong' && node.parentId) ids.push(node.parentId);
+      if (node.level === 'district') {
+        regionChildren(node.id, 'dong').forEach(function (r) { ids.push(r.id); });
+      }
+      return ids;
+    }
+    function regionTextOf(regionId, fallbackText) {
+      var p = regionId ? regionPath(regionId) : null;
+      if (p && p.text) return p.text;
+      var s = String(fallbackText == null ? '' : fallbackText).trim();
+      return s ? s.split(/\s+/).slice(0, 2).join(' ') : '';
+    }
+    /* 동 이름으로 id 찾기(마스터에 있을 때만). */
+    function dongIdOf(province, district, dong) {
+      var did = regionIdOf(province, district);
+      var d = String(dong == null ? '' : dong).trim();
+      if (!did || !d) return '';
+      var hit = findRegion(did + '-' + d);
+      return hit ? hit.id : '';
+    }
+    function dongIdFromText(text) {
+      var s = String(text == null ? '' : text);
+      if (!s) return '';
+      var did = regionIdFromText(s);
+      if (!did) return '';
+      var kids = regionChildren(did, 'dong');
+      for (var i = 0; i < kids.length; i++) { if (s.indexOf(kids[i].name) !== -1) return kids[i].id; }
+      return '';
+    }
+
+    /* 선생님 활동 지역 문자열('서울 강남 · 서초') → 정규화 토큰 */
+    function teacherRegionTokens(t, master) {
+      var list = master || masterRef;
+      var segs = String((t && t.regions) == null ? '' : t.regions).split('·');
+      var province = '';
+      var tokens = [];
+      segs.forEach(function (seg, idx) {
+        var words = String(seg).trim().split(/\s+/).filter(Boolean);
+        if (!words.length) return;
+        if (idx === 0 && isProvince(words[0], list)) province = words.shift();
+        else if (!province && isProvince(words[0], list)) province = words.shift();
+        if (words.length) tokens.push(words.join(' '));
+      });
+      return tokens.map(function (token) {
+        return { token: token, province: province, regionId: matchDistrict(province, token, list) || '' };
+      });
+    }
+    function teacherRegionIds(t) {
+      var out = [];
+      teacherRegionTokens(t, masterRef).forEach(function (x) {
+        if (x.regionId && out.indexOf(x.regionId) === -1) out.push(x.regionId);
+      });
+      return out;
+    }
+
+    /* 선생님이 그 날짜·시간에 방문 가능한지 (요일·시간대·첫 방문일·주간 한도·중복 방문) */
+    function teacherAvailability(t, dateIso, time, bookings, opts) {
+      var o = opts || {};
+      var blockedBy = [];
+      var day = weekdayOf(dateIso);
+      var bucket = timeBucketOf(time);
+      var days = Array.isArray(t && t.availableDays) ? t.availableDays : [];
+      var times = Array.isArray(t && t.availableTimes) ? t.availableTimes : [];
+      if (days.length && day && days.indexOf(day) === -1) blockedBy.push('time');
+      if (times.length && bucket && times.indexOf(bucket.label) === -1) blockedBy.push('time');
+      if (!day || !bucket) blockedBy.push('time');
+      var first = String((t && t.firstAvailable) || '').slice(0, 10);
+      if (first && dateIso && String(dateIso) < first) blockedBy.push('first_available');
+      var limit = num(t && t.maxWeeklyVisits, 0);
+      if (limit > 0 && !o.skipLoad) {
+        var range = weekRangeOf(dateIso);
+        if (range) {
+          var load = 0;
+          (bookings || []).forEach(function (b) {
+            if (!b || (b.teacherId || '') !== t.id) return;
+            if (reservationStatus(b.status) === 'canceled') return;
+            var d = String(b.dateIso || '').slice(0, 10);
+            if (d && d >= range.from && d <= range.to) load += 1;
+          });
+          if (load >= limit) blockedBy.push('weekly_limit');
+        }
+      }
+      if (!o.skipConflict && slotConflict(bookings || [], t.id, dateIso, time, o.except)) blockedBy.push('slot_conflict');
+      var uniq = [];
+      blockedBy.forEach(function (c) { if (uniq.indexOf(c) === -1) uniq.push(c); });
+      return {
+        ok: uniq.length === 0,
+        blockedBy: uniq,
+        day: day,
+        bucket: bucket ? bucket.label : '',
+        weekdayMatch: !days.length || (!!day && days.indexOf(day) !== -1),
+        timeMatch: !times.length || (!!bucket && times.indexOf(bucket.label) !== -1)
+      };
+    }
+
+    function normSymptomCodesOf(input) {
+      var raw = [];
+      if (Array.isArray(input)) raw = input.slice();
+      else if (input != null && input !== '') raw = String(input).split(/[,·/]/).map(function (s) { return s.trim(); }).filter(Boolean);
+      return symptomCodesOf(raw);
+    }
+    function specialtyCodesFor(codes) {
+      var out = [];
+      (codes || []).forEach(function (c) {
+        (SYMPTOM_SPECIALTY[c] || []).forEach(function (s) { if (out.indexOf(s) === -1) out.push(s); });
+      });
+      return out;
+    }
+
+    /* 교집합 후보 계산 — 지역 ∩ 시간(요일·시간대·충돌 없음) [+ 전문분야].
+       opts: { regionId, region, dongId, symptom, symptomCodes, dateIso, timeSlot|time,
+               teachers, bookings, except, includeAll, skipConflict, skipLoad, now }
+       → [{teacherId, name, score, matchedBy, reasons, eligible, blockedBy, ...}] (점수 내림차순) */
+    function matchCandidateTeachers(opts) {
+      var o = opts || {};
+      var list = Array.isArray(o.teachers) ? o.teachers : [];
+      var bookings = Array.isArray(o.bookings) ? o.bookings : [];
+      var regionSet = matchRegionIdSet({ regionId: o.regionId, region: o.region, dongId: o.dongId });
+      var symptoms = normSymptomCodesOf(o.symptomCodes || o.symptom);
+      var specialty = specialtyCodesFor(symptoms);
+      var dateIso = String(o.dateIso || '').slice(0, 10);
+      var slot = String(o.timeSlot || o.time || '');
+      var out = [];
+      list.forEach(function (t, i) {
+        if (!t || !t.id) return;
+        var status = String(t.status || 'approved');
+        /* 신분·면허가 확인된 선생님만 후보로 올린다(경력 확인은 후보 조건이 아니다). */
+        var v = t.verification ? verificationOf(t) : null;
+        var verifiedOk = !v || (v.identity === 'verified' && v.license === 'verified');
+        var tokens = teacherRegionTokens(t);
+        var hit = null;
+        for (var k = 0; k < tokens.length; k++) {
+          if (tokens[k].regionId && regionSet.indexOf(tokens[k].regionId) !== -1) { hit = tokens[k]; break; }
+        }
+        var avail = teacherAvailability(t, dateIso, slot, bookings, { except: o.except, skipConflict: o.skipConflict, skipLoad: o.skipLoad });
+        var cats = Array.isArray(t.cats) ? t.cats : [];
+        var symptomHit = !symptoms.length ? false : specialty.some(function (c) { return cats.indexOf(c) !== -1; });
+        var blockedBy = avail.blockedBy.slice();
+        if (!hit) blockedBy.unshift('region');
+        if (status !== 'approved' || !verifiedOk) blockedBy.push('status');
+        var eligible = !!hit && avail.ok && status === 'approved';
+        if (o.requireSymptom) eligible = eligible && symptomHit;
+        var score = 0;
+        var matchedBy = [];
+        var reasons = [];
+        if (hit) {
+          score += MATCH_WEIGHTS.region;
+          matchedBy.push('region');
+          reasons.push(MATCH_REASONS.region + ' (' + (regionTextOf(hit.regionId) || hit.token) + ')');
+          if (hit.token === (tokens[0] && tokens[0].token)) { score += MATCH_WEIGHTS.priority; matchedBy.push('priority'); }
+        }
+        if (symptomHit) {
+          score += MATCH_WEIGHTS.symptom;
+          matchedBy.push('symptom');
+          reasons.push(MATCH_REASONS.symptom + ' (' + symptoms.map(symptomLabel).join('·') + ')');
+        }
+        if (avail.ok) {
+          score += MATCH_WEIGHTS.time;
+          matchedBy.push('time');
+          reasons.push(MATCH_REASONS.time + ' (' + (avail.day || '') + ' ' + (avail.bucket || '') + ' ' + slot + ')'.trim());
+        }
+        var rating = num(t.rating, 0);
+        score += rating * MATCH_WEIGHTS.rating;
+        out.push({
+          teacherId: t.id,
+          name: t.name || '',
+          occupation: t.occupation || t.license || '',
+          rating: rating,
+          regionId: hit ? hit.regionId : '',
+          regionText: hit ? (regionTextOf(hit.regionId) || hit.token) : '',
+          score: Math.round(score * 10) / 10,
+          eligible: eligible,
+          matchedBy: matchedBy,
+          reasons: reasons,
+          blockedBy: blockedBy,
+          blockedText: blockedBy.map(function (c) { return MATCH_BLOCKERS[c] || c; }),
+          weekday: avail.day,
+          bucket: avail.bucket,
+          order: i
+        });
+      });
+      out.sort(function (a, b) {
+        if (a.eligible !== b.eligible) return a.eligible ? -1 : 1;
+        if (b.score !== a.score) return b.score - a.score;
+        return a.order - b.order;
+      });
+      if (o.includeAll) return out;
+      return out.filter(function (x) { return x.eligible; });
+    }
+
+    function candidateSummary(c) {
+      if (!c) return null;
+      return {
+        teacherId: c.teacherId, name: c.name, occupation: c.occupation, rating: c.rating,
+        regionId: c.regionId, regionText: c.regionText, score: c.score,
+        matchedBy: c.matchedBy.slice(), reasons: c.reasons.slice()
+      };
+    }
+
+    /* 매칭 대기열 — 미배정(received) + 재확정 필요(rescheduled)를 후보 수·1순위와 함께 정리한다. */
+    function buildMatchingQueue(reservations, opts) {
+      var o = opts || {};
+      var list = Array.isArray(reservations) ? reservations : [];
+      var waiting = [];
+      list.forEach(function (b) {
+        if (!b) return;
+        var st = reservationStatus(b.status);
+        if (st !== 'received' && st !== 'rescheduled') return;
+        var cands = matchCandidateTeachers({
+          regionId: b.regionId, region: b.region, symptomCodes: b.symptomCodes, symptom: b.symptom,
+          dateIso: b.dateIso, timeSlot: b.time, teachers: o.teachers, bookings: list,
+          except: b.no || b.id, skipLoad: false
+        });
+        var top = cands[0] || null;
+        waiting.push({
+          no: b.no || b.id || '', id: b.id || '', status: st, statusLabel: reservationLabel(st),
+          reason: st === 'received' ? 'unassigned' : 'reconfirm',
+          regionId: b.regionId || '', regionText: regionTextOf(b.regionId, b.region),
+          date: b.date || '', day: b.day || weekdayOf(b.dateIso), dateIso: String(b.dateIso || '').slice(0, 10),
+          time: b.time || '',
+          candidateCount: cands.length,
+          topCandidate: candidateSummary(top),
+          needsHuman: cands.length === 0,
+          hoursUntil: hoursUntil(b.dateIso, b.time, o.now || null)
+        });
+      });
+      waiting.sort(function (a, b) {
+        if (a.needsHuman !== b.needsHuman) return a.needsHuman ? -1 : 1;
+        var ka = a.dateIso + ' ' + a.time, kb = b.dateIso + ' ' + b.time;
+        return ka.localeCompare(kb);
+      });
+      var counts = { waiting: waiting.length, unassigned: 0, reconfirm: 0, noCandidate: 0, withCandidate: 0, urgent: 0 };
+      waiting.forEach(function (w) {
+        if (w.reason === 'unassigned') counts.unassigned += 1; else counts.reconfirm += 1;
+        if (w.needsHuman) counts.noCandidate += 1; else counts.withCandidate += 1;
+        if (w.hoursUntil != null && w.hoursUntil <= 24) counts.urgent += 1;
+      });
+      return {
+        asOf: todayIsoKst(o.now || null), version: SCALING_VERSION,
+        total: waiting.length, counts: counts, waiting: waiting
+      };
+    }
+
+    /* 사람이 개입해야 하는 예외만 추린다(선생님 거절·당일 변경·노쇼·컴플레인·후보 0명). */
+    function classifyOperationalExceptions(reservations, opts) {
+      var o = opts || {};
+      var list = Array.isArray(reservations) ? reservations : [];
+      var today = todayIsoKst(o.now || null);
+      var buckets = {};
+      EXCEPTION_TYPES.forEach(function (t) { buckets[t.code] = []; });
+      list.forEach(function (b) {
+        if (!b) return;
+        var st = reservationStatus(b.status);
+        var hist = Array.isArray(b.statusHistory) ? b.statusHistory : [];
+        var dateIso = String(b.dateIso || '').slice(0, 10);
+        var base = {
+          no: b.no || b.id || '', id: b.id || '', status: st, statusLabel: reservationLabel(st),
+          regionText: regionTextOf(b.regionId, b.region), dateIso: dateIso,
+          date: b.date || '', day: b.day || weekdayOf(dateIso), time: b.time || '',
+          teacherId: b.teacherId || ''
+        };
+        var declined = hist.some(function (h) {
+          return h && h.from === 'assigned' && h.to === 'received' && /거절/.test(String(h.reason || ''));
+        });
+        if (declined) {
+          buckets.teacher_declined.push(Object.assign({}, base, {
+            detail: '배정 거절 이력 · 재배정 후보를 다시 계산해요.',
+            action: '재배정 후보 확인'
+          }));
+        }
+        if ((st === 'canceled' || st === 'rescheduled') && dateIso && dateIso === today) {
+          buckets.same_day_change.push(Object.assign({}, base, {
+            detail: st === 'canceled' ? '당일 취소 접수' : '당일 일정 변경',
+            action: st === 'canceled' ? '환불·회차 복구 확인' : '새 시간 슬롯 확인'
+          }));
+        }
+        if (st === 'no_show') {
+          buckets.no_show.push(Object.assign({}, base, { detail: '노쇼 기록 · 정산 제외', action: '재예약 안내' }));
+        }
+        var complained = b.issue === 'complaint' || b.complaint === true ||
+          hist.some(function (h) { return h && h.event === 'complaint'; });
+        if (complained) {
+          buckets.complaint.push(Object.assign({}, base, { detail: String(b.issueMemo || '보호자 이슈 접수'), action: '담당자 응대·기록' }));
+        }
+        if (st === 'received') {
+          var cands = matchCandidateTeachers({
+            regionId: b.regionId, region: b.region, symptomCodes: b.symptomCodes, symptom: b.symptom,
+            dateIso: b.dateIso, timeSlot: b.time, teachers: o.teachers, bookings: list, except: b.no || b.id
+          });
+          if (!cands.length) {
+            buckets.no_candidate.push(Object.assign({}, base, { detail: '교집합 후보 0명', action: '대체 시간·지역 제안' }));
+          }
+        }
+      });
+      var counts = {};
+      var groups = EXCEPTION_TYPES.map(function (t) {
+        var items = buckets[t.code] || [];
+        counts[t.code] = items.length;
+        return {
+          code: t.code, label: t.label, desc: t.desc, owner: t.owner, sla: t.sla,
+          count: items.length, items: items
+        };
+      });
+      var total = groups.reduce(function (s, g) { return s + g.count; }, 0);
+      return { asOf: today, version: SCALING_VERSION, total: total, counts: counts, groups: groups };
+    }
+
+    /* 리마인드 안내 문구(D-1 / 30분 전) — 템플릿 생성만. 발송은 하지 않는다. */
+    function buildReminderNotice(resv, kind, meta) {
+      var key = String(kind == null ? '' : kind);
+      var tpl = REMINDER_KINDS[key];
+      if (!tpl) return { ok: false, error: 'unknown_kind', kind: key, available: Object.keys(REMINDER_KINDS) };
+      var b = (resv && typeof resv === 'object') ? resv : {};
+      var m = meta || {};
+      var ctx = noticeContext(b, m);
+      ctx.region = regionTextOf(b.regionId, b.region);
+      var out = { ok: true, kind: key, kindLabel: tpl.label, version: SCALING_VERSION };
+      ['customer', 'teacher'].forEach(function (aud) {
+        out[aud] = { title: fillNotice(tpl[aud].title, ctx), body: fillNotice(tpl[aud].body, ctx) };
+      });
+      out.title = out.customer.title;
+      out.body = out.customer.body;
+      out.text = '[보호자 안내]\n' + out.customer.title + '\n' + out.customer.body +
+        '\n\n[선생님 안내]\n' + out.teacher.title + '\n' + out.teacher.body;
+      return out;
     }
 
     /* ------------------ 상태 변환 ------------------ */
@@ -5539,6 +6011,37 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       slotRows: slotRows,
       endTimeOf: endTimeOf,
       slotConflict: slotConflict,
+      /* v18 · 규모 확장·자동 매칭 엔진 */
+      SCALING_VERSION: SCALING_VERSION,
+      scalingVersion: SCALING_VERSION,
+      weekdays: WEEKDAY_LABELS.slice(),
+      timeBuckets: TIME_BUCKETS.map(function (b) { return { code: b.code, label: b.label, fromHour: b.fromHour, toHour: b.toHour }; }),
+      matchWeights: MATCH_WEIGHTS,
+      matchReasons: MATCH_REASONS,
+      matchBlockers: MATCH_BLOCKERS,
+      symptomSpecialty: SYMPTOM_SPECIALTY,
+      exceptionTypes: EXCEPTION_TYPES.map(function (t) { return { code: t.code, label: t.label, desc: t.desc, owner: t.owner, sla: t.sla }; }),
+      reminderKinds: Object.keys(REMINDER_KINDS),
+      todayIsoKst: todayIsoKst,
+      weekdayOf: weekdayOf,
+      timeBucketOf: function (time) { var b = timeBucketOf(time); return b ? { code: b.code, label: b.label, fromHour: b.fromHour, toHour: b.toHour } : null; },
+      timeBucketLabel: timeBucketLabel,
+      weekRangeOf: weekRangeOf,
+      hoursUntil: hoursUntil,
+      regionPath: regionPath,
+      regionAncestorIds: regionAncestorIds,
+      regionChildren: regionChildren,
+      regionTextOf: regionTextOf,
+      dongIdOf: dongIdOf,
+      dongIdFromText: dongIdFromText,
+      matchRegionIdSet: matchRegionIdSet,
+      teacherRegionTokens: teacherRegionTokens,
+      teacherRegionIds: teacherRegionIds,
+      teacherAvailability: teacherAvailability,
+      matchCandidateTeachers: matchCandidateTeachers,
+      buildMatchingQueue: buildMatchingQueue,
+      classifyOperationalExceptions: classifyOperationalExceptions,
+      buildReminderNotice: buildReminderNotice,
       settlementRows: settlementRows,
       normalizeReservation: normalizeReservation,
       normalizeUserPass: normalizeUserPass,
@@ -5577,7 +6080,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   /* ================= 전국 지역 ================= */
   function TTMain() {
   var REGIONS = {
-    '서울': ['강남구', '서초구', '송파구', '마포구', '은평구', '강서구', '노원구'],
+    '서울': ['강남구', '서초구', '송파구', '마포구', '은평구', '강서구', '노원구', '서대문구'],
     '부산': ['해운대구', '수영구', '부산진구', '동래구'],
     '대구': ['수성구', '달서구', '중구'],
     '인천': ['연수구', '남동구', '부평구'],
@@ -5585,7 +6088,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     '대전': ['유성구', '서구', '중구'],
     '울산': ['남구', '울주군', '중구'],
     '세종': ['세종시'],
-    '경기': ['고양시 일산동구', '성남시 분당구', '용인시 수지구', '수원시 영통구', '부천시', '남양주시'],
+    '경기': ['고양시 일산동구', '성남시 분당구', '용인시 수지구', '수원시 영통구', '부천시', '남양주시', '파주시'],
     '강원': ['원주시', '춘천시', '강릉시'],
     '충북': ['청주시', '충주시'],
     '충남': ['천안시', '아산시'],
@@ -5597,8 +6100,32 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   };
   var PROVINCES = Object.keys(REGIONS);
 
-  /* v12 · 지역 마스터(시·도/시·군·구) — 지역은 코드가 아니라 데이터. 동 단위는 다음 단계에서 채운다. */
-  var REGION_MASTER = TtModel.buildRegionMaster(REGIONS);
+  /* v18 · 동 단위 마스터(데이터). 키는 '시·도 시·군·구', 값은 동 목록이다.
+     선생님 활동 동·방문 지역 동을 늘리는 일은 코드가 아니라 이 데이터를 늘리는 일이다.
+     (시드 선생님 regionDetail 의 동 + 수도권 동 일부. 전국 전체 동은 서버 단계에서 행정표준코드로 채운다.) */
+  var REGION_DONGS = {
+    '서울 강남구': ['대치동', '역삼동', '개포동'],
+    '서울 서초구': ['반포동', '서초동'],
+    '서울 송파구': ['잠실동', '가락동'],
+    '서울 마포구': ['성산동', '합정동'],
+    '서울 은평구': ['응암동', '불광동'],
+    '서울 서대문구': ['연희동', '북가좌동', '남가좌동'],
+    '경기 고양시 일산동구': ['장항동', '마두동', '식사동'],
+    '경기 파주시': ['야당동', '금촌동', '동패동', '와동동'],
+    '경기 성남시 분당구': ['정자동', '서현동', '수내동'],
+    '경기 용인시 수지구': ['풍덕천동', '신봉동'],
+    '부산 해운대구': ['우동', '중동'],
+    '부산 수영구': ['광안동', '남천동'],
+    '대전 유성구': ['봉명동', '전민동'],
+    '대전 서구': ['둔산동', '월평동'],
+    '대구 수성구': ['범어동', '황금동'],
+    '대구 달서구': ['상인동', '월배동'],
+    '광주 서구': ['치평동', '상무동'],
+    '광주 북구': ['운암동', '용봉동']
+  };
+
+  /* v12 · 지역 마스터(시·도/시·군·구) + v18 동 단위 — 지역은 코드가 아니라 데이터. */
+  var REGION_MASTER = TtModel.buildRegionMaster(REGIONS, REGION_DONGS);
   TtModel.useRegionMaster(REGION_MASTER);
 
   /* ================= 화면 / 역할 ================= */
@@ -8971,11 +9498,26 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var who = { customer: '보호자', teacher: '선생님', operator: '운영자', system: '시스템', migration: '기존 데이터' }[h.actor] || h.actor || '시스템';
     return who + ' · ' + TtModel.reservationLabel(h.status) + (h.reason ? ' · ' + h.reason : '');
   }
-  /* 후보 선생님 — 보호자 지역(시·군·구)과 겹치는 선생님을 먼저 보여준다(배정 후보 교집합의 단순판). */
+  /* v18 · 교집합 후보(지역 ∩ 가능 시간 [+ 전문분야]) — 자동 매칭 엔진 계산 결과만 쓴다. */
+  function adminMatchCandidates(b) {
+    try {
+      return TtModel.matchCandidateTeachers({
+        regionId: b && b.regionId, region: b && b.region,
+        symptomCodes: b && b.symptomCodes, symptom: b && b.symptom,
+        dateIso: b && b.dateIso, timeSlot: b && b.time,
+        teachers: teachers, bookings: account.bookings || [], except: b && (b.no || b.id)
+      });
+    } catch (e) { return []; }
+  }
+  /* 후보 선생님 — v18은 교집합 후보를 먼저 놓고, 나머지는 기존 지역·평점 순으로 뒤에 붙인다.
+     (교집합에 없어도 사람이 예외로 배정할 수 있어야 한다 — 선생님 거절·일정 조정 대응) */
   function adminCandidateTeachers(b) {
+    var matched = adminMatchCandidates(b);
+    var matchedIds = {};
+    matched.forEach(function (c) { matchedIds[c.teacherId] = true; });
     var parts = String((b && b.region) || '').split(/\s+/).filter(function (x) { return !!x; });
     var district = parts[1] || parts[0] || '';
-    var scored = (teachers || []).map(function (t, i) {
+    var scored = (teachers || []).filter(function (t) { return !matchedIds[t.id]; }).map(function (t, i) {
       var hay = String(t.regionDetail || '') + ' ' + String(t.regions || '');
       return { t: t, same: district ? hay.indexOf(district) !== -1 : false, i: i };
     });
@@ -8984,7 +9526,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var r = (y.t.rating || 0) - (x.t.rating || 0);
       return r !== 0 ? r : x.i - y.i;
     });
-    return scored.map(function (s) { return s.t; });
+    return matched.map(function (c) { return teacherById(c.teacherId); }).filter(Boolean)
+      .concat(scored.map(function (s) { return s.t; }));
   }
   /* 지역은 시·군·구까지만 보여준다(동·번지 등 개인 식별 정보는 운영자 목록에도 노출하지 않는다). */
   function adminRegionText(b) {
@@ -9022,13 +9565,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var picker = '';
     if (st === 'received' && (next.indexOf('assigned') !== -1 || next.indexOf('confirmed') !== -1)) {
       var cands = adminCandidateTeachers(b);
+      var matched = adminMatchCandidates(b);
+      var matchedIds = {};
+      matched.forEach(function (c) { matchedIds[c.teacherId] = true; });
+      var matchNote = matched.length
+        ? '<p class="admin-meta" style="margin:0 0 6px">교집합 후보 ' + matched.length + '명 · 1순위 ' + esc(matched[0].name) +
+          ' 선생님 · ' + esc((matched[0].reasons || []).slice(0, 2).join(' / ')) + '</p>'
+        : '<p class="admin-meta" style="margin:0 0 6px">교집합 후보 0명 — 시간·지역을 조정하거나 아래에서 직접 골라 주세요.</p>';
       var cur = adminAssignPick[b.no] || (b.teacher ? b.teacherId : '') || '';
-      picker = '<div class="field" style="margin:9px 0 0">' +
+      picker = '<div class="field" style="margin:9px 0 0">' + matchNote +
         '<select data-admin-resv-teacher="' + esc(b.no) + '" aria-label="배정할 선생님 선택">' +
           '<option value="">배정할 선생님 선택</option>' +
           cands.map(function (x) {
+            var tag = matchedIds[x.id] ? (matched[0] && matched[0].teacherId === x.id ? ' · 교집합 1순위' : ' · 교집합 후보') : '';
             return '<option value="' + esc(x.id) + '"' + (cur === x.id ? ' selected' : '') + '>' +
-              esc(x.name + ' 선생님 · ' + (x.occupation || x.license || '') + ' · ' + (x.regions || '')) + '</option>';
+              esc(x.name + ' 선생님 · ' + (x.occupation || x.license || '') + ' · ' + (x.regions || '') + tag) + '</option>';
           }).join('') +
         '</select></div>';
     }
@@ -11510,6 +12061,61 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         var o = opts || {};
         if (o.teacherId) adminAssignPick[no] = o.teacherId;
         return adminTransitionBooking(no, to);
+      },
+      /* v18 · 규모 확장·자동 매칭(검증·운영 도구용) */
+      scalingVersion: TtModel.scalingVersion,
+      weekdays: TtModel.weekdays,
+      timeBuckets: TtModel.timeBuckets,
+      matchReasons: TtModel.matchReasons,
+      matchBlockers: TtModel.matchBlockers,
+      exceptionTypes: TtModel.exceptionTypes,
+      regionDongs: REGION_DONGS,
+      regionMasterCounts: function () {
+        var c = { province: 0, district: 0, dong: 0 };
+        REGION_MASTER.forEach(function (r) { if (c[r.level] !== undefined) c[r.level] += 1; });
+        return c;
+      },
+      regionPath: function (id) { return TtModel.regionPath(id); },
+      regionAncestorIds: function (id) { return TtModel.regionAncestorIds(id); },
+      regionChildren: function (id, level) { return TtModel.regionChildren(id, level); },
+      regionTextOf: function (id, fallback) { return TtModel.regionTextOf(id, fallback); },
+      dongIdOf: function (p, d, g) { return TtModel.dongIdOf(p, d, g); },
+      dongIdFromText: function (text) { return TtModel.dongIdFromText(text); },
+      matchRegionIds: function (input) { return TtModel.matchRegionIdSet(input); },
+      teacherRegionIds: function (t) {
+        var src = (typeof t === 'string') ? teacherById(t) : t;
+        return src ? TtModel.teacherRegionIds(src) : [];
+      },
+      teacherAvailability: function (t, dateIso, time, opts) {
+        var src = (typeof t === 'string') ? teacherById(t) : t;
+        return src ? TtModel.teacherAvailability(src, dateIso, time, (opts && opts.bookings) || account.bookings || [], opts || {}) : null;
+      },
+      matchTeachers: function (input) {
+        var o = input || {};
+        if (o.byNo) {
+          var b = findBooking(o.byNo) || {};
+          o = {
+            regionId: b.regionId, region: b.region, symptomCodes: b.symptomCodes, symptom: b.symptom,
+            dateIso: b.dateIso, timeSlot: b.time, except: b.no || b.id
+          };
+        }
+        o.teachers = teachers;
+        o.bookings = o.bookings || account.bookings || [];
+        return TtModel.matchCandidateTeachers(o);
+      },
+      matchingQueue: function (list) {
+        return TtModel.buildMatchingQueue(Array.isArray(list) ? list : (account.bookings || []), { teachers: teachers });
+      },
+      exceptions: function (list) {
+        return TtModel.classifyOperationalExceptions(Array.isArray(list) ? list : (account.bookings || []), { teachers: teachers });
+      },
+      reminderNotice: function (target, kind) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return TtModel.buildReminderNotice(b, kind);
+      },
+      adminMatchCandidates: function (target) {
+        var b = (typeof target === 'string') ? findBooking(target) : target;
+        return b ? adminMatchCandidates(b).map(function (c) { return { teacherId: c.teacherId, name: c.name, score: c.score, matchedBy: c.matchedBy, reasons: c.reasons }; }) : [];
       }
     };
   } catch (e) {}
