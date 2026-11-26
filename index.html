@@ -15632,6 +15632,19 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     for (var w = 0; w < noWrapRows.length; w++) noWrapRows[w].style.flexWrap = 'wrap';
     var seps = base.querySelectorAll('.gate-links .gate-sep');
     for (var sp = 0; sp < seps.length; sp++) seps[sp].style.display = 'none';
+    /* 좁은 시트 머리: 별점·후기 줄은 항목 단위로 접히게(글자 중간 줄바꿈 방지) */
+    var ratings = base.querySelectorAll('.sheet-rating');
+    for (var rt = 0; rt < ratings.length; rt++) {
+      ratings[rt].style.flexWrap = 'wrap';
+      ratings[rt].style.rowGap = '2px';
+      ratings[rt].style.whiteSpace = 'nowrap';
+      var rkids = ratings[rt].children;
+      for (var rk = 0; rk < rkids.length; rk++) {
+        if (rkids[rk].classList && rkids[rk].classList.contains('sep')) rkids[rk].style.display = 'none';
+      }
+    }
+    var subs = base.querySelectorAll('.sheet-sub, .teacher .t-meta, .teacher .t-name');
+    for (var sb = 0; sb < subs.length; sb++) subs[sb].style.wordBreak = 'keep-all';
     var banners = base.querySelectorAll('.mp-banner, .home-notice, .hh-cta');
     for (var bn = 0; bn < banners.length; bn++) banners[bn].style.wordBreak = 'keep-all';
     /* 내 정보 머리의 '·' 구분자는 알약 버튼 사이에서 숨긴다 */
