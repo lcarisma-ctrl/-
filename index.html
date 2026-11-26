@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v21">
+<meta name="app-version" content="v22">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2333,6 +2333,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         </button>
         <span class="fav-hint" id="favHint">하트로 모아두기</span>
       </div>
+      <!-- v22 · 목록 | 내 주변(동 단위) — 지도 대신 동네 묶음 카드(개인 주소·좌표 비노출) -->
+      <div class="segmented" id="teacherViewTabs" role="tablist" aria-label="보기 방식">
+        <button class="is-on" type="button" data-view="list" role="tab" aria-selected="true">목록</button>
+        <button type="button" data-view="near" role="tab" aria-selected="false">내 주변 (동 단위)</button>
+      </div>
       <div class="segmented" id="teacherFilters" role="tablist" aria-label="전문 분야 필터">
         <button class="is-on" type="button" data-cat="all" role="tab" aria-selected="true">전체</button>
         <button type="button" data-cat="stroke" role="tab" aria-selected="false">뇌졸중</button>
@@ -2350,6 +2355,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       </div>
       <div class="query-bar" id="teacherQueryBar"></div>
       <div id="teacherList"></div>
+      <!-- v22 · 내 주변(동 단위): 시·도 → 시·군·구 → 동네 클러스터 요약 카드 -->
+      <div id="nearPanel" hidden>
+        <p class="fine" style="margin:8px 2px 0">개인 주소·정확한 위치는 보여드리지 않아요. 시·군·구와 동네 단위로만 묶어서 알려드려요.</p>
+        <div class="chips" id="nearProvinceChips" role="tablist" aria-label="시·도 선택"></div>
+        <div class="chips" id="nearDistrictChips" role="tablist" aria-label="시·군·구 선택"></div>
+        <div id="dongClusterList"></div>
+        <p class="fine" style="margin:10px 2px 0">* 동네는 선생님이 등록한 활동 지역 기준이에요. 실제 배정은 무료 방문 평가 후 확정됩니다.</p>
+      </div>
       <p class="fine">* 프로토타입용 예시 프로필입니다. 실제 배정은 무료 방문 평가 후 지역·증상에 맞춰 안내드립니다.</p>
     </section>
 
@@ -2613,6 +2626,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 
         <!-- v20 · 4주 재평가 시점 배지 -->
         <div id="journalReeval" hidden></div>
+
+        <!-- v22 · 최근 방문 일지 상세(선생님이 올린 사진 1장 포함) -->
+        <div class="card" id="journalLatestCard" hidden style="margin-top:12px">
+          <div class="card-head" style="margin-bottom:6px">
+            <h2>최근 방문 일지</h2>
+            <span style="font-size:10px;color:var(--muted-2)" id="journalLatestDate"></span>
+          </div>
+          <div id="journalLatestBody"></div>
+        </div>
 
         <div class="card schedule" id="todayCard">
           <div class="schedule-top">
@@ -2908,6 +2930,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             <div class="full">
               <label for="qlFocus">다음 권장 포커스</label>
               <select id="qlFocus"></select>
+            </div>
+            <!-- v22 · 사진 1장(선택). 저장 전 화면에서 줄여서(긴 변 720px) 기기에만 보관 -->
+            <div class="full">
+              <label for="qlPhoto">방문 사진 1장 <span style="font-weight:600;color:var(--muted-2)">(선택)</span></label>
+              <input id="qlPhoto" type="file" accept="image/*" capture="environment" hidden aria-hidden="true" tabindex="-1">
+              <button class="btn btn-outline btn-sm" type="button" id="qlPhotoPick">사진 선택</button>
+              <p class="fine" id="qlPhotoHint" style="margin:4px 0 0">운동 부위·자세가 보이는 사진 한 장이면 충분해요.</p>
+              <div id="qlPhotoPreview" hidden style="margin-top:8px"></div>
             </div>
           </div>
           <button class="btn btn-teal" type="button" id="qlSave" style="margin-top:12px">2분 일지 저장하고 보호자에게 공유</button>
@@ -6303,11 +6333,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       };
       if (l.startedAt) journal.visitStartedAt = l.startedAt;
       if (l.endedAt) journal.visitEndedAt = l.endedAt;
+      /* v22 · 사진 1장(선택). 형식·용량이 맞지 않으면 일지는 저장하고 사진만 뺀다. */
+      var photoRes = s.photo ? normalizePhoto(s.photo) : null;
+      if (photoRes && photoRes.ok) journal.photo = photoRes.photo;
       return {
         ok: true, journal: journal, complete: true,
         filled: quickLogFilled(l), total: 5,
         minutes: (l.startedAt && l.endedAt) ? visitMinutes(l.startedAt, l.endedAt) : null,
-        line: quickJournalLine(journal)
+        line: quickJournalLine(journal),
+        hasPhoto: !!(journal.photo),
+        photoWarning: (photoRes && !photoRes.ok) ? photoRes.message : ''
       };
     }
     /* 일지 1건 → 한 줄 요약('통증 3/5 · 컨디션 4/5 · 보행 연습 외 1개') */
@@ -6399,7 +6434,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
           var iso = journalIsoOf(j);
           return {
             id: j.id || '', date: iso, dateLabel: dateLabelOf(iso), patient: j.patient || '',
-            line: quickJournalLine(j), note: j.note || '', nextFocus: j.nextFocus || ''
+            line: quickJournalLine(j), note: j.note || '', nextFocus: j.nextFocus || '',
+            photo: photoOf(j), hasPhoto: !!photoOf(j)
           };
         })
       };
@@ -6597,6 +6633,206 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       ]
     };
 
+    /* ==================================================================
+       v22 · 선생님 찾기 '내 주변(동 단위)' + 방문 일지 사진 1장
+       ────────────────────────────────────────────────────────────────
+       · 지도 보조 탭: 개인 주소·좌표는 계산에도 넣지 않는다. 선생님이 등록한
+         활동 지역(시·도/시·군·구/동)만 묶어 동네별 요약을 만든다(SCALING §12-3).
+       · 사진: 검증·메타·용량 가드만 계산한다. 저장·표시는 화면이 한다(발송 없음).
+       ================================================================== */
+    var DONG_VIEW_VERSION = 'v22';
+    var DONG_IMMEDIATE_DAYS = 3;       /* '바로 가능' = 오늘 포함 3일 안 첫 방문 */
+    var PHOTO_VERSION = 'v22';
+    var PHOTO_MAX_CHARS = 160000;      /* data URL 길이 상한(약 117KB) — localStorage 보호 */
+    var PHOTO_MAX_PX = 720;            /* 화면에서 줄이는 긴 변 기준 */
+    var PHOTO_KEEP_PER_PARTNER = 3;    /* 기기에 남기는 일지 사진 수 */
+    var PHOTO_TOTAL_CHARS = 1200000;   /* 사진 전체 용량 상한(약 880KB) */
+    var PHOTO_PRIVACY_NOTE = '집 안 내부·가족 얼굴이 나오지 않게 운동 부위·자세 위주로 올려 주세요.';
+
+    function provinceOfText(text) {
+      var s = String(text == null ? '' : text);
+      if (!s) return '';
+      for (var i = 0; i < masterRef.length; i++) {
+        var r = masterRef[i];
+        if (r.level === 'province' && s.indexOf(r.name) === 0) return r.name;
+      }
+      return '';
+    }
+    /* 선생님의 시·도 — regions 문자열 → regionDetail → province 필드 순서 */
+    function teacherProvinceOf(t) {
+      var toks = teacherRegionTokens(t, masterRef);
+      for (var i = 0; i < toks.length; i++) { if (toks[i].province) return toks[i].province; }
+      return provinceOfText((t && t.regionDetail) || '') || String((t && t.province) || '');
+    }
+    /* 선생님 활동 동 [{id,name,fullName,districtId,province,district}] — 마스터에 있는 동만. */
+    function teacherDongList(t) {
+      var out = [], seen = {};
+      function push(id) {
+        var node = findRegion(id);
+        if (!node || node.level !== 'dong' || seen[node.id]) return;
+        seen[node.id] = true;
+        var path = regionPath(node.id) || {};
+        out.push({
+          id: node.id, name: node.name, fullName: node.fullName,
+          districtId: node.parentId || '', province: path.province || '', district: path.district || ''
+        });
+      }
+      (Array.isArray(t && t.dongs) ? t.dongs : []).forEach(function (id) { push(id); });
+      var province = teacherProvinceOf(t);
+      String((t && t.regionDetail) || '').split('·').forEach(function (seg) {
+        var s = String(seg == null ? '' : seg).trim();
+        if (!s) return;
+        var text = provinceOfText(s) ? s : (province ? province + ' ' + s : s);
+        var did = dongIdFromText(text);
+        if (did) push(did);
+      });
+      return out;
+    }
+    /* 선생님 활동 시·군·구 [{id,name,fullName,province}] — 동을 모르는 구는 구 단위로 묶는다. */
+    function teacherDistrictList(t) {
+      var out = [], seen = {};
+      function push(id) {
+        var node = findRegion(id);
+        if (!node || node.level !== 'district' || seen[node.id]) return;
+        seen[node.id] = true;
+        var path = regionPath(node.id) || {};
+        out.push({ id: node.id, name: node.name, fullName: node.fullName, province: path.province || '' });
+      }
+      teacherRegionIds(t).forEach(function (id) { push(id); });
+      var province = teacherProvinceOf(t);
+      String((t && t.regionDetail) || '').split('·').forEach(function (seg) {
+        var s = String(seg == null ? '' : seg).trim();
+        if (!s) return;
+        var text = provinceOfText(s) ? s : (province ? province + ' ' + s : s);
+        push(regionIdFromText(text));
+      });
+      return out;
+    }
+    function isImmediateTeacher(t, soonIso) {
+      var first = String((t && t.firstAvailable) || '').slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(first)) return true;   /* 시작일 미등록 = 바로 가능으로 본다 */
+      return !soonIso || first <= soonIso;
+    }
+    /* 선생님 목록 → 동네 클러스터(동 단위, 동을 모르면 시·군·구 단위). 계산만. */
+    function buildDongClusters(teachersList, opts) {
+      var o = opts || {};
+      var today = o.todayIso || todayIsoKst();
+      var base = Date.parse(today + 'T00:00:00Z');
+      var soonIso = isFinite(base) ? isoDateOf(new Date(base + DONG_IMMEDIATE_DAYS * 86400000)) : '';
+      var limit = o.specialtyLimit || 3;
+      var map = {}, order = [];
+      function add(cluster, t, immediate) {
+        var c = map[cluster.key];
+        if (!c) { cluster.teacherIds = []; cluster.teacherCount = 0; cluster.readyCount = 0; cluster._tags = {}; map[cluster.key] = c = cluster; order.push(cluster.key); }
+        if (c.teacherIds.indexOf(t.id) !== -1) return;
+        c.teacherIds.push(t.id);
+        c.teacherCount = c.teacherIds.length;
+        if (immediate) c.readyCount++;
+        (Array.isArray(t.tags) ? t.tags : []).forEach(function (x) {
+          var label = String(x == null ? '' : x).trim();
+          if (label) c._tags[label] = (c._tags[label] || 0) + 1;
+        });
+      }
+      (teachersList || []).forEach(function (t) {
+        if (!t || !t.id) return;
+        var immediate = isImmediateTeacher(t, soonIso);
+        var dongs = teacherDongList(t);
+        var covered = [];
+        dongs.forEach(function (d) {
+          if (covered.indexOf(d.districtId) === -1) covered.push(d.districtId);
+          add({
+            key: 'dong:' + d.id, level: 'dong', dongId: d.id, districtId: d.districtId,
+            name: d.name, districtText: [d.province, d.district].filter(Boolean).join(' ')
+          }, t, immediate);
+        });
+        teacherDistrictList(t).forEach(function (d) {
+          if (covered.indexOf(d.id) !== -1) return;   /* 이미 동으로 센 구 */
+          add({
+            key: 'district:' + d.id, level: 'district', dongId: '', districtId: d.id,
+            name: d.name, districtText: d.province || ''
+          }, t, immediate);
+        });
+      });
+      var out = order.map(function (key) {
+        var c = map[key];
+        c.specialties = Object.keys(c._tags)
+          .sort(function (a, b) { return (c._tags[b] - c._tags[a]) || (a < b ? -1 : 1); })
+          .slice(0, limit);
+        delete c._tags;
+        return c;
+      });
+      out.sort(function (a, b) {
+        if (b.teacherCount !== a.teacherCount) return b.teacherCount - a.teacherCount;
+        if (a.level !== b.level) return a.level === 'dong' ? -1 : 1;
+        return a.name < b.name ? -1 : (a.name > b.name ? 1 : 0);
+      });
+      return out;
+    }
+
+    /* --- 방문 일지 사진 1장 ------------------------------------------- */
+    /* data:image/(png|jpeg|webp);base64 만 통한다(HTML·스크립트 주입 차단). */
+    var PHOTO_DATA_RE = /^data:image\/(png|jpe?g|webp);base64,[A-Za-z0-9+/=]+$/;
+    function normalizePhoto(input) {
+      var src = (typeof input === 'string') ? { thumb: input } : ((input && typeof input === 'object') ? input : null);
+      if (!src) return { ok: false, error: 'empty', message: '사진이 없어요.' };
+      var url = String(src.thumb || src.dataUrl || src.url || '').trim();
+      if (!url) return { ok: false, error: 'empty', message: '사진이 없어요.' };
+      if (!PHOTO_DATA_RE.test(url)) return { ok: false, error: 'not_image', message: '이미지 파일(JPG·PNG·WEBP)만 올릴 수 있어요.' };
+      if (url.length > PHOTO_MAX_CHARS) return { ok: false, error: 'too_large', message: '사진이 저장 용량을 넘었어요. 조금 작은 사진으로 다시 시도해 주세요.' };
+      var m = /^data:image\/(png|jpe?g|webp);/i.exec(url) || [];
+      return {
+        ok: true,
+        photo: {
+          thumb: url,
+          mime: String(m[1] || 'jpeg').toLowerCase(),
+          name: String(src.name || 'photo.jpg').replace(/[\\/:*?"<>|]/g, '').slice(0, 60) || 'photo.jpg',
+          width: Math.round(num(src.width || src.w, 0)),
+          height: Math.round(num(src.height || src.h, 0)),
+          bytes: Math.round(num(src.bytes || src.size, 0)),
+          chars: url.length,
+          privacy: 'guidance_shown',
+          at: isIso(src.at) ? src.at : nowIso()
+        }
+      };
+    }
+    function photoOf(j) {
+      var p = j && j.photo;
+      if (!p) return '';
+      var url = (typeof p === 'string') ? p : String(p.thumb || p.dataUrl || '');
+      return PHOTO_DATA_RE.test(url) ? url : '';
+    }
+    function photoMetaOf(j) {
+      var p = j && j.photo;
+      if (!p || typeof p !== 'object') return null;
+      var url = photoOf(j);
+      if (!url) return null;
+      return {
+        name: String(p.name || ''), width: num(p.width, 0), height: num(p.height, 0),
+        bytes: num(p.bytes, 0), chars: url.length, privacy: String(p.privacy || ''), at: String(p.at || '')
+      };
+    }
+    /* 기기 저장(localStorage) 보호 — 최신 keep장만 남기고 나머지 사진을 뺀다. */
+    function pruneJournalPhotos(src, opts) {
+      var o = opts || {};
+      var keep = (o.keep == null) ? PHOTO_KEEP_PER_PARTNER : Math.max(0, Math.round(num(o.keep, PHOTO_KEEP_PER_PARTNER)));
+      var maxChars = (o.maxChars == null) ? PHOTO_TOTAL_CHARS : Math.max(0, Math.round(num(o.maxChars, PHOTO_TOTAL_CHARS)));
+      var p = (src && typeof src === 'object') ? src : {};
+      var journals = Array.isArray(p.journals) ? p.journals : [];
+      var total = 0, seen = 0, dropped = [], kept = 0;
+      journals.forEach(function (j) { if (j && j.photo) total += photoOf(j).length; });
+      journals.forEach(function (j) {
+        if (!j || !j.photo) return;
+        var url = photoOf(j);
+        if (!url) { delete j.photo; return; }
+        seen++;
+        if (seen <= keep && total <= maxChars) { kept++; return; }
+        total -= url.length;
+        delete j.photo;
+        dropped.push(String(j.id || ''));
+      });
+      return { partner: p, dropped: dropped, kept: kept, totalChars: total };
+    }
+
     return {
       SCHEMA_VERSION: SCHEMA_VERSION,
       STATUS: STATUS,
@@ -6730,6 +6966,23 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       safetySteps: SAFETY_STEPS.map(function (s) { return { n: s.n, title: s.title, desc: s.desc }; }),
       safetyForbidden: SAFETY_FORBIDDEN.slice(),
       healthDataPolicy: { version: HEALTH_DATA_POLICY.version, title: HEALTH_DATA_POLICY.title, items: HEALTH_DATA_POLICY.items.map(function (x) { return { k: x.k, v: x.v }; }) },
+      /* v22 · 내 주변(동 단위)·일지 사진 1장 */
+      dongViewVersion: DONG_VIEW_VERSION,
+      dongImmediateDays: DONG_IMMEDIATE_DAYS,
+      teacherProvinceOf: teacherProvinceOf,
+      teacherDongList: teacherDongList,
+      teacherDistrictList: teacherDistrictList,
+      buildDongClusters: buildDongClusters,
+      photoVersion: PHOTO_VERSION,
+      photoMaxChars: PHOTO_MAX_CHARS,
+      photoMaxPx: PHOTO_MAX_PX,
+      photoKeepPerPartner: PHOTO_KEEP_PER_PARTNER,
+      photoTotalChars: PHOTO_TOTAL_CHARS,
+      photoPrivacyNote: PHOTO_PRIVACY_NOTE,
+      normalizePhoto: normalizePhoto,
+      photoOf: photoOf,
+      photoMetaOf: photoMetaOf,
+      pruneJournalPhotos: pruneJournalPhotos,
       settlementRows: settlementRows,
       normalizeReservation: normalizeReservation,
       normalizeUserPass: normalizeUserPass,
@@ -7249,6 +7502,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var q = teacherQuery.trim().toLowerCase();
     return teachers.filter(function (t) {
       if (favOnly && !isFav(t.id)) return false;
+      if (dongFilter && dongFilter.teacherIds.indexOf(t.id) === -1) return false;
       if (teacherCat !== 'all' && t.cats.indexOf(teacherCat) === -1) return false;
       if (teacherZone !== 'all' && t.zone !== teacherZone) return false;
       if (q && teacherHaystack(t).indexOf(q) === -1) return false;
@@ -7259,9 +7513,16 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function renderTeacherQueryBar() {
     var bar = $('#teacherQueryBar');
     if (!bar) return;
-    if (!teacherQuery) { bar.classList.remove('is-on'); bar.innerHTML = ''; return; }
+    if (!teacherQuery && !dongFilter) { bar.classList.remove('is-on'); bar.innerHTML = ''; return; }
     bar.classList.add('is-on');
-    bar.innerHTML = '<span class="q-chip">“' + esc(teacherQuery) + '” ' + filteredTeachers().length + '명<button type="button" data-query-clear aria-label="검색어 지우기">' + icon('x') + '</button></span>';
+    var chips = '';
+    if (dongFilter) {
+      chips += '<span class="q-chip" data-dong-chip="' + esc(dongFilter.key) + '">' + icon('map-pin') + esc(dongFilter.name) + ' ' + filteredTeachers().length + '명<button type="button" data-dong-clear aria-label="동네 필터 지우기">' + icon('x') + '</button></span>';
+    }
+    if (teacherQuery) {
+      chips += '<span class="q-chip">“' + esc(teacherQuery) + '” ' + filteredTeachers().length + '명<button type="button" data-query-clear aria-label="검색어 지우기">' + icon('x') + '</button></span>';
+    }
+    bar.innerHTML = chips;
   }
 
   function renderTeachers() {
@@ -7348,6 +7609,150 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
   bindFilterBar('#teacherFilters', 'data-cat', function (v) { teacherCat = v; });
   bindFilterBar('#regionFilters', 'data-reg', function (v) { teacherZone = v; });
+
+  /* ===================================================================
+     v22 · 선생님 찾기 '목록 | 내 주변(동 단위)'
+     ─ 기본은 검증 카드 목록(v15). 내 주변은 개인 주소·좌표 없이
+       시·도 → 시·군·구 → 동네 클러스터 요약 카드만 보여준다(SCALING §12-3).
+     ─ 클러스터 계산은 TtModel.buildDongClusters(계산만), 화면은 기존 클래스만 재사용.
+     =================================================================== */
+  var teacherView = 'list';
+  var nearProvince = '';
+  var nearDistrict = '';
+  var dongFilter = null;      /* { key, level, name, districtText, teacherIds } */
+
+  function nearSchoolProvince() {
+    var saved = null;
+    try { saved = readRegion(); } catch (e) { saved = null; }
+    if (saved && saved.province && PROVINCES.indexOf(saved.province) !== -1) return saved.province;
+    var first = '';
+    teachers.forEach(function (t) { if (!first) first = TtModel.teacherProvinceOf(t); });
+    return first || PROVINCES[0];
+  }
+  function teacherDistrictIdsOf(t) {
+    var out = TtModel.teacherDistrictList(t).map(function (d) { return d.id; });
+    TtModel.teacherDongList(t).forEach(function (d) { if (out.indexOf(d.districtId) === -1) out.push(d.districtId); });
+    return out;
+  }
+  /* 그 시·도에서 선생님이 실제 활동 중인 시·군·구만 */
+  function nearDistrictNamesFor(province) {
+    if (!province) return [];
+    var pid = TtModel.regionIdOf(province);
+    return (REGIONS[province] || []).filter(function (d) {
+      var did = TtModel.regionIdOf(province, d);
+      return teachers.some(function (t) {
+        var ids = teacherDistrictIdsOf(t);
+        return ids.indexOf(did) !== -1 || TtModel.teacherProvinceOf(t) === province && ids.some(function (id) {
+          var node = TtModel.findRegion(id);
+          return !!node && node.parentId === pid;
+        });
+      });
+    });
+  }
+  function nearTeacherList() {
+    var did = TtModel.regionIdOf(nearProvince, nearDistrict);
+    if (!did) return [];
+    return teachers.filter(function (t) { return teacherDistrictIdsOf(t).indexOf(did) !== -1; });
+  }
+  function nearClusters() {
+    return TtModel.buildDongClusters(nearTeacherList(), { todayIso: TtModel.todayIsoKst() });
+  }
+  function dongCardHtml(c) {
+    var ids = c.teacherIds.join(' ');
+    return '<article class="card" data-dong-cluster="' + esc(c.key) + '" style="margin-top:10px">' +
+      '<div class="card-head" style="margin-bottom:6px">' +
+        '<h2>' + esc(c.name) + '</h2>' +
+        '<span style="font-size:10px;color:var(--muted-2)">' + esc(c.level === 'dong' ? c.districtText : '동네 미등록') + '</span>' +
+      '</div>' +
+      '<div class="sum-row"><span>활동 선생님</span><b>' + c.teacherCount + '명</b></div>' +
+      '<div class="sum-row"><span>바로 가능 (3일 내)</span><b>' + c.readyCount + '명</b></div>' +
+      (c.specialties.length ? '<div class="t-tags">' + c.specialties.map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>' : '') +
+      '<button class="btn btn-outline btn-sm" type="button" data-dong-pick="' + esc(c.key) + '" data-dong-name="' + esc(c.name) + '" data-dong-level="' + esc(c.level) + '" data-dong-district="' + esc(c.districtText) + '" data-dong-teachers="' + esc(ids) + '">이 동네 선생님 보기</button>' +
+    '</article>';
+  }
+  function renderNearPanel() {
+    var panel = $('#nearPanel');
+    if (!panel) return;
+    if (!nearProvince) nearProvince = nearSchoolProvince();
+    var provs = PROVINCES.filter(function (p) { return nearDistrictNamesFor(p).length > 0; });
+    if (!provs.length) provs = [nearProvince];
+    if (provs.indexOf(nearProvince) === -1) nearProvince = provs[0];
+    var dists = nearDistrictNamesFor(nearProvince);
+    if (dists.indexOf(nearDistrict) === -1) nearDistrict = dists[0] || '';
+    var provWrap = $('#nearProvinceChips');
+    if (provWrap) {
+      provWrap.innerHTML = provs.map(function (p) {
+        var on = p === nearProvince;
+        return '<button class="chip' + (on ? ' is-on' : '') + '" type="button" data-near-province="' + esc(p) + '" role="tab" aria-selected="' + on + '">' + esc(p) + '</button>';
+      }).join('');
+    }
+    var distWrap = $('#nearDistrictChips');
+    if (distWrap) {
+      distWrap.innerHTML = dists.length ? dists.map(function (d) {
+        var on = d === nearDistrict;
+        return '<button class="chip' + (on ? ' is-on' : '') + '" type="button" data-near-district="' + esc(d) + '" role="tab" aria-selected="' + on + '">' + esc(d) + '</button>';
+      }).join('') : '<span class="fine" style="margin:0">이 시·도는 아직 동네 정보를 준비 중이에요.</span>';
+    }
+    var body = $('#dongClusterList');
+    var clusters = nearClusters();
+    if (body) {
+      body.innerHTML = clusters.length
+        ? clusters.map(dongCardHtml).join('')
+        : '<p class="fine" style="text-align:center;padding:22px 0">' + esc(nearProvince + (nearDistrict ? ' ' + nearDistrict : '')) + '에는 아직 활동 선생님이 없어요.<br>다른 시·군·구를 골라 보세요.</p>';
+    }
+    try {
+      window.__ttokttokNear = {
+        version: TtModel.dongViewVersion, view: teacherView, province: nearProvince, district: nearDistrict,
+        clusters: clusters.map(function (c) {
+          return { key: c.key, level: c.level, name: c.name, districtText: c.districtText, teacherCount: c.teacherCount, readyCount: c.readyCount, specialties: c.specialties.slice(), teacherIds: c.teacherIds.slice() };
+        }),
+        at: Date.now()
+      };
+    } catch (e) {}
+  }
+  function renderTeacherView() {
+    var isNear = teacherView === 'near';
+    [['#teacherFilters'], ['#regionFilters'], ['#teacherQueryBar'], ['#teacherList']].forEach(function (sel) {
+      var el = $(sel[0]);
+      if (el) el.style.display = isNear ? 'none' : '';
+    });
+    var panel = $('#nearPanel');
+    if (panel) panel.hidden = !isNear;
+    $$('#teacherViewTabs [data-view]').forEach(function (b) {
+      var on = b.getAttribute('data-view') === teacherView;
+      b.classList.toggle('is-on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    if (isNear) renderNearPanel();
+  }
+  function setTeacherView(v) {
+    teacherView = (v === 'near') ? 'near' : 'list';
+    renderTeacherView();
+    if (teacherView === 'list') renderTeachers();
+  }
+  function pickDongCluster(btn) {
+    if (!btn) return;
+    var ids = String(btn.getAttribute('data-dong-teachers') || '').split(' ').filter(Boolean);
+    dongFilter = {
+      key: btn.getAttribute('data-dong-pick') || '',
+      name: btn.getAttribute('data-dong-name') || '',
+      level: btn.getAttribute('data-dong-level') || 'dong',
+      districtText: btn.getAttribute('data-dong-district') || '',
+      teacherIds: ids
+    };
+    teacherView = 'list';
+    renderTeacherView();
+    renderTeachers();
+    try { showTab('teachers'); } catch (e) {}
+    var list = $('#teacherList');
+    try { if (list && list.scrollIntoView) list.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+    toast(dongFilter.name + '에서 활동하는 선생님 ' + ids.length + '명을 보여드려요.');
+  }
+  function clearDongFilter() {
+    dongFilter = null;
+    renderTeachers();
+    toast('동네 필터를 해제했어요.');
+  }
 
   /* ================= 선생님 상세 바텀시트 ================= */
   var sheetTeacherId = null;
@@ -7531,6 +7936,26 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   }
 
   document.addEventListener('click', function (e) {
+    /* v22 · 목록 | 내 주변(동 단위) 전환 · 동네 클러스터 선택 */
+    var viewBtn = e.target.closest('#teacherViewTabs [data-view]');
+    if (viewBtn) { setTeacherView(viewBtn.getAttribute('data-view')); return; }
+    var nearProv = e.target.closest('[data-near-province]');
+    if (nearProv) {
+      nearProvince = nearProv.getAttribute('data-near-province');
+      nearDistrict = '';
+      renderNearPanel();
+      return;
+    }
+    var nearDist = e.target.closest('[data-near-district]');
+    if (nearDist) {
+      nearDistrict = nearDist.getAttribute('data-near-district');
+      renderNearPanel();
+      return;
+    }
+    var dongPick = e.target.closest('[data-dong-pick]');
+    if (dongPick) { pickDongCluster(dongPick); return; }
+    if (e.target.closest('[data-dong-clear]')) { clearDongFilter(); return; }
+
     var favBtn = e.target.closest('[data-fav]');
     if (favBtn) {
       e.preventDefault();
@@ -9289,8 +9714,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       return obj;
     } catch (e) { return null; }
   }
+  var lastPhotoGuard = null;
   function savePartner() {
-    try { SafeStorage.setItem(P_KEY, JSON.stringify(partner)); } catch (e) {}
+    try {
+      lastPhotoGuard = TtModel.pruneJournalPhotos(partner, {});
+      SafeStorage.setItem(P_KEY, JSON.stringify(partner));
+    } catch (e) {}
   }
 
   var partner = TtModel.normalizePartner(loadPartner() || seedPartner());
@@ -9438,10 +9867,77 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   function saveQuickDraft() {
     try { SafeStorage.setItem(QL_KEY, JSON.stringify(qlState)); } catch (e) {}
   }
+
+  /* v22 · 방문 사진 1장(선택). 화면에서 줄여(긴 변 720px·JPEG) 메모리에만 두고,
+     저장할 때 일지 레코드에 메타와 함께 넣는다. 초안(기기 저장)에는 넣지 않는다. */
+  var qlPhoto = null;
+  function renderQuickPhoto() {
+    var wrap = $('#qlPhotoPreview');
+    if (!wrap) return;
+    if (!qlPhoto) { wrap.hidden = true; wrap.innerHTML = ''; return; }
+    wrap.hidden = false;
+    var meta = TtModel.photoMetaOf({ photo: qlPhoto }) || {};
+    var sizeText = meta.bytes ? Math.max(1, Math.round(meta.bytes / 1024)) + 'KB' : '';
+    wrap.innerHTML =
+      '<img src="' + esc(TtModel.photoOf({ photo: qlPhoto })) + '" alt="방문 사진 미리보기" style="width:100%;max-height:200px;object-fit:cover;border-radius:14px;display:block">' +
+      '<p class="fine" id="qlPhotoNote" style="margin:6px 0 0">' + esc(TtModel.photoPrivacyNote) + '</p>' +
+      '<div style="display:flex;align-items:center;gap:8px;margin-top:6px">' +
+        '<button class="btn btn-ghost btn-sm" type="button" data-ql-photo-remove="1">사진 빼기</button>' +
+        '<span class="fine" id="qlPhotoMeta" style="margin:0">' + esc([meta.width && meta.height ? meta.width + '×' + meta.height : '', sizeText].filter(Boolean).join(' · ')) + '</span>' +
+      '</div>';
+  }
+  function setQuickPhoto(input) {
+    if (!input) { qlPhoto = null; renderQuickPhoto(); return { ok: true, removed: true }; }
+    var res = TtModel.normalizePhoto(input);
+    if (!res.ok) { toast(res.message); return res; }
+    qlPhoto = res.photo;
+    renderQuickPhoto();
+    var meta = TtModel.photoMetaOf({ photo: qlPhoto }) || {};
+    return { ok: true, photo: meta };
+  }
+  /* 파일 → 화면 캔버스로 줄여 JPEG data URL. 실패하면 null. */
+  function readQuickPhotoFile(file, done) {
+    if (!file) return;
+    if (!/^image\//.test(String(file.type || ''))) { toast('이미지 파일(JPG·PNG)만 올릴 수 있어요.'); return; }
+    if (file.size > 12 * 1024 * 1024) { toast('사진이 너무 커요. 12MB 이하 사진으로 골라 주세요.'); return; }
+    var reader = new FileReader();
+    reader.onerror = function () { toast('사진을 읽지 못했어요. 다른 사진으로 다시 시도해 주세요.'); };
+    reader.onload = function () {
+      var img = new Image();
+      img.onerror = function () { toast('사진을 열지 못했어요. JPG나 PNG 사진으로 다시 시도해 주세요.'); };
+      img.onload = function () {
+        var max = TtModel.photoMaxPx || 720;
+        var w = img.width || 0, h = img.height || 0;
+        var scale = (w > max || h > max) ? (max / Math.max(w, h)) : 1;
+        var tw = Math.max(1, Math.round(w * scale)), th = Math.max(1, Math.round(h * scale));
+        var url = '';
+        try {
+          var canvas = document.createElement('canvas');
+          canvas.width = tw; canvas.height = th;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, tw, th);
+          url = canvas.toDataURL('image/jpeg', 0.62);
+          var q = 0.62;
+          while (url.length > (TtModel.photoMaxChars || 160000) && q > 0.32) {
+            q -= 0.1;
+            url = canvas.toDataURL('image/jpeg', q);
+          }
+        } catch (e) { url = ''; }
+        if (!url) { toast('사진을 준비하지 못했어요. 다른 사진으로 다시 시도해 주세요.'); return; }
+        var res = setQuickPhoto({ thumb: url, name: file.name || 'photo.jpg', width: tw, height: th, bytes: Math.round(url.length * 0.75) });
+        if (res.ok) toast('사진 1장을 첨부했어요. 저장하면 보호자 일지에도 함께 보여요.');
+        if (typeof done === 'function') done(res);
+      };
+      img.src = String(reader.result || '');
+    };
+    try { reader.readAsDataURL(file); } catch (e) { toast('사진을 읽지 못했어요. 다른 사진으로 다시 시도해 주세요.'); }
+  }
   function resetQuickDraft() {
     qlState = { patient: ($('#qlPatient') ? $('#qlPatient').value : DEMO_PATIENT), pain: 0, condition: 0, activities: [], note: '', focus: '' };
+    qlPhoto = null;   /* 사진은 기기 저장 초안에 넣지 않는다(용량) — 저장된 일지에만 남긴다. */
     saveQuickDraft();
     renderTpQuickLog();
+    renderQuickPhoto();
   }
   function quickLogStateOf() {
     return {
@@ -9518,7 +10014,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       teacherId: partner.teacherId || '',
       date: todayLabel(),
       startedAt: win.startedAt || '', endedAt: win.endedAt || '',
-      reservationId: sch ? (sch.reservationNo || '') : ''
+      reservationId: sch ? (sch.reservationNo || '') : '',
+      photo: qlPhoto || null
     });
     if (!res.ok) { toast(res.message); return res; }
     partner.journals = partner.journals || [];
@@ -9533,12 +10030,15 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderPartner();
     renderJournalV20();
     resetQuickDraft();
-    toast('2분 일지를 저장하고 보호자에게 공유했어요.');
+    toast(res.hasPhoto
+      ? '2분 일지와 사진 1장을 저장하고 보호자에게 공유했어요.'
+      : (res.photoWarning ? res.photoWarning + ' (일지는 사진 없이 저장했어요)' : '2분 일지를 저장하고 보호자에게 공유했어요.'));
     try {
       window.__ttokttokQuickLog = {
         ok: true, journalId: res.journal.id, patient: patient, pain: res.journal.pain5,
         condition: res.journal.condition5, activities: res.journal.activities.slice(),
-        note: res.journal.note, nextFocus: res.journal.nextFocus, line: res.line, at: Date.now()
+        note: res.journal.note, nextFocus: res.journal.nextFocus, line: res.line,
+        hasPhoto: !!res.hasPhoto, photoChars: res.journal.photo ? res.journal.photo.chars : 0, at: Date.now()
       };
     } catch (e) {}
     return res;
@@ -9598,7 +10098,9 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       html += '<div style="margin-top:14px">' + r.entries.map(function (e) {
         return '<div class="jr-item" style="margin-top:8px"><b>' + esc(e.dateLabel) + ' · ' + esc(e.patient || DEMO_PATIENT) + '</b>' +
           '<div class="jr-vals"><span>' + esc(e.line || '기록') + '</span></div>' +
-          (e.note ? '<p>' + esc(e.note) + '</p>' : '') + '</div>';
+          (e.note ? '<p>' + esc(e.note) + '</p>' : '') +
+          (e.photo ? '<img src="' + esc(e.photo) + '" data-journal-photo="' + esc(e.id || '') + '" alt="방문 일지 사진" style="width:100%;max-height:220px;object-fit:cover;border-radius:12px;margin-top:8px;display:block">' : '') +
+        '</div>';
       }).join('') + '</div>';
     }
     html += '<div class="rc-quote"><p class="rc-quote-top">' + icon('message') + '보호자님께</p><p>' +
@@ -9712,7 +10214,41 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     renderWeeklyCard();
     renderReevalNotice();
     renderVisitTimeLine();
+    renderJournalLatest();
     syncReevalNotifs();
+  }
+
+  /* v22 · 최근 방문 일지 상세(보호자 화면) — 선생님이 2분 일지에 올린 사진 1장을 보여준다. */
+  function latestSharedJournal() {
+    var list = sharedJournals().slice();
+    list.sort(function (a, b) {
+      var ka = String(TtModel.journalIsoOf(a) || '') + '|' + String((a && a.createdAt) || '');
+      var kb = String(TtModel.journalIsoOf(b) || '') + '|' + String((b && b.createdAt) || '');
+      return kb < ka ? -1 : (kb > ka ? 1 : 0);
+    });
+    return list[0] || null;
+  }
+  function renderJournalLatest() {
+    var card = $('#journalLatestCard');
+    if (!card) return;
+    var j = latestSharedJournal();
+    if (!j) { card.hidden = true; return; }
+    card.hidden = false;
+    var iso = TtModel.journalIsoOf(j);
+    var dateEl = $('#journalLatestDate');
+    if (dateEl) dateEl.textContent = [TtModel.dateLabelOf(iso), (j.quick || j.source === 'quick') ? '2분 일지' : ''].filter(Boolean).join(' · ');
+    var body = $('#journalLatestBody');
+    if (!body) return;
+    var photo = TtModel.photoOf(j);
+    var meta = TtModel.photoMetaOf(j);
+    body.innerHTML =
+      (photo ? '<img src="' + esc(photo) + '" data-journal-photo="' + esc(j.id || '') + '" alt="선생님이 올린 방문 사진" style="width:100%;max-height:240px;object-fit:cover;border-radius:14px;display:block">' : '') +
+      (photo ? '<p class="fine" style="margin:6px 0 0">' + esc('담당 선생님이 올린 방문 사진 1장' + (meta && meta.width ? ' · ' + meta.width + '×' + meta.height : '') + ' · 가족에게만 공유해 주세요') + '</p>' : '') +
+      '<div class="jr-item" style="margin-top:8px"><b>' + esc(j.patient || DEMO_PATIENT) + '</b><span class="jr-date">' + esc(j.date || '') + '</span>' +
+        '<div class="jr-vals"><span>' + esc(TtModel.quickJournalLine(j) || '기록') + '</span>' +
+          (j.nextFocus ? '<span>다음 · ' + esc(j.nextFocus) + '</span>' : '') + '</div>' +
+        (j.note || j.memo ? '<p>' + esc(j.note || j.memo) + '</p>' : '') +
+      '</div>';
   }
   /* 방문 시작·종료 시각(보호자 화면) */
   function renderVisitTimeLine() {
@@ -10305,10 +10841,12 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
             '<span>무릎 ROM ' + esc(j.rom) + '°</span>' +
             '<span>통증 ' + esc(String(j.pain)) + '/10</span>';
         var memo = j.note || j.memo || '';
+        var photo = TtModel.photoOf(j);
         return '<div class="jr-item"' + (quick ? ' data-quick-journal="' + esc(j.id) + '"' : '') + '>' +
           '<b>' + esc(j.patient) + '</b><span class="jr-date">' + esc(j.date) + '</span>' +
           '<div class="jr-vals">' + vals + '</div>' +
           (memo ? '<p>' + esc(memo) + '</p>' : '') +
+          (photo ? '<img src="' + esc(photo) + '" data-journal-photo="' + esc(j.id) + '" alt="방문 사진" style="width:100%;max-height:160px;object-fit:cover;border-radius:12px;margin-top:8px;display:block">' : '') +
         '</div>';
       }).join('');
     }
@@ -12356,6 +12894,11 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       saveQuickJournal();
       return;
     }
+    if (e.target.closest('[data-ql-photo-remove]')) {
+      setQuickPhoto(null);
+      toast('첨부한 사진을 뺐어요.');
+      return;
+    }
 
     /* v20 · 주간 보호자 리포트 · 안전 안내 시트 */
     if (e.target.closest('#weeklyOpen')) { openWeeklyReport(); return; }
@@ -12485,6 +13028,21 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       saveQuickDraft();
     });
   }
+  /* v22 · 방문 사진 1장 */
+  var qlPhotoEl = $('#qlPhoto');
+  if (qlPhotoEl) {
+    qlPhotoEl.addEventListener('change', function () {
+      var file = qlPhotoEl.files && qlPhotoEl.files[0];
+      if (!file) return;
+      readQuickPhotoFile(file);
+      qlPhotoEl.value = '';   /* 같은 사진을 다시 고를 수 있게 비운다 */
+    });
+  }
+  var qlPhotoPick = $('#qlPhotoPick');
+  if (qlPhotoPick) {
+    qlPhotoPick.addEventListener('click', function () { if (qlPhotoEl) qlPhotoEl.click(); });
+  }
+  renderQuickPhoto();
 
   var tpSave = $('#tpSaveJournal');
   if (tpSave) {
@@ -13686,6 +14244,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
      선생님 카드·매칭 후보가 이 값을 읽으므로 첫 렌더 전에 적용한다. */
   applySavedTeacherProfile();
   renderTeachers();
+  renderTeacherView();
   renderHomeTeachers();
   renderDates();
   renderSlots();
@@ -14045,7 +14604,79 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       safetyContacts: TtModel.safetyContacts,
       safetySteps: TtModel.safetySteps,
       healthDataPolicy: TtModel.healthDataPolicy,
-      openSafety: function () { openSafetySheet(); return true; }
+      openSafety: function () { openSafetySheet(); return true; },
+      /* v22 · 선생님 찾기 내 주변(동 단위) · 방문 일지 사진 1장(검증·운영 도구용) */
+      nearVersion: TtModel.dongViewVersion,
+      todayIsoKst: function () { return TtModel.todayIsoKst(); },
+      dongImmediateDays: TtModel.dongImmediateDays,
+      teacherDongList: function (t) {
+        var src = (typeof t === 'string') ? teacherById(t) : t;
+        return src ? TtModel.teacherDongList(src) : [];
+      },
+      teacherDistrictList: function (t) {
+        var src = (typeof t === 'string') ? teacherById(t) : t;
+        return src ? TtModel.teacherDistrictList(src) : [];
+      },
+      buildDongClusters: function (list, opts) {
+        var o = opts || {};
+        return TtModel.buildDongClusters(Array.isArray(list) ? list : teachers, o);
+      },
+      teacherView: function () { return teacherView; },
+      setTeacherView: function (v) { setTeacherView(v); return teacherView; },
+      nearState: function () {
+        try { renderNearPanel(); } catch (e) {}
+        return window.__ttokttokNear || null;
+      },
+      nearClusters: function () { return nearClusters(); },
+      nearDistrict: function (province, district) {
+        if (province != null) nearProvince = String(province);
+        if (district != null) nearDistrict = String(district);
+        renderNearPanel();
+        return window.__ttokttokNear || null;
+      },
+      pickDongKey: function (key) {
+        var btn = document.querySelector('[data-dong-pick="' + String(key).replace(/"/g, '\\"') + '"]');
+        if (!btn) return false;
+        pickDongCluster(btn);
+        return true;
+      },
+      dongFilter: function () {
+        return dongFilter ? { key: dongFilter.key, name: dongFilter.name, level: dongFilter.level, teacherIds: dongFilter.teacherIds.slice() } : null;
+      },
+      clearDongFilter: function () { clearDongFilter(); return true; },
+      photoVersion: TtModel.photoVersion,
+      photoMaxChars: TtModel.photoMaxChars,
+      photoMaxPx: TtModel.photoMaxPx,
+      photoPrivacyNote: TtModel.photoPrivacyNote,
+      normalizePhoto: function (input) { return TtModel.normalizePhoto(input); },
+      photoOf: function (j) { return TtModel.photoOf(j); },
+      photoMetaOf: function (j) { return TtModel.photoMetaOf(j); },
+      pruneJournalPhotos: function (src, opts) { return TtModel.pruneJournalPhotos(src, opts); },
+      photoGuard: function () { return lastPhotoGuard; },
+      setQuickPhoto: function (input) { return setQuickPhoto(input); },
+      quickPhoto: function () {
+        return qlPhoto ? { name: qlPhoto.name, width: qlPhoto.width, height: qlPhoto.height, bytes: qlPhoto.bytes, chars: qlPhoto.chars, privacy: qlPhoto.privacy } : null;
+      },
+      quickPhotoPreview: function () {
+        var img = document.querySelector('#qlPhotoPreview img');
+        var note = document.querySelector('#qlPhotoNote');
+        return {
+          visible: !!($('#qlPhotoPreview') && !$('#qlPhotoPreview').hidden),
+          hasImg: !!img, src: img ? img.getAttribute('src') : '',
+          note: note ? note.textContent : '',
+          hasRemove: !!document.querySelector('[data-ql-photo-remove]')
+        };
+      },
+      journalPhoto: function (id) {
+        var list = partner.journals || [];
+        for (var i = 0; i < list.length; i++) { if (list[i] && list[i].id === id) return TtModel.photoMetaOf(list[i]); }
+        return null;
+      },
+      latestJournal: function () {
+        var j = latestSharedJournal();
+        if (!j) return null;
+        return { id: j.id || '', date: j.date || '', patient: j.patient || '', hasPhoto: !!TtModel.photoOf(j), photo: TtModel.photoMetaOf(j) };
+      }
     };
   } catch (e) {}
   var initProg = $('#bookingProgress');
