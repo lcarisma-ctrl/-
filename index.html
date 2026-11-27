@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v39">
+<meta name="app-version" content="v40">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -342,7 +342,7 @@ a{color:inherit}
 .compare{padding:16px 15px 14px}
 .card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .card-head h2{font-size:var(--fs-15);font-weight:800;letter-spacing:-.03em;color:var(--ink)}
-.tag-example{font-size:var(--fs-10);font-weight:700;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-pill);padding:4px 8px}
+.tag-example{font-size:var(--fs-10);font-weight:700;color:var(--text-muted);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-pill);padding:4px 8px;white-space:nowrap;flex:0 0 auto}
 .cmp{display:grid;grid-template-columns:66px 1fr 1fr;gap:6px;font-size:var(--fs-12)}
 .cmp .h{font-size:var(--fs-10h);font-weight:700;color:var(--text-muted);text-align:center;padding:8px 3px;border-radius:10px;background:var(--surface-2);display:flex;align-items:center;justify-content:center}
 .cmp .h:empty{background:transparent}
@@ -2829,11 +2829,11 @@ body.is-keyboard #bookTotalBar{display:none}
 
         <div class="card schedule" id="todayCard">
           <div class="schedule-top">
-            <span class="daychip"><svg class="ic" style="width:12px;height:12px" aria-hidden="true"><use href="#i-calendar"/></svg>오늘 · 11월 25일 (수)</span>
+            <span class="daychip"><svg class="ic" style="width:12px;height:12px" aria-hidden="true"><use href="#i-calendar"/></svg><span id="todayChip">방문 일정</span></span>
             <span class="status" id="checkStatus">방문 예정</span>
           </div>
-          <p class="sched-time">10:30 <span>~ 11:30</span></p>
-          <p class="sched-row">박서준 선생님 <span class="dot">·</span> 서울 강남구 대치동 <span class="dot">·</span> 5회차</p>
+          <p class="sched-time" id="todayTime"></p>
+          <p class="sched-row" id="todayMeta"></p>
           <p class="fine" id="visitTimeLine" style="margin:6px 0 2px">방문 시작·종료 시각이 여기에 남아요.</p>
           <button class="btn btn-outline" id="checkinBtn" type="button">도착 체크인</button>
           <button class="btn btn-ghost mt-8" type="button" data-safety-open>긴급 연락 · 안전 안내</button>
@@ -6690,6 +6690,11 @@ body.is-keyboard #bookTotalBar{display:none}
       var d = dateObjOf(iso);
       return d ? (d.getUTCMonth() + 1) + '.' + pad(d.getUTCDate()) : '';
     }
+    /* '2026-11-25' → '11/25' (선생님 일정 스트립용) */
+    function mdSlashOf(iso) {
+      var d = dateObjOf(iso);
+      return d ? (d.getUTCMonth() + 1) + '/' + pad(d.getUTCDate()) : '';
+    }
     /* ISO 시각 → 'HH:MM' (한국 시간) */
     function clockOfIso(iso) {
       if (!isIso(iso)) return '';
@@ -7063,7 +7068,7 @@ body.is-keyboard #bookTotalBar{display:none}
         });
         nextVisit = {
           bookingNo: String(nb.no || nb.id || ''),
-          dateIso: nv.iso, dateLabel: dateLabelOf(nv.iso), weekday: String(nb.day || weekdayOf(nv.iso) || ''),
+          dateIso: nv.iso, dateLabel: dateLabelOf(nv.iso), weekday: String(weekdayOf(nv.iso) || nb.day || ''),
           time: String(nb.time || ''), teacher: String(nb.teacher || ''), teacherId: String(nb.teacherId || ''),
           region: String(nb.region || ''),
           status: reservationStatus(nb.status), statusLabel: reservationLabel(nb.status),
@@ -9520,6 +9525,7 @@ body.is-keyboard #bookTotalBar{display:none}
       visitMinutes: visitMinutes,
       clockOfIso: clockOfIso,
       dateLabelOf: dateLabelOf,
+      mdSlashOf: mdSlashOf,
       safetyContacts: SAFETY_CONTACTS.map(function (c) { return { code: c.code, label: c.label, tel: c.tel, display: c.display, note: c.note }; }),
       safetySteps: SAFETY_STEPS.map(function (s) { return { n: s.n, title: s.title, desc: s.desc }; }),
       safetyForbidden: SAFETY_FORBIDDEN.slice(),
@@ -12290,13 +12296,15 @@ body.is-keyboard #bookTotalBar{display:none}
   var STORE_KEY = 'ttokttok_account_v3';
 
   function seedAccount() {
+    /* v40 · 시드 날짜를 '오늘' 기준으로 계산한다 — 라벨·요일이 달력과 어긋나지 않게. */
+    var seedIso = nextIso(2);
     return {
       profile: { name: '현수' },
       passes: [
         { id: 'seed-pass', userId: 'usr-demo', passId: 'p8', name: '8회권', total: 8, remaining: 5, purchased: '2026.10.28', expire: '2027.01.27', status: 'active' }
       ],
       bookings: [
-        { id: 'res-tt-261021-7302', no: 'TT-261021-7302', userId: 'usr-demo', date: '11.27', day: '금', time: '10:30', teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구', status: 'confirmed', passId: 'p8', walletId: 'seed-pass', dateIso: nextIso(2), amount: 74000, paymentStatus: 'paid' },
+        { id: 'res-tt-261021-7302', no: 'TT-261021-7302', userId: 'usr-demo', date: TtModel.dateLabelOf(seedIso), day: TtModel.weekdayOf(seedIso), time: '10:30', teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구', status: 'confirmed', passId: 'p8', walletId: 'seed-pass', dateIso: seedIso, amount: 74000, paymentStatus: 'paid' },
         /* v21 · 4주 재평가 데모 — 36일 전 첫 방문(무료 평가)을 '방문 완료'로 남긴다.
            관리자 「오늘 처리할 일」의 4주 재평가 보드·알림이 기본 시드에서 바로 보인다. */
         demoPastVisit()
@@ -12337,6 +12345,12 @@ body.is-keyboard #bookTotalBar{display:none}
       if (!b.teacherId) b.teacherId = teacherIdOfName(b.teacher || '');
       if (typeof b.walletId === 'undefined') b.walletId = '';
       if (typeof b.passId === 'undefined') b.passId = '';
+      /* v40 · 날짜 라벨·요일은 ISO 날짜에서 다시 계산한다 — 예전 시드(11.27 금)나
+         기기에 저장된 값이 남아 있어도 화면마다 다른 날짜가 보이지 않게 한다. */
+      var isoB = String(b.dateIso || '').slice(0, 10);
+      var lblB = TtModel.dateLabelOf(isoB), wdB = TtModel.weekdayOf(isoB);
+      if (lblB) b.date = lblB;
+      if (wdB) b.day = wdB;
       return b;
     });
     if (!Array.isArray(o.sessions)) o.sessions = defaultSessions();
@@ -13401,13 +13415,13 @@ body.is-keyboard #bookTotalBar{display:none}
       approvedAt: '2026.10.18',
       settlement: { visits: 14, gross: 1260000, fee: 280000, net: 980000, due: '2026.11.30', month: '11월' },
       requests: [
-        { id: 'r1', patient: '김순자 어르신', symptom: '뇌졸중·편마비', region: '서울 강남구 대치동', date: '12/01 (월)', time: '10:30', pass: '12회권', payout: 54444, ago: '12분 전' },
-        { id: 'r2', patient: '이만복 어르신', symptom: '무릎·고관절 수술 후', region: '서울 서초구 반포동', date: '12/02 (화)', time: '15:00', pass: '4회권', payout: 62222, ago: '38분 전' }
+        { id: 'r1', patient: '김순자 어르신', symptom: '뇌졸중·편마비', region: '서울 강남구 대치동', date: TtModel.mdSlashOf(nextIso(5)) + ' (' + TtModel.weekdayOf(nextIso(5)) + ')', time: '10:30', pass: '12회권', payout: 54444, ago: '12분 전' },
+        { id: 'r2', patient: '이만복 어르신', symptom: '무릎·고관절 수술 후', region: '서울 서초구 반포동', date: TtModel.mdSlashOf(nextIso(6)) + ' (' + TtModel.weekdayOf(nextIso(6)) + ')', time: '15:00', pass: '4회권', payout: 62222, ago: '38분 전' }
       ],
       schedule: [
-        { id: 's1', patient: '김순자 어르신', region: '서울 강남구 대치동', date: '오늘', day: '수', time: '14:00', pass: '12회권 · 5회차', checked: false },
-        { id: 's2', patient: '박정호 어르신', region: '서울 서초구 반포동', date: '11/27', day: '금', time: '10:30', pass: '8회권 · 3회차', checked: false },
-        { id: 's3', patient: '최은자 어르신', region: '서울 송파구 잠실동', date: '11/28', day: '토', time: '16:00', pass: '4회권 · 2회차', checked: false }
+        { id: 's1', patient: '김순자 어르신', region: '서울 강남구 대치동', date: '오늘', day: TtModel.weekdayOf(nextIso(0)), time: '14:00', pass: '12회권 · 5회차', checked: false },
+        { id: 's2', patient: '박정호 어르신', region: '서울 서초구 반포동', date: TtModel.mdSlashOf(nextIso(1)), day: TtModel.weekdayOf(nextIso(1)), time: '10:30', pass: '8회권 · 3회차', checked: false },
+        { id: 's3', patient: '최은자 어르신', region: '서울 송파구 잠실동', date: TtModel.mdSlashOf(nextIso(2)), day: TtModel.weekdayOf(nextIso(2)), time: '16:00', pass: '4회권 · 2회차', checked: false }
       ],
       journals: [
         { id: 'jnl-2026-11-25-1', date: '2026.11.25', patient: '김순자 어르신', gait: '0.66', rom: '118', pain: 3, memo: '무릎 안쪽 붕괴 패턴 감소. 다음 회차 계단 훈련 추가.' },
@@ -13936,6 +13950,7 @@ body.is-keyboard #bookTotalBar{display:none}
   }
   /* 보호자 화면(일지 탭)에서 함께 그리는 것들 */
   function renderJournalV20() {
+    renderTodayCard();
     renderWeeklyCard();
     renderReevalNotice();
     renderVisitTimeLine();
@@ -13976,6 +13991,41 @@ body.is-keyboard #bookTotalBar{display:none}
         (j.note || j.memo ? '<p>' + esc(j.note || j.memo) + '</p>' : '') +
       '</div>';
   }
+  /* v40 · 일지 탭의 방문 카드 — 마크업에 박혀 있던 날짜(11월 25일 (수))를 버리고
+     예약 데이터(다음 방문)로 날짜·요일·시간·장소를 그린다. 방문이 없으면 카드를 숨긴다. */
+  function renderTodayCard() {
+    var card = $('#todayCard');
+    if (!card) return;
+    var nv = null;
+    try { nv = nextVisit(); } catch (e) { nv = null; }
+    if (!nv || !nv.b) { card.hidden = true; return; }
+    card.hidden = false;
+    var b = nv.b;
+    var iso = String(b.dateIso || '').slice(0, 10);
+    var wd = TtModel.weekdayOf(iso) || b.day || '';
+    var label = TtModel.dateLabelOf(iso) || b.date || '';
+    var chip = $('#todayChip');
+    if (chip) {
+      var dayText = /^\d{4}-\d{2}-\d{2}$/.test(iso)
+        ? parseInt(iso.slice(5, 7), 10) + '월 ' + parseInt(iso.slice(8, 10), 10) + '일' + (wd ? ' (' + wd + ')' : '')
+        : (label + (wd ? ' (' + wd + ')' : ''));
+      chip.textContent = (nv.d === 0 ? '오늘' : '다음 방문') + ' · ' + dayText;
+    }
+    var timeEl = $('#todayTime');
+    if (timeEl) {
+      var m = /^(\d{1,2}):(\d{2})$/.exec(String(b.time || ''));
+      var end = '';
+      if (m) { var tot = (+m[1]) * 60 + (+m[2]) + 60; end = pad2(Math.floor(tot / 60) % 24) + ':' + pad2(tot % 60); }
+      timeEl.innerHTML = esc(b.time || '시간 미정') + (end ? ' <span>~ ' + esc(end) + '</span>' : '');
+    }
+    var metaEl = $('#todayMeta');
+    if (metaEl) {
+      var p = b.passId ? passById(b.passId) : null;
+      var parts = [b.teacher || '선생님 배정 중', b.region || '', p ? p.name : ''].filter(Boolean);
+      metaEl.textContent = parts.join(' · ');
+    }
+  }
+
   /* 방문 시작·종료 시각(보호자 화면) */
   function renderVisitTimeLine() {
     var el = $('#visitTimeLine');
@@ -14431,7 +14481,7 @@ body.is-keyboard #bookTotalBar{display:none}
       var y = base - h;
       var on = i === vals.length - 1;
       return '<rect x="' + x.toFixed(1) + '" y="' + y + '" width="' + bw.toFixed(1) + '" height="' + h + '" rx="5" fill="' + (on ? '#0D9488' : '#D8E4F5') + '"/>' +
-        (on ? '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (y - 6) + '" text-anchor="middle" font-size="9" font-weight="700" fill="#0B7A6B">' + Math.round(v / 1000) + 'k</text>' : '');
+        (on ? '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (y - 6) + '" text-anchor="middle" font-size="9" font-weight="700" fill="#0B7A6B">' + (Math.round(v / 1000) / 10).toFixed(1) + '만</text>' : '');
     }).join('');
     return '<div class="settle-chart"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="주별 정산 막대 그래프">' +
       '<line x1="0" y1="' + base + '" x2="' + W + '" y2="' + base + '" stroke="#EDF1F7" stroke-width="1"/>' +
@@ -14441,7 +14491,7 @@ body.is-keyboard #bookTotalBar{display:none}
   function requestHtml(r) {
     return '<div class="req">' +
       '<div class="req-top"><b>' + esc(r.patient) + '</b><span class="req-new">NEW</span><span class="req-time">' + esc(r.ago) + '</span></div>' +
-      '<p class="req-meta">' + esc(r.symptom) + ' · ' + esc(r.pass) + '<br>' + esc(r.region) + ' · ' + esc(r.date) + ' ' + esc(r.time) + '</p>' +
+      '<p class="req-meta">' + esc(r.symptom) + ' · ' + esc(r.pass) + '<br>' + esc(r.region) + ' · ' + esc(fixShortDateWeekday(r.date)) + ' ' + esc(r.time) + '</p>' +
       '<p class="req-pay">정산 예상 ' + r.payout.toLocaleString('ko-KR') + '원 (보호자 결제액의 78% · 수수료 22.2%)</p>' +
       '<div class="req-btns">' +
         '<button class="btn btn-teal" type="button" data-tp-accept="' + esc(r.id) + '">수락</button>' +
@@ -14473,6 +14523,37 @@ body.is-keyboard #bookTotalBar{display:none}
     if (cnt) cnt.textContent = isApproved() && pending.length ? pending.length + '건' : '';
   }
 
+  /* v40 · '오늘'·'12/01'처럼 연도 없이 적힌 일정 라벨의 요일을 달력에서 다시 계산한다.
+     예전 시드(오늘=수, 12/01 월)나 기기에 저장된 값이 남아도 요일이 틀리지 않게. */
+  function todayIsoLocal() {
+    var n = new Date();
+    return n.getFullYear() + '-' + pad2(n.getMonth() + 1) + '-' + pad2(n.getDate());
+  }
+  function isoOfShortLabel(label) {
+    var m = /^(\d{1,2})\/(\d{1,2})$/.exec(String(label || '').trim());
+    if (!m) return '';
+    var now = new Date();
+    var base = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    var best = null;
+    [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1].forEach(function (y) {
+      var mo = (+m[1]) - 1, da = +m[2];
+      var t = new Date(y, mo, da).getTime();
+      if (!isNaN(t) && (!best || Math.abs(t - base) < best.diff)) best = { diff: Math.abs(t - base), iso: y + '-' + pad2(mo + 1) + '-' + pad2(da) };
+    });
+    return best ? best.iso : '';
+  }
+  function schedDayLabelOf(s) {
+    if (!s) return '';
+    var iso = String(s.date || '').trim() === '오늘' ? todayIsoLocal() : isoOfShortLabel(s.date);
+    return TtModel.weekdayOf(iso) || s.day || '';
+  }
+  function fixShortDateWeekday(text) {
+    return String(text == null ? '' : text).replace(/(\d{1,2})\/(\d{1,2})\s*\((일|월|화|수|목|금|토)\)/g, function (all, m, d) {
+      var wd = TtModel.weekdayOf(isoOfShortLabel(m + '/' + d));
+      return wd ? (m + '/' + d + ' (' + wd + ')') : all;
+    });
+  }
+
   function schedHtml(s, withBtn) {
     /* v20 · 방문 시작/종료 시각(체크인·체크아웃) */
     var win = TtModel.visitWindowOf(s);
@@ -14492,7 +14573,7 @@ body.is-keyboard #bookTotalBar{display:none}
         (win.state === 'done' ? '완료' : (win.state === 'in_progress' ? '방문 중' : (s.checked ? '방문 중' : '예정'))) + '</span>';
     }
     return '<div class="tp-sched" data-sched="' + esc(s.id) + '" data-visit-state="' + esc(win.state) + '">' +
-      '<div class="when"><b>' + esc(s.time) + '</b><span>' + esc(s.date) + ' (' + esc(s.day) + ')</span></div>' +
+      '<div class="when"><b>' + esc(s.time) + '</b><span>' + esc(s.date) + ' (' + esc(schedDayLabelOf(s)) + ')</span></div>' +
       '<div class="who"><b>' + esc(s.patient) + '</b><span>' + esc(s.region) + ' · ' + esc(s.pass) + '</span>' +
         (timeLine ? '<span class="fw-700 c-teal">' + esc(timeLine) + '</span>' : '') + '</div>' +
       '<div class="act" style="display:flex;flex-direction:column;gap:5px;align-items:flex-end">' + act + '</div>' +
@@ -14502,7 +14583,7 @@ body.is-keyboard #bookTotalBar{display:none}
   function renderTpSchedule() {
     renderTpWeekChips();
     var all = partner.schedule || [];
-    var list = schedDay ? all.filter(function (s) { return s.day === schedDay || (s.date === '오늘' && s.day === schedDay); }) : all;
+    var list = schedDay ? all.filter(function (s) { return schedDayLabelOf(s) === schedDay; }) : all;
     var full = $('#tpScheduleList');
     if (full) {
       if (!isApproved()) {
@@ -14554,7 +14635,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var html = '<button class="week-chip' + (schedDay ? '' : ' is-on') + '" type="button" data-sched-day="" aria-selected="' + (schedDay ? 'false' : 'true') + '"><b>전체</b><span>일정</span></button>';
     html += days.map(function (d) {
       var on = schedDay === d.day;
-      var count = all.filter(function (s) { return s.day === d.day; }).length;
+      var count = all.filter(function (s) { return schedDayLabelOf(s) === d.day; }).length;
       return '<button class="week-chip' + (on ? ' is-on' : '') + '" type="button" data-sched-day="' + d.day + '" aria-selected="' + (on ? 'true' : 'false') + '">' +
         '<span>' + d.day + (d.isToday ? ' · 오늘' : '') + '</span><b>' + d.label + '</b>' +
         (count ? '<span class="dot"></span>' : '') +
@@ -20375,6 +20456,10 @@ body.is-keyboard #bookTotalBar{display:none}
       regionMaster: REGION_MASTER,
       teacherRegions: function () { return TtModel.teacherRegionRows(teachers, REGION_MASTER); },
       reservations: function () { return account.bookings || []; },
+      /* v40 · 날짜 표기 검증용 — 화면과 같은 함수를 그대로 본다 */
+      dateLabelOf: function (iso) { return TtModel.dateLabelOf(iso); },
+      weekdayOf: function (iso) { return TtModel.weekdayOf(iso); },
+      mdSlashOf: function (iso) { return TtModel.mdSlashOf(iso); },
       slots: function (teacherId, dateIso) { return TtModel.slotRows(teacherId, dateIso, times, account.bookings || []); },
       export: function () {
         return TtModel.exportBundle({
