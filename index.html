@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v37">
+<meta name="app-version" content="v38">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2319,7 +2319,7 @@ body.is-keyboard #bookTotalBar{display:none}
   <!-- JS가 실행되지 않는 미리보기(QuickLook 등)에서만 보이는 안내. 스크립트가 즉시 숨긴다. -->
   <div class="preview-note" id="previewNote" role="status">
     <span class="pn-ico" aria-hidden="true"><svg class="ic"><use href="#i-info"/></svg></span>
-    <span>미리보기에서는 버튼이 동작하지 않아요. 우측 상단 <b>공유 → Safari로 열기</b>로 열어주세요.</span>
+    <span>미리보기에서는 버튼이 동작하지 않아요. 우측 상단 <b>공유 → Safari로 열기</b>로 열어 주세요.</span>
   </div>
   <script>try{document.getElementById('previewNote').style.display='none';}catch(e){}</script>
 
@@ -2330,7 +2330,7 @@ body.is-keyboard #bookTotalBar{display:none}
         <span class="brand-name">똑똑쌤</span>
         <span class="brand-sub">전국 17개 시·도 · 검증 재활 쌤</span>
       </div>
-      <button class="header-pill" type="button" id="rolePill" aria-label="이용 모드 전환"><span id="rolePillText">고객 모드</span><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg></button>
+      <button class="header-pill" type="button" id="rolePill" aria-label="이용 모드 전환"><span id="rolePillText">보호자 모드</span><svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg></button>
     </div>
     <div class="ah-home">
       <button class="ah-region" type="button" id="homeRegionBtn" aria-label="서비스 지역 확인">
@@ -2338,7 +2338,7 @@ body.is-keyboard #bookTotalBar{display:none}
         <svg class="ic ah-chev" aria-hidden="true"><use href="#i-chev-d"/></svg>
       </button>
       <div class="ah-icons">
-        <button class="ah-ic-btn" type="button" id="homeTicketBtn" aria-label="이용권 · 예약 내역">
+        <button class="ah-ic-btn" type="button" id="homeTicketBtn" aria-label="회차권 · 예약 내역">
           <svg class="ic" aria-hidden="true"><use href="#i-ticket"/></svg>
         </button>
         <button class="ah-ic-btn ah-alert" type="button" id="btnNotif" aria-label="알림함">
@@ -2446,7 +2446,7 @@ body.is-keyboard #bookTotalBar{display:none}
         <section class="home-programs" aria-labelledby="homeProgTitle">
           <div class="hp-head">
             <h2 class="hp-title" id="homeProgTitle">증상별 찾기</h2>
-            <span class="hp-sub">누르면 바로 매칭</span>
+            <span class="hp-sub">증상으로 바로 찾기</span>
           </div>
           <div class="hp-rail" id="homeProgramRail">
             <button class="home-program-card" type="button" data-symfilter="stroke" data-symlabel="뇌졸중·편마비">
@@ -2540,9 +2540,9 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="chips" id="nearProvinceChips" role="tablist" aria-label="시·도 선택"></div>
         <div class="chips" id="nearDistrictChips" role="tablist" aria-label="시·군·구 선택"></div>
         <div id="dongClusterList"></div>
-        <p class="fine" style="margin:10px 2px 0">* 동네는 선생님이 등록한 활동 지역 기준이에요. 실제 배정은 무료 방문 평가 후 확정됩니다.</p>
+        <p class="fine" style="margin:10px 2px 0">* 동네는 선생님이 등록한 활동 지역 기준이에요. 실제 배정은 무료 방문 평가 후 확정돼요.</p>
       </div>
-      <p class="fine">* 프로토타입용 예시 프로필입니다. 실제 배정은 무료 방문 평가 후 지역·증상에 맞춰 안내드립니다.</p>
+      <p class="fine">* 시연용 예시 프로필이에요. 실제 배정은 무료 방문 평가 뒤 지역·증상에 맞춰 안내드려요.</p>
     </section>
 
     <!-- ================= 예약 (고객) ================= -->
@@ -2564,7 +2564,7 @@ body.is-keyboard #bookTotalBar{display:none}
         <!-- v32 · 입력값 보존: 저장된 예약 초안이 있으면 이어서 쓸지 물어본다 -->
         <div id="bookResume" class="card mb-10" hidden style="padding:14px">
           <b class="fs-13p" style="display:block">작성 중이던 예약이 있어요</b>
-          <p class="fine" id="bookResumeText" style="margin:5px 0 10px">이어서 작성하면 입력한 내용이 그대로 살아납니다.</p>
+          <p class="fine" id="bookResumeText" style="margin:5px 0 10px">이어서 작성하면 입력한 내용이 그대로 살아 있어요.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn btn-navy btn-sm" type="button" data-book-resume style="flex:0 0 auto">이어서 작성</button>
             <button class="btn btn-ghost btn-sm" type="button" data-book-discard style="flex:0 0 auto">새로 예약</button>
@@ -2660,7 +2660,7 @@ body.is-keyboard #bookTotalBar{display:none}
 
         <!-- step 3 -->
         <div class="wstep" id="wstep-3">
-          <p class="wstep-title">이용권 선택</p>
+          <p class="wstep-title">회차권 선택</p>
           <p class="wstep-sub">첫 평가 무료 · 많이 살수록 저렴</p>
           <div id="passList"></div>
           <div class="coupon-pick" id="couponPick" hidden>
@@ -2672,7 +2672,7 @@ body.is-keyboard #bookTotalBar{display:none}
           </div>
           <div class="pass-note">
             <span aria-hidden="true">ℹ️</span>
-            <span>결제한 이용권은 <b>내 정보 &gt; 보유 이용권</b>에 저장되고, 방문마다 1회씩 차감됩니다.</span>
+            <span>결제한 회차권은 <b>내 정보 &gt; 보유 회차권</b>에 저장되고, 방문마다 1회씩 차감돼요.</span>
           </div>
           <div class="wiz-nav">
             <button class="btn btn-back" type="button" data-back="3">이전</button>
@@ -2727,7 +2727,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <div class="mt-10" id="payBusy" hidden></div>
             <div class="mt-10" id="bookError"></div>
             <button class="btn btn-teal" type="button" id="payBtn">결제하고 예약 완료</button>
-            <p class="pay-note">프로토타입입니다. 실제 결제는 이루어지지 않습니다.<br>취소·환불은 방문 24시간 전까지 무료이며, 자세한 기준은 FAQ &gt; 서비스·환불(운영 기준 초안)에서 확인할 수 있습니다.</p>          </div>
+            <p class="pay-note">시연용 화면이에요. 실제 결제는 이루어지지 않아요.<br>취소·환불은 방문 24시간 전까지 무료이며, 자세한 기준은 FAQ &gt; 서비스·환불(운영 기준 초안)에서 확인할 수 있어요.</p>          </div>
 
           <div class="wiz-nav">
             <button class="btn btn-back" type="button" data-back="4">이전</button>
@@ -2751,7 +2751,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <span class="done-ring" aria-hidden="true"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="31.5"/></svg></span>
           </div>
           <h2>예약 완료</h2>
-          <p>방문 전에 선생님이 연락드립니다.</p>
+          <p>방문 전에 선생님이 연락드려요.</p>
           <div class="done-tracker" id="doneTracker" aria-live="polite"></div>
           <div class="summary" id="doneSummary"></div>
           <p class="done-beta" id="doneSaved" role="status" aria-live="polite"></p>
@@ -2797,7 +2797,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <span class="p-badge">주 2회 방문</span>
           </div>
           <div class="p-progress">
-            <div class="p-prog-top"><span>전체 12회기 중 <b>5회기</b> 진행</span><span>42%</span></div>
+            <div class="p-prog-top"><span>전체 12회차 중 <b>5회차</b> 진행</span><span>42%</span></div>
             <div class="p-bar"><span></span></div>
           </div>
         </div>
@@ -2833,7 +2833,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <span class="status" id="checkStatus">방문 예정</span>
           </div>
           <p class="sched-time">10:30 <span>~ 11:30</span></p>
-          <p class="sched-row">박서준 선생님 <span class="dot">·</span> 서울 강남구 대치동 <span class="dot">·</span> 5회기</p>
+          <p class="sched-row">박서준 선생님 <span class="dot">·</span> 서울 강남구 대치동 <span class="dot">·</span> 5회차</p>
           <p class="fine" id="visitTimeLine" style="margin:6px 0 2px">방문 시작·종료 시각이 여기에 남아요.</p>
           <button class="btn btn-outline" id="checkinBtn" type="button">도착 체크인</button>
           <button class="btn btn-ghost mt-8" type="button" data-safety-open>긴급 연락 · 안전 안내</button>
@@ -2859,7 +2859,7 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="card chart-card mt-10">
           <div class="card-head mb-6">
             <h2>회차별 변화</h2>
-            <span class="fs-10p c-cap">최근 5회기</span>
+            <span class="fs-10p c-cap">최근 5회차</span>
           </div>
           <div class="metric-tabs" role="tablist" aria-label="측정 항목">
             <button class="is-on" type="button" data-metric="gait" role="tab" aria-selected="true">보행 속도</button>
@@ -2876,7 +2876,7 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="card rom-card therapist-only">
           <div class="card-head mb-12">
             <h2>관절가동범위 (ROM)</h2>
-            <span class="fs-10p c-cap">5회기 기준</span>
+            <span class="fs-10p c-cap">5회차 기준</span>
           </div>
           <div class="rom-row">
             <div class="rom-top"><span>오른쪽 무릎 굽힘</span><span><b>118°</b><em>+23°</em></span></div>
@@ -2947,7 +2947,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <p class="mp-meta">
               <button type="button" id="mpBookLink">예약 내역 <b id="mpBookCount">1</b>건</button>
               <span class="sep" aria-hidden="true">·</span>
-              <button type="button" id="mpPassLink">이용권 <b id="mpPassLeft">5</b>회 남음</button>
+              <button type="button" id="mpPassLink">회차권 <b id="mpPassLeft">5</b>회 남음</button>
             </p>
             <button class="mp-guide-link" type="button" id="mpGuideLink">이용 가이드</button>
           </div>
@@ -2994,7 +2994,7 @@ body.is-keyboard #bookTotalBar{display:none}
           <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
         <button class="mp-row" type="button" id="mpJournalRow">
-          <span>회복 일지 보기</span>
+          <span>방문 일지 보기</span>
           <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
         <button class="mp-row" type="button" id="mpRoleRow">
@@ -3007,13 +3007,13 @@ body.is-keyboard #bookTotalBar{display:none}
         </button>
       </div>
 
-      <p class="mp-fine">* 프로토타입 화면입니다. 결제·예약 정보는 브라우저에만 저장됩니다.</p>
+      <p class="mp-fine">* 시연용 화면이에요. 결제·예약 정보는 이 브라우저에만 저장돼요.</p>
     </section>
 
-    <!-- ================= 파트너 홈 (선생님) ================= -->
-    <section class="screen" id="screen-tp-home" aria-label="파트너 홈">
+    <!-- ================= 선생님 홈 (선생님) ================= -->
+    <section class="screen" id="screen-tp-home" aria-label="선생님 홈">
       <div class="page-head">
-        <h1>파트너 홈</h1>
+        <h1>선생님 홈</h1>
         <p>방문 요청과 이번 달 정산을 확인하세요.</p>
       </div>
 
@@ -3032,7 +3032,7 @@ body.is-keyboard #bookTotalBar{display:none}
         </div>
         <div class="chips" id="tpNotifChips" role="tablist" aria-label="선생님 알림 분류 필터" style="flex-wrap:wrap;overflow:visible"></div>
         <div class="notif-list" id="tpNotifList"></div>
-        <p class="fine mt-8">* 앱 안 알림입니다. 문자·카카오 발송은 아직 연결되지 않았어요.</p>
+        <p class="fine mt-8">* 앱 안 알림이에요. 문자·카카오 발송은 아직 연결되지 않았어요.</p>
       </section>
 
       <section class="sec mt-20">
@@ -3051,14 +3051,14 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="list" id="tpSchedMini"></div>
       </section>
 
-      <p class="fine ta-c mb-6">* 수수료 22.2%(보호자 결제액 기준) · 회차 완료 D+3 정산 확정 · 월 2회(15일·말일) 지급 · 예시 데이터입니다.</p>
+      <p class="fine ta-c mb-6">* 수수료 22.2%(보호자 결제액 기준) · 회차 완료 D+3 정산 확정 · 월 2회(15일·말일) 지급 · 예시 데이터예요.</p>
     </section>
 
     <!-- ================= 일정·요청 (선생님) ================= -->
     <section class="screen" id="screen-tp-schedule" aria-label="일정 관리">
       <div class="page-head">
         <h1>일정 · 요청 관리</h1>
-        <p>방문 요청을 수락하면 일정에 자동으로 등록됩니다.</p>
+        <p>방문 요청을 수락하면 일정에 자동으로 등록돼요.</p>
       </div>
 
       <section class="sec mt-14">
@@ -3077,14 +3077,14 @@ body.is-keyboard #bookTotalBar{display:none}
         <p class="fine" id="tpWeekHint" style="margin:6px 2px 8px"></p>
         <div class="list" id="tpScheduleList"></div>
       </section>
-      <p class="fine">* 체크인 기록은 보호자에게 도착 알림으로 전송됩니다. (예시)</p>
+      <p class="fine">* 체크인 기록은 예약 이력에 남아요. (예시)</p>
     </section>
 
     <!-- ================= 일지 작성 (선생님) ================= -->
     <section class="screen" id="screen-tp-journal" aria-label="일지 작성">
       <div class="page-head">
-        <h1>초기평가 · 회복 일지</h1>
-        <p>방문 후 측정값을 기록하면 보호자 화면에 바로 반영됩니다.</p>
+        <h1>초기평가 · 방문 일지</h1>
+        <p>방문 후 측정값을 기록하면 보호자 화면에 바로 반영돼요.</p>
       </div>
 
       <div id="tpJournalLocked" hidden></div>
@@ -3099,7 +3099,7 @@ body.is-keyboard #bookTotalBar{display:none}
           <p class="fine" style="margin:0 0 2px">방문 직후 2분. 통증·컨디션·수행 동작만 남겨도 보호자 화면에 바로 올라가요.</p>
           <div class="jr-form mt-10">
             <div class="full">
-              <label for="qlPatient">회원</label>
+              <label for="qlPatient">방문 대상</label>
               <select id="qlPatient">
                 <option value="김순자 어르신">김순자 어르신 (78세·뇌졸중)</option>
                 <option value="박정호 어르신">박정호 어르신 (72세·무릎 수술 후)</option>
@@ -3143,7 +3143,7 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="card mt-12">
           <div class="jr-form">
             <div class="full">
-              <label for="tpPatient">회원</label>
+              <label for="tpPatient">방문 대상</label>
               <select id="tpPatient">
                 <option value="김순자 어르신 (78세·뇌졸중)">김순자 어르신 (78세·뇌졸중)</option>
                 <option value="박정호 어르신 (72세·무릎 수술 후)">박정호 어르신 (72세·무릎 수술 후)</option>
@@ -3168,7 +3168,7 @@ body.is-keyboard #bookTotalBar{display:none}
             </div>
           </div>
           <button class="btn btn-teal mt-12" type="button" id="tpSaveJournal">일지 저장하고 보호자에게 공유</button>
-          <p class="fine">* 저장한 기록은 일지 목록과 보호자 화면에 반영됩니다. (프로토타입)</p>
+          <p class="fine">* 저장한 기록은 일지 목록과 보호자 화면에 반영돼요. (시연용)</p>
         </div>
 
         <section class="sec">
@@ -3187,13 +3187,13 @@ body.is-keyboard #bookTotalBar{display:none}
         <p class="fs-12h5p c-cap" style="line-height:1.6;max-width:none;word-break:keep-all">회차별 정산 내역을 월 단위로 확인하세요. 회차 완료 D+3 확정 · 월 2회(15일·말일) 지급.</p>
       </div>
       <div id="tpsScreen"></div>
-      <p class="fine ta-c" style="margin:14px 0 6px">* 수수료 22.2%(보호자 결제액 기준) · 원천징수 3.3%는 참고 계산입니다. · 예시 데이터</p>
+      <p class="fine ta-c" style="margin:14px 0 6px">* 수수료 22.2%(보호자 결제액 기준) · 원천징수 3.3%는 참고 계산 · 예시 데이터</p>
     </section>
 
     <!-- ================= 내 정보 (선생님) ================= -->
-    <section class="screen" id="screen-tp-mypage" aria-label="파트너 내 정보">
+    <section class="screen" id="screen-tp-mypage" aria-label="선생님 내 정보">
       <div class="page-head">
-        <h1>파트너 내 정보</h1>
+        <h1>선생님 내 정보</h1>
         <p>자격·서류·정산 정보를 관리하세요.</p>
       </div>
 
@@ -3206,7 +3206,7 @@ body.is-keyboard #bookTotalBar{display:none}
           <span class="tag-example">직접 등록</span>
         </div>
         <div class="card" id="tpAvailForm"></div>
-        <p class="fine">* 저장하면 매칭 후보(활동 지역 ∩ 가능 시간)에 바로 반영됩니다. 관리자가 대신 입력하지 않습니다.</p>
+        <p class="fine">* 저장하면 매칭 후보(활동 지역 ∩ 가능 시간)에 바로 반영돼요. 관리자가 대신 입력하지 않아요.</p>
       </section>
 
       <section class="sec mt-20">
@@ -3228,22 +3228,22 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="list">
           <button class="list-item" type="button" data-role-switch="customer">
             <span class="li-ico" aria-hidden="true"><svg class="ic"><use href="#i-refresh"/></svg></span>
-            <span class="li-main"><b>고객 모드로 전환</b><span>환자·보호자 화면으로 이동</span></span>
+            <span class="li-main"><b>보호자 모드로 전환</b><span>보호자 화면으로 이동</span></span>
             <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
           </button>
           <button class="list-item" type="button" data-tp-toggle-status>
             <span class="li-ico is-gray" aria-hidden="true"><svg class="ic"><use href="#i-flask"/></svg></span>
-            <span class="li-main"><b>데모: 심사 상태 전환</b><span>활동중 ↔ 심사 대기 화면 미리보기</span></span>
+            <span class="li-main"><b>시연용: 심사 상태 전환</b><span>활동중 ↔ 심사 대기 화면 미리보기</span></span>
             <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
           </button>
           <button class="list-item" type="button" data-tp-reset>
             <span class="li-ico is-gray" aria-hidden="true"><svg class="ic"><use href="#i-refresh"/></svg></span>
-            <span class="li-main"><b>데모: 파트너 데이터 초기화</b><span>예시 파트너(박서준·활동중)로 되돌리기</span></span>
+            <span class="li-main"><b>시연용: 선생님 데이터 초기화</b><span>예시 선생님(박서준·활동 중)으로 되돌리기</span></span>
             <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
           </button>
           <button class="list-item" type="button" data-admin-open>
             <span class="li-ico is-teal" aria-hidden="true"><svg class="ic"><use href="#i-shield-check"/></svg></span>
-            <span class="li-main"><b>관리자 심사 콘솔 <span class="fs-9h5p" style="color:#2F5FD0">DEMO</span></b><span>내 지원서 승인 · 보완 요청 처리</span></span>
+            <span class="li-main"><b>관리자 심사 콘솔 <span class="fs-9h5p" style="color:#2F5FD0">시연용</span></b><span>내 지원서 승인 · 보완 요청 처리</span></span>
             <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
           </button>
           <button class="list-item" type="button" data-logout>
@@ -3252,16 +3252,16 @@ body.is-keyboard #bookTotalBar{display:none}
             <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
           </button>
         </div>
-        <p class="fine">* 프로토타입 화면입니다. 서류 심사·정산은 실제로 처리되지 않습니다.</p>
+        <p class="fine">* 시연용 화면이에요. 서류 심사·정산은 실제로 처리되지 않아요.</p>
       </section>
     </section>
 
-    <!-- ================= 선생님 파트너 지원 ================= -->
+    <!-- ================= 선생님 지원하기 ================= -->
     <section class="screen" id="screen-partner" aria-label="선생님 지원">
       <button class="back-link" type="button" data-partner-back>‹ 돌아가기</button>
       <div class="page-head">
-        <h1>선생님 파트너 지원</h1>
-        <p>면허·경력·서류 심사를 통과한 선생님만 활동할 수 있습니다.<br>접수 후 2~3영업일 내에 결과를 알려드립니다.</p>
+        <h1>선생님 지원하기</h1>
+        <p>면허·경력·서류 심사를 통과한 선생님만 활동할 수 있어요.<br>접수 후 2~3영업일 내에 결과를 알려드려요.</p>
       </div>
 
       <div id="partnerWizard">
@@ -3354,9 +3354,9 @@ body.is-keyboard #bookTotalBar{display:none}
         <!-- partner step 3 -->
         <div class="wstep" id="pstep-3">
           <p class="wstep-title">면허 · 경력</p>
-          <p class="wstep-sub">국가면허 정보와 임상 경력을 입력해 주세요. 면허 진위는 심사 단계에서 확인합니다.</p>
+          <p class="wstep-sub">국가면허 정보와 임상 경력을 입력해 주세요. 면허 진위는 심사 단계에서 확인해요.</p>
           <div class="form">
-            <p class="fine" style="margin:0 0 2px">주민등록번호·건강정보는 받지 않습니다. 계좌·정산 정보는 계약 단계에서 따로 받아요.</p>
+            <p class="fine" style="margin:0 0 2px">주민등록번호·건강정보는 받지 않아요. 계좌·정산 정보는 계약 단계에서 따로 받아요.</p>
             <div class="field" id="f-pLicense">
               <label>직종·면허 <span class="req-mark">*</span></label>
               <div class="sym-chips" id="pLicense">
@@ -3369,7 +3369,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <div class="field" id="f-pLicenseNo">
               <label for="pLicenseNo">면허번호 <span class="req-mark">*</span></label>
               <input class="input num" id="pLicenseNo" type="text" placeholder="예: 11-2019-004821" maxlength="20" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" enterkeyhint="next" data-tt-rule="license" data-next="#pLicenseYear">
-              <p class="fine mt-6">사이트에는 마스킹(제○○-○○○○호)해서 표시됩니다. 번호는 심사용으로만 저장돼요.</p>
+              <p class="fine mt-6">사이트에는 마스킹(제○○-○○○○호)해서 표시돼요. 번호는 심사용으로만 저장돼요.</p>
               <p class="err">면허번호를 입력해 주세요.</p>
             </div>
             <div class="field" id="f-pLicenseYear">
@@ -3415,13 +3415,13 @@ body.is-keyboard #bookTotalBar{display:none}
         <!-- partner step 4 -->
         <div class="wstep" id="pstep-4">
           <p class="wstep-title">서류 · 희망 단가</p>
-          <p class="wstep-sub">심사에 필요한 서류를 준비해 주세요. 파일 업로드는 프로토타입에서 생략됩니다.</p>
+          <p class="wstep-sub">심사에 필요한 서류를 준비해 주세요. 파일 업로드는 시연용 화면이라 생략했어요.</p>
           <div class="form">
             <div class="field" id="f-pRate">
               <label for="pRate">희망 단가 <span class="hint">참고</span></label>
               <input class="input num" id="pRate" type="number" inputmode="numeric" step="1000" min="40000" max="150000" placeholder="예: 70000" autocomplete="off" enterkeyhint="done" data-tt-rule="rate">
               <p class="err">40,000~150,000원 사이로 입력해 주세요.</p>
-              <p class="fine mt-6">* 지급액은 플랫폼 확정 단가로 정산됩니다 — 보호자 부담 회당 90,000원, 선생님 지급 회당 70,000원. 희망 단가는 배정할 때 참고합니다.</p>
+              <p class="fine mt-6">* 지급액은 플랫폼 확정 단가로 정산돼요 — 보호자 부담 회당 90,000원, 선생님 지급 회당 70,000원. 희망 단가는 배정할 때 참고해요.</p>
             </div>
 
             <div class="field" id="f-pDocs">
@@ -3438,7 +3438,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <div class="field mt-14 mb-6" id="f-pAgree">
               <label class="consent" for="pAgree">
                 <input type="checkbox" id="pAgree">
-                <span>파트너 이용약관, 개인정보 수집·이용(자격 심사), 수수료 22.2% 정산 정책에 동의합니다. <span class="req-mark">*</span></span>
+                <span>선생님 이용약관, 개인정보 수집·이용(자격 심사), 수수료 22.2% 정산 정책에 동의합니다. <span class="req-mark">*</span></span>
               </label>
               <p class="err">필수 약관에 동의해 주세요.</p>
             </div>
@@ -3455,18 +3455,18 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="pending-card mt-14">
           <div class="pending-ico" aria-hidden="true"><svg class="ic"><use href="#i-clock"/></svg></div>
           <h2 id="partnerDoneTitle">심사 접수 완료</h2>
-          <p id="partnerDoneDesc">제출하신 서류를 확인하고 있습니다.<br>영업일 기준 2~3일 내에 결과를 알려드립니다.</p>
+          <p id="partnerDoneDesc">제출하신 서류를 확인하고 있어요.<br>영업일 기준 2~3일 내에 결과를 알려드려요.</p>
           <div class="summary ta-l" id="partnerDoneSummary"></div>
           <div class="steps-mini">
-            <div class="mini-step done"><span class="n">1</span><div><b>접수 완료</b>제출 서류가 정상적으로 접수됐습니다.</div></div>
-            <div class="mini-step"><span class="n">2</span><div><b>서류·면허 검증</b>면허 진위, 경력증명서, 범죄경력조회를 확인합니다.</div></div>
-            <div class="mini-step"><span class="n">3</span><div><b>승인 및 활동 시작</b>승인되면 활동 지역의 방문 요청을 받을 수 있습니다.</div></div>
+            <div class="mini-step done"><span class="n">1</span><div><b>접수 완료</b>제출 서류가 정상적으로 접수됐어요.</div></div>
+            <div class="mini-step"><span class="n">2</span><div><b>서류·면허 검증</b>면허 진위, 경력증명서, 범죄경력조회를 확인해요.</div></div>
+            <div class="mini-step"><span class="n">3</span><div><b>승인 및 활동 시작</b>승인되면 활동 지역의 방문 요청을 받을 수 있어요.</div></div>
           </div>
           <div class="done-btns">
             <button class="btn btn-navy" type="button" data-role-switch="therapist">선생님 모드로 이동</button>
-            <button class="btn btn-outline" type="button" data-tp-approve>데모: 심사 승인 처리</button>
+            <button class="btn btn-outline" type="button" data-tp-approve>시연용: 심사 승인 처리</button>
           </div>
-          <p class="pay-note">프로토타입입니다. 실제 서류 심사는 이루어지지 않습니다.</p>
+          <p class="pay-note">시연용 화면이에요. 실제 서류 심사는 이루어지지 않아요.</p>
         </div>
       </div>
     </section>
@@ -3478,9 +3478,9 @@ body.is-keyboard #bookTotalBar{display:none}
       </button>
 
       <div class="admin-hero">
-        <p class="admin-eyebrow"><svg class="ic" aria-hidden="true"><use href="#i-shield-check"/></svg>REVIEW CONSOLE · DEMO</p>
+        <p class="admin-eyebrow"><svg class="ic" aria-hidden="true"><use href="#i-shield-check"/></svg>관리자 콘솔 · 시연용</p>
         <h1>선생님 심사 콘솔</h1>
-        <p>제출 서류 4종을 확인한 뒤 승인 또는 보완 요청을 처리합니다. 처리 결과는 선생님 모드에 즉시 반영됩니다.</p>
+        <p>제출 서류 4종을 확인한 뒤 승인 또는 보완 요청을 처리해요. 처리 결과는 선생님 모드에 즉시 반영돼요.</p>
         <div class="admin-stats" id="adminStats"></div>
       </div>
 
@@ -3489,17 +3489,17 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="sec-head mb-10">
           <div>
             <h2 class="sec-title">운영 지표</h2>
-            <p class="sec-sub" id="adminMetricsSub">예약 퍼널·매출/마진·지역 수요 공급 갭·매칭 대기 시간을 한 번에 봅니다.</p>
+            <p class="sec-sub" id="adminMetricsSub">예약 진행 단계·매출/마진·지역 수요 공급 갭·매칭 대기 시간을 한 번에 봐요.</p>
           </div>
-          <span class="tag-example">DEMO</span>
+          <span class="tag-example">시연용</span>
         </div>
         <div class="chips" id="adminMetricsPeriods" role="tablist" aria-label="지표 기간 필터" style="flex-wrap:wrap;overflow:visible;padding-top:4px"></div>
         <div class="settle mt-10" id="adminMetricsKpiCard">
           <div class="settle-top"><span>핵심 지표</span><b id="adminMetricsKpiCaption">-</b></div>
           <div class="settle-grid" id="adminMetricsKpis"></div>
         </div>
-        <div class="admin-card mt-10" id="adminMetricsFunnel" aria-label="예약 퍼널">
-          <p class="admin-name" style="display:block">예약 퍼널 <span class="status-badge is-on" id="adminMetricsFunnelBasis">접수일 기준</span></p>
+        <div class="admin-card mt-10" id="adminMetricsFunnel" aria-label="예약 진행 단계">
+          <p class="admin-name" style="display:block">예약 진행 단계 <span class="status-badge is-on" id="adminMetricsFunnelBasis">접수일 기준</span></p>
           <div id="adminMetricsFunnelRows"></div>
         </div>
         <div class="admin-card mt-10" id="adminMetricsRevenue" aria-label="매출·마진">
@@ -3512,7 +3512,7 @@ body.is-keyboard #bookTotalBar{display:none}
           <button class="btn btn-outline btn-sm" type="button" id="adminMetricsCopyText">지표 요약 텍스트 복사</button>
           <button class="btn btn-outline btn-sm" type="button" id="adminMetricsCopyCsv">지역 표 CSV 복사</button>
         </div>
-        <p class="fine" id="adminMetricsNote" role="status" aria-live="polite" style="margin:10px 0 0">로컬 데모 계산입니다. 서버·DB·외부 발송 없이 이 기기 데이터로만 집계합니다.</p>
+        <p class="fine" id="adminMetricsNote" role="status" aria-live="polite" style="margin:10px 0 0">이 기기 데이터로만 계산한 예시 수치예요. 서버·DB·외부 발송과 연결되어 있지 않아요.</p>
       </section>
 
       <!-- v19 · 매칭 대기열 & 운영 예외 요약 보드 (로컬 데모) -->
@@ -3520,9 +3520,9 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="sec-head mb-10">
           <div>
             <h2 class="sec-title">오늘 처리할 일</h2>
-            <p class="sec-sub" id="adminOpsSub">미배정·재확정 대기 건과 사람이 봐야 하는 예외를 먼저 모았습니다.</p>
+            <p class="sec-sub" id="adminOpsSub">미배정·재확정 대기 건과 사람이 봐야 하는 예외를 먼저 모았어요.</p>
           </div>
-          <span class="tag-example">DEMO</span>
+          <span class="tag-example">시연용</span>
         </div>
         <div id="adminOpsCounts" style="display:flex;flex-wrap:wrap;gap:5px"></div>
         <div class="admin-queue mt-10" id="adminMatchQueue" aria-label="매칭 대기열"></div>
@@ -3536,11 +3536,11 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="sec-head mb-10">
           <div>
             <h2 class="sec-title">오늘 발송할 리마인드 미리보기</h2>
-            <p class="sec-sub" id="adminReminderSub">방문 D-1·4주 재평가·최근 변경/취소·정산 확정/지급 예정 문구를 모았습니다.</p>
+            <p class="sec-sub" id="adminReminderSub">방문 D-1·4주 재평가·최근 변경/취소·정산 확정/지급 예정 문구를 모았어요.</p>
           </div>
-          <span class="tag-example">DEMO</span>
+          <span class="tag-example">시연용</span>
         </div>
-        <div class="admin-approved" id="adminReminderNotice"><svg class="ic mt-2" aria-hidden="true" style="align-self:flex-start"><use href="#i-shield-check"/></svg><span><b>실제 문자·알림톡 발송은 하지 않습니다</b><br>이 화면은 발송 전 문구를 확인·복사하는 로컬 미리보기입니다. 외부 발송기·서버와 연결되어 있지 않아요.</span></div>
+        <div class="admin-approved" id="adminReminderNotice"><svg class="ic mt-2" aria-hidden="true" style="align-self:flex-start"><use href="#i-shield-check"/></svg><span><b>실제 문자·알림톡 발송은 하지 않습니다</b><br>이 화면은 발송 전 문구를 확인하고 복사하는 미리보기예요. 외부 발송기·서버와 연결되어 있지 않아요.</span></div>
         <div id="adminReminderCounts" style="display:flex;flex-wrap:wrap;gap:5px"></div>
         <div class="mt-10" style="display:flex;flex-wrap:wrap;gap:8px">
           <button class="btn btn-outline btn-sm" type="button" id="adminReminderCopyAll">오늘 리마인드 전체 문구 복사</button>
@@ -3553,11 +3553,11 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="sec-head mb-10">
           <div>
             <h2 class="sec-title">예약 접수 큐</h2>
-            <p class="sec-sub" id="adminResvSub">접수된 예약을 상태별로 보고, 지금 상태에서 가능한 다음 단계만 처리합니다.</p>
+            <p class="sec-sub" id="adminResvSub">접수된 예약을 상태별로 보고, 지금 상태에서 가능한 다음 단계만 처리해요.</p>
           </div>
-          <span class="tag-example">DEMO</span>
+          <span class="tag-example">시연용</span>
         </div>
-        <div class="admin-approved" id="adminResvDemoNotice"><svg class="ic mt-2" aria-hidden="true" style="align-self:flex-start"><use href="#i-shield-check"/></svg><span><b>로컬 데모 저장 · 서버 미연결(이 기기 브라우저에만 반영)</b><br>상태 변경·알림·정산 기록은 이 브라우저 안에서만 일어납니다. 실제 서버·DB·문자 발송과 연결되어 있지 않습니다.</span></div>
+        <div class="admin-approved" id="adminResvDemoNotice"><svg class="ic mt-2" aria-hidden="true" style="align-self:flex-start"><use href="#i-shield-check"/></svg><span><b>이 기기에만 저장 · 서버 미연결(이 브라우저에만 반영)</b><br>상태 변경·알림·정산 기록은 이 브라우저 안에서만 일어납니다. 실제 서버·DB·문자 발송과 연결되어 있지 않습니다.</span></div>
         <div class="chips" id="adminResvFilters" role="tablist" aria-label="예약 상태 필터" style="flex-wrap:wrap;overflow:visible;padding-top:4px"></div>
         <div class="admin-queue" id="adminResvQueue"></div>
       </section>
@@ -3567,16 +3567,16 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="sec-head mb-10">
           <div>
             <h2 class="sec-title">운영 데이터 백업</h2>
-            <p class="sec-sub" id="adminBackupSub">예약·방문 일지·정산 원장·알림·선생님 프로필을 JSON 파일 하나로 내려받고, 같은 파일로 되돌립니다. 서버 없이 이 기기 안에서만 동작합니다.</p>
+            <p class="sec-sub" id="adminBackupSub">예약·방문 일지·정산 원장·알림·선생님 프로필을 JSON 파일 하나로 내려받고, 같은 파일로 되돌릴 수 있어요. 서버 없이 이 기기 안에서만 동작해요.</p>
           </div>
-          <span class="tag-example">DEMO</span>
+          <span class="tag-example">시연용</span>
         </div>
         <div class="admin-card" id="adminBackupCard">
           <div style="display:flex;flex-direction:column;gap:3px">
             <span class="fs-12p c-muted" style="letter-spacing:-.01em">지금 기기에 있는 데이터</span>
             <b class="fs-13p" id="adminBackupCounts" style="letter-spacing:-.02em">-</b>
           </div>
-          <p class="fine" id="adminBackupMeta" style="margin:8px 0 0">백업 파일에는 빠른일지 초안(임시 입력)은 들어가지 않습니다.</p>
+          <p class="fine" id="adminBackupMeta" style="margin:8px 0 0">백업 파일에는 빠른일지 초안(임시 입력)이 들어가지 않아요.</p>
           <div class="mt-12" style="display:flex;flex-wrap:wrap;gap:8px">
             <button class="btn btn-outline btn-sm" type="button" id="adminBackupExport">운영 데이터 백업(JSON)</button>
             <button class="btn btn-outline btn-sm" type="button" id="adminBackupPick">백업 파일 복원</button>
@@ -3600,9 +3600,9 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="sec-head mb-10">
           <div>
             <h2 class="sec-title">홈 화면 미리보기</h2>
-            <p class="sec-sub" id="adminHomeStageSub">보호자 상태에 따라 홈 첫 카드가 달라집니다. 미리보기는 화면만 바꾸고 이 기기의 예약·회차권 데이터는 그대로 둡니다.</p>
+            <p class="sec-sub" id="adminHomeStageSub">보호자 상태에 따라 홈 첫 카드가 달라져요. 미리보기는 화면만 바꾸고 이 기기의 예약·회차권 데이터는 그대로 둬요.</p>
           </div>
-          <span class="tag-example">DEMO</span>
+          <span class="tag-example">시연용</span>
         </div>
         <div class="admin-card" id="adminHomeStageCard">
           <div class="sum-row"><span>지금 보호자 상태</span><b id="adminHomeStageNow">-</b></div>
@@ -3612,7 +3612,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <button class="btn btn-outline btn-sm" type="button" id="adminStageFirst">첫 방문 전 화면 보기</button>
             <button class="btn btn-outline btn-sm" type="button" id="adminStageReset">실제 상태로 보기</button>
           </div>
-          <p class="fine" id="adminHomeStageResult" role="status" aria-live="polite" style="margin:10px 0 0">미리보기를 보려면 버튼을 누르면 보호자 홈으로 이동합니다.</p>
+          <p class="fine" id="adminHomeStageResult" role="status" aria-live="polite" style="margin:10px 0 0">미리보기를 보려면 버튼을 누르세요. 보호자 홈으로 이동해요.</p>
         </div>
       </section>
 
@@ -3622,7 +3622,7 @@ body.is-keyboard #bookTotalBar{display:none}
             <h2 class="sec-title">심사 대기</h2>
             <p class="sec-sub" id="adminQueueSub">서류를 확인하면 승인할 수 있어요.</p>
           </div>
-          <span class="tag-example">DEMO</span>
+          <span class="tag-example">시연용</span>
         </div>
         <div class="admin-queue" id="adminQueue"></div>
       </section>
@@ -3634,11 +3634,11 @@ body.is-keyboard #bookTotalBar{display:none}
         <div class="admin-recent" id="adminRecent"></div>
       </section>
 
-      <p class="fine mb-6">* 데모 콘솔입니다. 실제 면허 진위 조회·범죄경력조회는 이루어지지 않습니다.</p>
+      <p class="fine mb-6">* 시연용 콘솔이에요. 실제 면허 진위 조회와 범죄경력조회는 하지 않아요.</p>
     </section>
   </main>
 
-  <nav class="tabbar" data-mode="customer" aria-label="고객 메뉴">
+  <nav class="tabbar" data-mode="customer" aria-label="보호자 메뉴">
     <button class="tabbtn is-active" type="button" data-tab="home" aria-selected="true" aria-label="홈">
       <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg></span>
       홈
@@ -3662,9 +3662,9 @@ body.is-keyboard #bookTotalBar{display:none}
   </nav>
 
   <nav class="tabbar" data-mode="therapist" aria-label="선생님 메뉴" style="grid-template-columns:repeat(5,1fr)">
-    <button class="tabbtn is-active" type="button" data-tab="tp-home" aria-selected="true" aria-label="파트너 홈">
+    <button class="tabbtn is-active" type="button" data-tab="tp-home" aria-selected="true" aria-label="선생님 홈">
       <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg></span>
-      파트너 홈
+      선생님 홈
     </button>
     <button class="tabbtn" type="button" data-tab="tp-schedule" aria-selected="false" aria-label="일정">
       <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/><path d="M9 14h2M13 14h2M9 17.5h2"/></svg></span>
@@ -3678,7 +3678,7 @@ body.is-keyboard #bookTotalBar{display:none}
       <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 6.5h15a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5V8a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M3 11h18"/><path d="M7 14.5h3"/></svg></span>
       정산
     </button>
-    <button class="tabbtn" type="button" data-tab="tp-mypage" aria-selected="false" aria-label="파트너 내 정보">
+    <button class="tabbtn" type="button" data-tab="tp-mypage" aria-selected="false" aria-label="선생님 내 정보">
       <span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.4"/><path d="M4.8 20.2c.5-3.8 3.3-6 7.2-6s6.7 2.2 7.2 6"/></svg></span>
       내 정보
     </button>
@@ -3749,14 +3749,14 @@ body.is-keyboard #bookTotalBar{display:none}
       <div class="gate-phone">
         <label for="gatePhone"><svg class="ic" aria-hidden="true"><use href="#i-phone"/></svg>휴대폰 번호</label>
         <input class="input" id="gatePhone" type="tel" inputmode="numeric" value="010-1234-5678" maxlength="13" autocomplete="tel" enterkeyhint="done" spellcheck="false" data-tt-rule="phone" data-autofocus>
-        <p class="gate-demo">* 데모 번호가 채워져 있습니다. 실제 인증 문자는 발송되지 않습니다.</p>
+        <p class="gate-demo">* 시연용 번호가 채워져 있어요. 실제 인증 문자는 보내지 않아요.</p>
         <p class="err" id="gatePhoneErr" role="alert">연락처를 정확히 입력해 주세요. (예: 010-1234-5678)</p>
       </div>
       <div class="gate-roles" id="gateRoles">
         <p class="gate-roles-label">이용 화면 선택</p>
         <button class="role-card" type="button" data-login="customer">
           <span class="role-ico" aria-hidden="true"><svg class="ic"><use href="#i-user"/></svg></span>
-          <span class="role-body"><b>고객</b><small>선생님 찾기 · 예약 · 일지</small></span>
+          <span class="role-body"><b>보호자</b><small>선생님 찾기 · 예약 · 일지</small></span>
           <span class="role-arrow" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
         <button class="role-card is-tp" type="button" data-login="therapist">
@@ -3766,11 +3766,11 @@ body.is-keyboard #bookTotalBar{display:none}
         </button>
         <button class="role-card is-admin" type="button" data-login="admin">
           <span class="role-ico" aria-hidden="true"><svg class="ic"><use href="#i-shield-check"/></svg></span>
-          <span class="role-body"><b>관리자 <span class="demo-badge">DEMO</span></b><small>심사 콘솔 · 승인 · 보완</small></span>
+          <span class="role-body"><b>관리자 <span class="demo-badge">시연용</span></b><small>심사 콘솔 · 승인 · 보완</small></span>
           <span class="role-arrow" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
       </div>
-      <p class="region-hint">고객·선생님·관리자(데모) 화면은 언제든 상단에서 바꿀 수 있어요.</p>
+      <p class="region-hint">보호자·선생님·관리자(시연용) 화면은 언제든 상단에서 바꿀 수 있어요.</p>
     </div>
   </div>
 </div>
@@ -3782,7 +3782,7 @@ body.is-keyboard #bookTotalBar{display:none}
     <button class="sheet-close sheet-close-top" type="button" data-region-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="regionTitle">우리 동네도 되나요?</h2>
-      <p class="sheet-desc">시·도와 시·군·구를 고르면 바로 매칭이 가능한지 알려드려요.<br><span id="regionLead">전국 17개 시·도 가운데 6개 지역부터 선생님이 활동 중입니다.</span></p>
+      <p class="sheet-desc">시·도와 시·군·구를 고르면 바로 매칭이 가능한지 알려드려요.<br><span id="regionLead">전국 17개 시·도 가운데 6개 지역부터 선생님이 활동 중이에요.</span></p>
       <div class="region-quick" id="regionQuick" role="group" aria-label="선생님이 활동 중인 지역"></div>
       <div class="region-fields">
         <div class="field">
@@ -3828,7 +3828,7 @@ body.is-keyboard #bookTotalBar{display:none}
     <div class="sheet-handle" aria-hidden="true"></div>
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="rejectTitle">보완 요청 사유</h2>
-      <p class="sheet-desc" id="rejectDesc">어떤 서류를 보완해야 하는지 알려주세요.<br>선생님 모드에 사유가 바로 표시됩니다.</p>
+      <p class="sheet-desc" id="rejectDesc">어떤 서류를 보완해야 하는지 알려주세요.<br>선생님 모드에 사유가 바로 표시돼요.</p>
       <div class="reject-reasons" id="rejectReasons">
         <button class="reject-reason" type="button" data-reason="면허증 사본 확인 불가">면허증 확인 불가</button>
         <button class="reject-reason" type="button" data-reason="경력증명서 발급처 확인 필요">경력 증빙 부족</button>
@@ -3841,7 +3841,7 @@ body.is-keyboard #bookTotalBar{display:none}
         <button class="btn btn-ghost" type="button" id="rejectCancel">취소</button>
         <button class="btn btn-navy" type="button" id="rejectConfirm">보완 요청 보내기</button>
       </div>
-      <p class="sheet-note">* 보완 요청을 받은 선생님은 내 정보에서 지원서를 수정해 다시 제출할 수 있습니다.</p>
+      <p class="sheet-note">* 보완 요청을 받은 선생님은 내 정보에서 지원서를 수정해 다시 제출할 수 있어요.</p>
     </div>
   </div>
 </div>
@@ -4034,26 +4034,26 @@ body.is-keyboard #bookTotalBar{display:none}
         </div>
       </div>
       <button class="btn btn-blue mt-16" type="button" id="guideBook">방문 재활 신청</button>
-      <p class="sheet-note">* 이동비는 따로 없습니다. 방문 24시간 전까지 무료로 변경·취소할 수 있어요.</p>
+      <p class="sheet-note">* 이동비는 따로 없어요. 방문 24시간 전까지 무료로 변경·취소할 수 있어요.</p>
       <a class="sheet-beta-link" href="https://naver.me/G3vCkS0S" target="_blank" rel="noopener noreferrer">오픈 전 베타 상담 폼 남기기<svg class="ic" aria-hidden="true"><use href="#i-arrow-ur"/></svg></a>
     </div>
   </div>
 </div>
 
-<!-- 내 예약 · 이용권 시트 -->
+<!-- 내 예약 · 회차권 시트 -->
 <div class="sheet-backdrop" id="accountSheet" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
   <div class="sheet">
     <div class="sheet-handle" aria-hidden="true"></div>
     <button class="sheet-close sheet-close-top" type="button" data-account-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     <div class="sheet-scroll">
-      <h2 class="sheet-title" id="accountTitle">내 예약 · 이용권</h2>
+      <h2 class="sheet-title" id="accountTitle">내 예약 · 회차권</h2>
       <p class="sheet-desc">보유 회차와 방문 일정을 한 곳에서 관리해요.</p>
 
       <div class="dday-wrap mt-16" id="accountDday"></div>
 
       <section class="sec mt-16">
         <div class="sec-head mb-9">
-          <h3 class="sheet-label m-0">보유 이용권 <span class="fs-11p fw-700 c-teal" id="walletTotal"></span></h3>
+          <h3 class="sheet-label m-0">보유 회차권 <span class="fs-11p fw-700 c-teal" id="walletTotal"></span></h3>
           <button class="sec-link" type="button" data-book="p8">충전하기</button>
         </div>
         <div id="walletList"></div>
@@ -4074,7 +4074,7 @@ body.is-keyboard #bookTotalBar{display:none}
         </div>
         <div id="reviewList"></div>
       </section>
-      <p class="sheet-note">* 예약 변경·취소는 방문 24시간 전까지 무료입니다.</p>
+      <p class="sheet-note">* 예약 변경·취소는 방문 24시간 전까지 무료예요.</p>
     </div>
   </div>
 </div>
@@ -4113,7 +4113,7 @@ body.is-keyboard #bookTotalBar{display:none}
           <button class="btn btn-navy" type="button" id="cardSave">카드 등록</button>
           <button class="btn btn-ghost" type="button" id="cardCancel">취소</button>
         </div>
-        <p class="sheet-note mt-10">* 데모 화면입니다. 카드번호 전체는 저장하지 않고 끝 4자리만 이 기기에 저장해요.</p>
+        <p class="sheet-note mt-10">* 시연용 화면이에요. 카드번호 전체는 저장하지 않고 끝 4자리만 이 기기에 저장해요.</p>
       </div>
       <p class="sheet-label mt-24">결제 내역</p>
       <div class="list" id="receiptList"></div>
@@ -4135,7 +4135,7 @@ body.is-keyboard #bookTotalBar{display:none}
       <p class="sheet-desc">방문 확정·리마인드·회복 리포트 소식을 모았어요.</p>
       <div class="chips" id="notifChips" role="tablist" aria-label="알림 분류 필터" style="flex-wrap:wrap;overflow:visible"></div>
       <div class="notif-list" id="notifList"></div>
-      <p class="sheet-note" id="notifNote">* 알림은 이 기기에만 저장되는 프로토타입입니다. 알림을 누르면 관련 화면으로 이동하고, 발송 전 문구를 미리 볼 수 있어요(실제 발송 없음).</p>
+      <p class="sheet-note" id="notifNote">* 알림은 이 기기에만 저장돼요. 알림을 누르면 관련 화면으로 이동하고, 발송 전 문구를 미리 볼 수 있어요(실제 발송 없음).</p>
     </div>
   </div>
 </div>
@@ -4150,7 +4150,7 @@ body.is-keyboard #bookTotalBar{display:none}
       <p class="sheet-desc">문자·알림톡으로 나갈 문구를 발송 전에 확인하는 화면이에요.</p>
       <div class="admin-approved mt-12">
         <svg class="ic mt-2" aria-hidden="true" style="align-self:flex-start"><use href="#i-shield-check"/></svg>
-        <span><b>실제 발송 전 로컬 미리보기</b><br>문자·카카오 알림톡은 아직 연결되어 있지 않아요. 이 화면에서 외부로 발송되지 않습니다.</span>
+        <span><b>실제 발송 전 미리보기</b><br>문자·카카오 알림톡은 아직 연결되어 있지 않아요. 이 화면에서 외부로 발송되지 않아요.</span>
       </div>
       <div id="notifPreviewBody"></div>
       <div class="mt-16" style="display:flex;flex-wrap:wrap;gap:8px">
@@ -4173,7 +4173,7 @@ body.is-keyboard #bookTotalBar{display:none}
       <p class="sheet-desc">방문 배정·확정·정산 소식을 모았어요. 알림을 누르면 발송 전 문구를 미리 볼 수 있어요.</p>
       <div class="chips" id="tpNotiChips" role="tablist" aria-label="선생님 알림 분류 필터" style="flex-wrap:wrap;overflow:visible"></div>
       <div class="notif-list" id="tpNotiList"></div>
-      <p class="sheet-note">* 앱 안 알림입니다. 문자·카카오 발송은 아직 연결되지 않았어요.</p>
+      <p class="sheet-note">* 앱 안 알림이에요. 문자·카카오 발송은 아직 연결되지 않았어요.</p>
     </div>
   </div>
 </div>
@@ -4241,26 +4241,26 @@ body.is-keyboard #bookTotalBar{display:none}
     <button class="sheet-close sheet-close-top" type="button" data-role-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="roleTitle">모드 전환</h2>
-      <p class="sheet-desc">선생님 모드에서는 방문 요청·일정·정산·일지를 관리해요.<br>관리자 콘솔은 심사 데모 화면입니다.</p>
+      <p class="sheet-desc">선생님 모드에서는 방문 요청·일정·정산·일지를 관리해요.<br>관리자 콘솔은 심사 시연용 화면이에요.</p>
       <div class="list mt-16">
         <button class="list-item" type="button" data-role-switch="therapist">
           <span class="li-ico" aria-hidden="true"><svg class="ic"><use href="#i-stethoscope"/></svg></span>
-          <span class="li-main"><b>선생님 모드로 전환</b><span>파트너 홈 · 일정 · 정산 · 일지 작성</span></span>
+          <span class="li-main"><b>선생님 모드로 전환</b><span>선생님 홈 · 일정 · 정산 · 일지 작성</span></span>
           <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
         <button class="list-item" type="button" data-admin-open>
           <span class="li-ico is-gray" aria-hidden="true"><svg class="ic"><use href="#i-shield-check"/></svg></span>
-          <span class="li-main"><b>관리자 심사 콘솔 <span class="fs-9h5p" style="color:#2F5FD0">DEMO</span></b><span>선생님 지원서 승인 · 보완 요청</span></span>
+          <span class="li-main"><b>관리자 심사 콘솔</b><span>시연용 화면 · 선생님 지원서 승인 · 보완 요청</span></span>
           <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
       </div>
-      <button class="btn btn-ghost mt-12" type="button" data-role-close>고객 모드로 계속 이용하기</button>
+      <button class="btn btn-ghost mt-12" type="button" data-role-close>보호자 모드로 계속 이용하기</button>
     </div>
   </div>
 </div>
 
 <noscript>
-  <div class="fs-13p ta-c" style="padding:24px;color:#fff">이 프로토타입은 JavaScript가 필요합니다. 브라우저에서 JavaScript를 켜 주세요.</div>
+  <div class="fs-13p ta-c" style="padding:24px;color:#fff">이 화면은 JavaScript가 필요해요. 브라우저에서 JavaScript를 켜 주세요.</div>
 </noscript>
 
 <script>
@@ -4573,11 +4573,11 @@ body.is-keyboard #bookTotalBar{display:none}
       var passText = String(o.passName || '').trim();
       var amount = num(b.amount, 0);
       if (passText || amount > 0) {
-        var pay = passText || '방문 이용권';
+        var pay = passText || '방문 회차권';
         pay += amount > 0
           ? ' · ' + wonText(amount) + (o.payMethod ? ' (' + String(o.payMethod).trim() + ')' : '') + ' 결제'
           : ' · 무료';
-        body.push('· 이용권 : ' + pay);
+        body.push('· 회차권 : ' + pay);
       }
 
       var teacherName = String(b.teacher || '').trim();
@@ -5583,10 +5583,10 @@ body.is-keyboard #bookTotalBar{display:none}
       regularSinglePrice: 90000,
       plans: [
         { id: 'eval', name: '첫 1:1 방문 평가권', sessions: 1, price: 0, listPrice: 50000 },
-        { id: 'p1', name: '1회 방문권', sessions: 1, price: 90000, listPrice: 90000 },
-        { id: 'p4', name: '4회 방문권', sessions: 4, price: 320000, listPrice: 360000 },
-        { id: 'p8', name: '8회 방문권', sessions: 8, price: 592000, listPrice: 720000 },
-        { id: 'p12', name: '12회 집중 재활', sessions: 12, price: 840000, listPrice: 1080000 }
+        { id: 'p1', name: '1회권', sessions: 1, price: 90000, listPrice: 90000 },
+        { id: 'p4', name: '4회권', sessions: 4, price: 320000, listPrice: 360000 },
+        { id: 'p8', name: '8회권', sessions: 8, price: 592000, listPrice: 720000 },
+        { id: 'p12', name: '12회권', sessions: 12, price: 840000, listPrice: 1080000 }
       ]
     };
 
@@ -5679,8 +5679,8 @@ body.is-keyboard #bookTotalBar{display:none}
     function refundTextOf(q) {
       var r = q || {};
       if (num(r.refund, 0) > 0) return '환불 예정 금액은 ' + wonText(r.refund) + '이에요.';
-      if (num(r.restoreSessions, 0) > 0) return '이용권 잔여 ' + num(r.restoreSessions, 1) + '회가 복구돼요.';
-      if (num(r.deductSessions, 0) > 0) return '이용권 1회가 차감되고 환불 금액은 없어요.';
+      if (num(r.restoreSessions, 0) > 0) return '회차권 잔여 ' + num(r.restoreSessions, 1) + '회가 복구돼요.';
+      if (num(r.deductSessions, 0) > 0) return '회차권 1회가 차감되고 환불 금액은 없어요.';
       if (num(r.amount, 0) > 0) return '환불 가능한 금액이 없어요.';
       return '결제 내역이 없어 환불은 없어요.';
     }
@@ -7076,7 +7076,7 @@ body.is-keyboard #bookTotalBar{display:none}
           nearestName = String(p.name || '');
         }
         passItems.push({
-          id: String(p.id || ''), name: String(p.name || '이용권'),
+          id: String(p.id || ''), name: String(p.name || '회차권'),
           remaining: remain, total: tot,
           percent: tot > 0 ? Math.round((remain / tot) * 100) : 0,
           expire: expire
@@ -7499,7 +7499,7 @@ body.is-keyboard #bookTotalBar{display:none}
       if (!(s.rows || []).length) lines.push('(이 달에는 정산 내역이 없습니다)');
       lines.push('');
       lines.push('* ' + STATEMENT_NOTE);
-      lines.push('* 로컬 데모 데이터입니다. 서버·정산 시스템과 연결되어 있지 않습니다.');
+      lines.push('* 시연용 예시 데이터예요. 서버·정산 시스템과 연결되어 있지 않아요.');
       return lines.join('\n');
     }
 
@@ -7564,7 +7564,7 @@ body.is-keyboard #bookTotalBar{display:none}
         { k: '무엇을 안 받나', v: '주민등록번호·상세 병력·진단서·처방전은 받지 않습니다.' },
         { k: '누가 보나', v: '본인·담당 선생님·최소 관리자만 봅니다. 상세 주소는 확정된 담당 선생님에게만 공개해요.' },
         { k: '얼마나', v: '건강 측정값·일지는 재활 목적이 끝나면 파기하고, 결제·계약 기록만 5년 분리 보관합니다.' },
-        { k: '어디에', v: '지금은 이 기기 브라우저(localStorage)에만 저장되는 데모입니다. 서버 이전 시 암호화·접근 기록을 붙입니다.' }
+        { k: '어디에', v: '지금은 이 기기 브라우저에만 저장돼요. 서버로 옮기면 암호화와 접근 기록을 붙여요.' }
       ]
     };
 
@@ -8392,7 +8392,7 @@ body.is-keyboard #bookTotalBar{display:none}
        기간 필터(전체 · 최근 7일 · 최근 30일)
          · 퍼널·지역 수요·공급은 예약 접수일(createdAt) 기준
          · 매출·마진·일지 기록률은 방문일(visitDate/dateIso) 기준
-         · 매칭 SLA는 기간과 무관한 "지금 대기 중" 건 기준(운영자 백로그)
+         · 매칭 대기 시간는 기간과 무관한 "지금 대기 중" 건 기준(운영자 백로그)
        단가·수수료는 v16 PRICING 한 곳만 쓴다(90,000 / 70,000원 · 22.2%).
        ================================================================= */
     var ADMIN_METRICS_VERSION = 'v28';
@@ -8407,7 +8407,7 @@ body.is-keyboard #bookTotalBar{display:none}
     /* 기간 내 선생님 1명이 감당하는 예약 수(가정치). 모집 필요 판정에만 쓴다. */
     var METRICS_VISITS_PER_TEACHER = 3;
     var METRICS_SLA_HOURS = 24;
-    var METRICS_LOCAL_NOTE = '로컬 데모 계산입니다. 서버·DB·외부 발송 없이 이 기기 데이터로만 집계합니다.';
+    var METRICS_LOCAL_NOTE = '이 기기 데이터로만 계산한 예시 수치예요. 서버·DB·외부 발송과 연결되어 있지 않아요.';
     var METRICS_REGION_BADGES = {
       shortage: { key: 'shortage', label: '모집 필요' },
       balanced: { key: 'balanced', label: '균형' },
@@ -8500,7 +8500,7 @@ body.is-keyboard #bookTotalBar{display:none}
       function inWindow(iso) { return !fromIso || (!!iso && iso >= fromIso); }
       function isOpenStatus(st) { return METRICS_OPEN_STATUSES.indexOf(st) !== -1; }
 
-      /* ── ① 예약 퍼널 (접수일 기준) ─────────────────────────────── */
+      /* ── ① 예약 진행 단계 (접수일 기준) ─────────────────────────────── */
       var scoped = [];
       bookings.forEach(function (b) {
         if (!b || typeof b !== 'object') return;
@@ -8690,7 +8690,7 @@ body.is-keyboard #bookTotalBar{display:none}
         }
       };
 
-      /* ── ④ 매칭 SLA (지금 대기 중 — 기간 무관) ───────────────────── */
+      /* ── ④ 매칭 대기 시간 (지금 대기 중 — 기간 무관) ───────────────────── */
       var sla = { pending: 0, awaitingAssign: 0, awaitingConfirm: 0, reconfirm: 0, over24: 0, over48: 0, oldestHours: 0, items: [] };
       bookings.forEach(function (b) {
         if (!b || typeof b !== 'object') return;
@@ -8774,7 +8774,7 @@ body.is-keyboard #bookTotalBar{display:none}
       lines.push('[똑똑쌤 운영 지표] ' + String(x.todayIso || todayIsoKst()) + ' · 기간 ' + String(x.periodLabel || '전체'));
       lines.push('* ' + METRICS_LOCAL_NOTE);
       lines.push('');
-      lines.push('■ 예약 퍼널 (' + String((x.basis && x.basis.funnel) || '접수일 기준') + ')');
+      lines.push('■ 예약 진행 단계 (' + String((x.basis && x.basis.funnel) || '접수일 기준') + ')');
       lines.push('전체 신청 ' + num(f.applied, 0) + '건 → 배정 완료 ' + num(f.assigned, 0) + '건(' + pct(f.assignRate) + ') → ' +
         '방문 확정 ' + num(f.confirmed, 0) + '건(' + pct(f.confirmRate) + ') → 방문 완료 ' + num(f.completed, 0) + '건(' + pct(f.completionRate) + ')');
       lines.push('취소 ' + num(f.canceled, 0) + '건 · 노쇼 ' + num(f.noShow, 0) + '건 · 취소·노쇼율 ' + pct(f.cancelNoShowRate));
@@ -8792,7 +8792,7 @@ body.is-keyboard #bookTotalBar{display:none}
         lines.push(row.label + ': 수요 ' + row.demand + '건 · 선생님 ' + row.supply + '명 → ' + row.badge);
       });
       lines.push('');
-      lines.push('■ 매칭 SLA (' + String((x.basis && x.basis.sla) || '지금 대기 기준') + ')');
+      lines.push('■ 매칭 대기 시간 (' + String((x.basis && x.basis.sla) || '지금 대기 기준') + ')');
       lines.push('대기 ' + num(s.pending, 0) + '건 · 미배정 ' + num(s.awaitingAssign, 0) + ' · 확정 대기 ' + num(s.awaitingConfirm, 0) +
         ' · 재확정 ' + num(s.reconfirm, 0) + ' · 24시간 초과 ' + num(s.over24, 0) + '건');
       (s.items || []).forEach(function (it) {
@@ -8832,7 +8832,7 @@ body.is-keyboard #bookTotalBar{display:none}
     }
 
     /* ------------------------------------------------------------------
-       v29 · 고객 후기 신뢰 배지 · 원클릭 재예약
+       v29 · 보호자 후기 신뢰 배지 · 원클릭 재예약
        ──────────────────────────────────────────────────────────────────
        ① 후기 태그 마스터 5종(친절한 설명·시간 엄수·체계적 평가·통증 완화·보호자 소통)
        ② 방문 1회 1후기 규칙: 방문 완료 + 담당 선생님 + 아직 후기 없음 = 작성 가능
@@ -9108,7 +9108,7 @@ body.is-keyboard #bookTotalBar{display:none}
         teacherName: teacherNameIn(c, teacherId) || String(b.teacher || ''),
         province: province, district: district, region: String(b.region || ''),
         syms: syms, symptomCodes: Array.isArray(b.symptomCodes) ? b.symptomCodes.slice() : symptomCodesOf(syms),
-        passId: passId, passName: plan ? plan.name : '1회 방문권',
+        passId: passId, passName: plan ? plan.name : '1회권',
         unitPrice: unitPrice, total: unitPrice, freeEval: false, free: false,
         note: '같은 선생님 · 같은 지역 · 같은 증상으로 미리 채웠어요. 방문 주소와 날짜·시간만 확인하면 돼요.'
       };
@@ -9135,6 +9135,63 @@ body.is-keyboard #bookTotalBar{display:none}
       licenseShort: '면허번호를 4자 이상 입력해 주세요.'
     };
     var INPUT_KINDS = ['name', 'phone', 'email', 'card4', 'expiry', 'rate', 'year', 'license'];
+
+    /* =================================================================
+       v38 · 문구·용어 표준 (GLOSSARY.md)
+       ─ 화면에 나가는 말은 여기 적힌 한 가지 이름만 쓴다.
+         보호자(서비스를 받는 사람·가족) · 선생님(방문하는 치료사) · 관리자(운영)
+         회차권(1·4·8·12회권 상품) · 회차(방문 1회) · 방문 일지(줄여서 일지)
+       ─ 말투: 화면 안내·버튼·토스트는 해요체, 약관·결제·개인정보·안전 고지는 합니다체.
+       ─ 아래 COPY_BANNED는 '쓰지 않는 말'이다. auditCopy()로 화면 문구를 검사한다.
+       ================================================================= */
+    var COPY_VERSION = 'v38';
+    var COPY_TERMS = {
+      guardian: '보호자',
+      teacher: '선생님',
+      operator: '관리자',
+      pass: '회차권',
+      round: '회차',
+      journal: '방문 일지',
+      demo: '시연용',
+      settlement: '회차 완료 D+3 정산 확정 · 월 2회(15일·말일) 지급'
+    };
+    var COPY_BANNED = [
+      { term: '이용권', use: '회차권' },
+      { term: '회기', use: '회차' },
+      { term: '방문권', use: '회차권' },
+      { term: '파트너', use: '선생님' },
+      { term: '고객 모드', use: '보호자 모드' },
+      { term: '회복 일지', use: '방문 일지' },
+      { term: '프로토타입', use: '시연용' },
+      { term: '데모', use: '시연용' },
+      { term: 'DEMO', use: '시연용' }
+    ];
+    var COPY_SEARCH_ALIASES = ['이용권', '패키지', '회기'];   /* 검색어로만 남기는 옛 표현 */
+    function auditCopy(text, limit) {
+      var s = String(text == null ? '' : text);
+      var max = num(limit, 200);
+      var out = [];
+      for (var i = 0; i < COPY_BANNED.length; i++) {
+        var rule = COPY_BANNED[i];
+        var at = s.indexOf(rule.term);
+        while (at !== -1 && out.length < max) {
+          out.push({
+            term: rule.term, use: rule.use, at: at,
+            context: s.slice(Math.max(0, at - 14), at + rule.term.length + 14).replace(/\s+/g, ' ')
+          });
+          at = s.indexOf(rule.term, at + rule.term.length);
+        }
+        if (out.length >= max) break;
+      }
+      return out;
+    }
+    /* 해요체 안내문에 합니다체가 섞였는지 — 법적 고지 문단은 검사에서 뺀다. */
+    function copyToneOf(text) {
+      var s = String(text == null ? '' : text);
+      var formal = (s.match(/(습니다|입니다)(?=[\s.,)<]|$)/g) || []).length;
+      var polite = (s.match(/[가-힣]요(?=[\s.,)<]|$)/g) || []).length;
+      return { formal: formal, polite: polite, mixed: formal > 0 && polite > 0 };
+    }
     var INPUT_OPTIONAL = { email: true, year: true };
 
     /* 휴대폰·지역번호 자동 하이픈 — 기존 예약 폼과 같은 규칙(02는 2-3-4, 나머지 3-4-4) */
@@ -9407,7 +9464,7 @@ body.is-keyboard #bookTotalBar{display:none}
       buildAdminMetrics: buildAdminMetrics,
       adminMetricsText: adminMetricsText,
       adminMetricsCsv: adminMetricsCsv,
-      /* v29 · 고객 후기 신뢰 배지·원클릭 재예약 */
+      /* v29 · 보호자 후기 신뢰 배지·원클릭 재예약 */
       trustVersion: TRUST_VERSION,
       reviewTagMaster: REVIEW_TAG_MASTER.map(function (x) { return { code: x.code, label: x.label }; }),
       reviewRuleNote: REVIEW_RULE_NOTE,
@@ -9529,7 +9586,14 @@ body.is-keyboard #bookTotalBar{display:none}
       formatCardExpiryKR: formatCardExpiryKR,
       isInputComplete: isInputComplete,
       validateInput: validateInput,
-      keyboardInsetOf: keyboardInsetOf
+      keyboardInsetOf: keyboardInsetOf,
+      /* v38 · 문구·용어 표준 */
+      copyVersion: COPY_VERSION,
+      copyTerms: COPY_TERMS,
+      copyBanned: COPY_BANNED.map(function (x) { return { term: x.term, use: x.use }; }),
+      copySearchAliases: COPY_SEARCH_ALIASES.slice(),
+      auditCopy: auditCopy,
+      copyToneOf: copyToneOf
     };
   })();
 
@@ -9658,18 +9722,18 @@ body.is-keyboard #bookTotalBar{display:none}
         cta: [{ label: '예약하기', attrs: 'data-go="booking"' }]
       },
       'wallet-passes': {
-        title: '보유한 이용권이 없어요',
+        title: '보유한 회차권이 없어요',
         desc: '첫 방문 평가는 무료예요. 평가 뒤에 회차권을 고르면 됩니다.',
         cta: [{ label: '무료 평가 예약', attrs: 'data-book="eval"' }]
       },
       'receipts': {
         title: '결제 내역이 없어요',
-        desc: '결제를 마치면 영수증이 여기에 쌓입니다.',
+        desc: '결제를 마치면 영수증이 여기에 쌓여요.',
         cta: [{ label: '예약하기', attrs: 'data-go="booking"' }]
       },
       'journal-timeline': {
         title: '아직 방문 기록이 없어요',
-        desc: '첫 방문이 끝나면 회복 기록이 여기에 쌓입니다.',
+        desc: '첫 방문이 끝나면 회복 기록이 여기에 쌓여요.',
         cta: [{ label: '방문 예약', attrs: 'data-go="booking"' }]
       },
       'teachers-filter': {
@@ -9694,7 +9758,7 @@ body.is-keyboard #bookTotalBar{display:none}
       },
       'notif-list': {
         title: '새 알림이 없어요',
-        desc: '방문 일정·리포트·정산 소식이 생기면 여기에 모입니다.',
+        desc: '방문 일정·리포트·정산 소식이 생기면 여기에 모여요.',
         cta: [{ label: '예약 보기', attrs: 'data-go="booking"' }]
       },
       'notif-filter': {
@@ -9704,17 +9768,17 @@ body.is-keyboard #bookTotalBar{display:none}
       },
       'tp-notif': {
         title: '아직 선생님 알림이 없어요',
-        desc: '방문 요청이 배정되면 여기에 쌓입니다.',
+        desc: '방문 요청이 배정되면 여기에 쌓여요.',
         cta: [{ label: '일정 보기', attrs: 'data-go="tp-schedule"' }]
       },
       'tp-requests': {
         title: '대기 중인 방문 요청이 없어요',
-        desc: '새 요청이 오면 알림으로 알려드립니다.',
+        desc: '새 요청이 오면 알림으로 알려드려요.',
         cta: [{ label: '일정 보기', attrs: 'data-go="tp-schedule"' }]
       },
       'tp-schedule': {
         title: '확정된 방문이 없어요',
-        desc: '예약이 확정되면 이번 주 일정이 여기에 표시됩니다.',
+        desc: '예약이 확정되면 이번 주 일정이 여기에 표시돼요.',
         cta: [{ label: '가능 시간 등록', attrs: 'data-go="tp-mypage"' }]
       },
       'tp-journals': {
@@ -9757,12 +9821,12 @@ body.is-keyboard #bookTotalBar{display:none}
       },
       'admin-queue': {
         title: '심사 대기 중인 지원서가 없어요',
-        desc: '새 지원서가 접수되면 여기에 표시됩니다.',
+        desc: '새 지원서가 접수되면 여기에 표시돼요.',
         cta: [{ label: '예약 큐 보기', attrs: 'data-scroll="adminResvSec"' }]
       },
       'admin-recent': {
         title: '아직 처리한 지원서가 없어요',
-        desc: '지원서를 승인하거나 보완 요청하면 이력이 남습니다.',
+        desc: '지원서를 승인하거나 보완 요청하면 이력이 남아요.',
         cta: [{ label: '심사 대기 보기', attrs: 'data-scroll="adminQueue"' }]
       },
       'admin-resv': {
@@ -9772,17 +9836,17 @@ body.is-keyboard #bookTotalBar{display:none}
       },
       'admin-ops-queue': {
         title: '미배정·재확정 대기 예약이 없어요',
-        desc: '모두 배정·확정됐습니다.',
+        desc: '모두 배정·확정됐어요.',
         cta: [{ label: '운영 지표 보기', attrs: 'data-scroll="adminMetricsSec"' }]
       },
       'admin-reminders': {
         title: '오늘 발송할 리마인드가 없어요',
-        desc: '방문 D-1·4주 재평가·정산 확정 일정이 생기면 여기에 모입니다.',
+        desc: '방문 D-1·4주 재평가·정산 확정 일정이 생기면 여기에 모여요.',
         cta: [{ label: '오늘 처리할 일', attrs: 'data-scroll="adminOpsSec"' }]
       },
       'admin-metrics-regions': {
         title: '이번 기간 수요가 있는 지역이 없어요',
-        desc: '새 예약이 접수되면 지역별 수요·공급 갭이 여기에 모입니다.',
+        desc: '새 예약이 접수되면 지역별 수요·공급 갭이 여기에 모여요.',
         cta: [{ label: '전체 기간으로 보기', attrs: 'data-metrics-period="all"' }]
       }
     };
@@ -10165,6 +10229,43 @@ body.is-keyboard #bookTotalBar{display:none}
   /* v32 · 검증 훅 — 화면에는 영향 없음(빈 상태 감사·로딩·재시도·초안) */
   try { window.__ttokttokUI = TtUI; } catch (e) {}
 
+  /* v38 · 문구·용어 검사 훅(테스트·운영 점검용). 화면에는 영향을 주지 않는다. */
+  try {
+    window.__ttokttokCopy = {
+      version: TtModel.copyVersion,
+      terms: TtModel.copyTerms,
+      banned: TtModel.copyBanned,
+      searchAliases: TtModel.copySearchAliases,
+      audit: function (text) {
+        var s = text;
+        if (s == null) {
+          try { s = document.body.innerText; } catch (e) {}
+          if (s == null) { try { s = document.body.textContent; } catch (e) { s = ''; } }
+        }
+        return TtModel.auditCopy(s);
+      },
+      toneOf: function (text) { return TtModel.copyToneOf(text); },
+      /* 지금 보이는 화면(열린 시트 포함)의 문구만 모은다. */
+      visibleText: function () {
+        var parts = [];
+        var nodes = document.body.querySelectorAll('body *');
+        for (var i = 0; i < nodes.length; i++) {
+          var el = nodes[i];
+          var tag = (el.nodeName || '').toUpperCase();
+          if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT' || tag === 'SVG') continue;
+          if (el.children.length) continue;
+          var cs = null;
+          try { cs = window.getComputedStyle ? window.getComputedStyle(el) : null; } catch (e) {}
+          if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) continue;
+          if (el.closest && el.closest('[hidden],[inert],[aria-hidden="true"]')) continue;
+          var tx = (el.textContent || '').trim();
+          if (tx) parts.push(tx);
+        }
+        return parts.join(' ');
+      }
+    };
+  } catch (e) {}
+
   /* ================= 전국 지역 ================= */
   function TTMain() {
   var REGIONS = {
@@ -10248,7 +10349,7 @@ body.is-keyboard #bookTotalBar{display:none}
     document.body.classList.toggle('on-home', name === 'home');
     document.body.classList.toggle('on-mypage', name === 'mypage');
     var rpText = $('#rolePillText');
-    if (rpText) rpText.textContent = name === 'admin' ? '관리자 모드' : (role === 'therapist' ? '선생님 모드' : '고객 모드');
+    if (rpText) rpText.textContent = name === 'admin' ? '관리자 모드' : (role === 'therapist' ? '선생님 모드' : '보호자 모드');
     if (name === 'mypage') renderAccount();
     if (name === 'home' || name === 'mypage') { renderCustomerHeader(); if (name === 'home') { try { renderHomeSummary(); } catch (e) {} } }
     if (name === 'journal') { renderChart(currentMetric); renderJournalTimeline(); renderDday(); try { renderJournalV20(); } catch (e) {} }
@@ -10269,7 +10370,7 @@ body.is-keyboard #bookTotalBar{display:none}
     document.body.classList.toggle('mode-customer', role === 'customer');
     var pill = $('#rolePill');
     var pillText = $('#rolePillText');
-    if (pillText) pillText.textContent = role === 'therapist' ? '선생님 모드' : '고객 모드';
+    if (pillText) pillText.textContent = role === 'therapist' ? '선생님 모드' : '보호자 모드';
     if (pill) pill.setAttribute('aria-label', '이용 모드 전환');
     try { SafeStorage.setItem(ROLE_KEY, role); } catch (e) {}
     if (role === 'therapist') {
@@ -10528,7 +10629,7 @@ body.is-keyboard #bookTotalBar{display:none}
     yoon: {
       grad: 'linear-gradient(140deg,#0D9488,#134E4A)', since: '2016', price: 70000, revisit: '93%',
       hospital: '대전 대학병원 재활의학과 작업치료 6년',
-      career: '뇌졸중 상지 재활과 인지·일상동작 훈련을 담당합니다. 손을 다시 쓰는 과정을 목표로 집에서 할 수 있는 과제를 함께 정하고, 보호자에게도 방법을 알려드립니다.',
+      career: '뇌졸중 상지 재활과 인지·일상동작 훈련을 담당합니다. 손을 다시 쓰는 과정을 목표로 집에서 할 수 있는 과제를 함께 정하고, 보호자에게도 방법을 알려드려요.',
       reviews: [
         { who: '임*숙 보호자', when: '2026.11.10', stars: 5, text: '남편이 다시 젓가락을 잡습니다. 집에서 연습할 과제를 매번 챙겨주셨어요.', tags: ['체계적 평가', '보호자 소통'] },
         { who: '박*경 보호자', when: '2026.09.22', stars: 5, text: '인지 훈련까지 같이 봐주셔서 대화도 많아지셨어요.', tags: ['친절한 설명', '통증 완화'] }
@@ -10998,7 +11099,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var pending = TtModel.pendingVerificationSteps(t);
     var pendingNote = pending.length
       ? '<p class="sheet-note">' + esc(pending.map(function (s) { return s.label; }).join(' · ')) +
-        '은 진행 중이에요. 마무리되면 프로필에 표시됩니다.</p>'
+        '은 진행 중이에요. 마무리되면 프로필에 표시돼요.</p>'
       : '';
     var reviews = (d.reviews || []).map(function (r) {
       return '<div class="review-card">' +
@@ -11050,7 +11151,7 @@ body.is-keyboard #bookTotalBar{display:none}
       '</div>' +
       trustHtml +
       '<div class="sheet-block">' +
-        '<p class="sheet-label">' + icon('message') + '고객 후기 ' + t.reviews + ' <span class="fs-10p c-cap fw-600">최근 2건</span></p>' +
+        '<p class="sheet-label">' + icon('message') + '보호자 후기 ' + t.reviews + ' <span class="fs-10p c-cap fw-600">최근 2건</span></p>' +
         reviews +
       '</div>' +
       '<div class="sheet-block">' +
@@ -11238,26 +11339,26 @@ body.is-keyboard #bookTotalBar{display:none}
     }
   });
 
-  /* ================= 이용권 상품 ================= */
+  /* ================= 회차권 상품 ================= */
   var passes = [
     {
       id: 'eval', name: '첫 1:1 방문 평가권', sessions: 1, price: 0, listPrice: 50000,
-      per: '0원', tag: '신규 1회', sub: '걸음·관절·통증 평가 + 맞춤 재활 계획', note: '평가 후 정규 이용권을 안내드려요.'
+      per: '0원', tag: '신규 1회', sub: '걸음·관절·통증 평가 + 맞춤 재활 계획', note: '평가 후 정규 회차권을 안내드려요.'
     },
     {
-      id: 'p1', name: '1회 방문권', sessions: 1, price: 90000, listPrice: 0,
+      id: 'p1', name: '1회권', sessions: 1, price: 90000, listPrice: 0,
       per: '90,000원/회', tag: '', sub: '평가 후 바로 시작하는 단건 방문', note: ''
     },
     {
-      id: 'p4', name: '4회 방문권', sessions: 4, price: 320000, listPrice: 360000,
+      id: 'p4', name: '4회권', sessions: 4, price: 320000, listPrice: 360000,
       per: '80,000원/회', tag: '11% 할인', sub: '2주 집중 · 주 2회 방문', note: ''
     },
     {
-      id: 'p8', name: '8회 방문권', sessions: 8, price: 592000, listPrice: 720000,
+      id: 'p8', name: '8회권', sessions: 8, price: 592000, listPrice: 720000,
       per: '74,000원/회', tag: '18% 할인', sub: '4주 프로그램 · 가장 많이 선택', note: '', best: true
     },
     {
-      id: 'p12', name: '12회 집중 재활', sessions: 12, price: 840000, listPrice: 1080000,
+      id: 'p12', name: '12회권', sessions: 12, price: 840000, listPrice: 1080000,
       per: '70,000원/회', tag: '22% 할인', sub: '6주 집중 · 보행·관절 목표 설정', note: ''
     }
   ];
@@ -11470,7 +11571,7 @@ body.is-keyboard #bookTotalBar{display:none}
     renderSlots();
   });
 
-  /* ----- 이용권 ----- */
+  /* ----- 회차권 ----- */
   function renderPasses() {
     var wrap = $('#passList');
     wrap.innerHTML = passes.map(function (p) {
@@ -11499,7 +11600,7 @@ body.is-keyboard #bookTotalBar{display:none}
     updateTotal();
   });
 
-  /* 선택한 이용권에 실제로 쓸 수 있는 쿠폰인지 */
+  /* 선택한 회차권에 실제로 쓸 수 있는 쿠폰인지 */
   function couponAppliesTo(coupon, p) {
     if (!coupon || coupon.used || !p) return false;
     if (p.price === 0) return coupon.type === 'free' || coupon.target === 'eval';
@@ -11589,7 +11690,7 @@ body.is-keyboard #bookTotalBar{display:none}
   var BOOK_STEPS = [
     '방문 정보를 입력해 주세요',
     '방문 일정을 골라주세요',
-    '이용권을 골라주세요',
+    '회차권을 골라주세요',
     '결제 전 마지막 확인'
   ];
 
@@ -11662,7 +11763,7 @@ body.is-keyboard #bookTotalBar{display:none}
       return true;
     }
     if (n === 3) {
-      if (!bk.passId) { toast('이용권을 선택해 주세요.'); return false; }
+      if (!bk.passId) { toast('회차권을 선택해 주세요.'); return false; }
       return true;
     }
     return true;
@@ -11690,7 +11791,7 @@ body.is-keyboard #bookTotalBar{display:none}
       ['불편 부위', bk.syms.length ? bk.syms.join(', ') : '-'],
       ['방문 일정', bk.dateIso ? bk.dateLabel + ' (' + bk.dateDay + ') ' + bk.time : '-'],
       ['담당 선생님', bk.teacherId ? teacherName(bk.teacherId) : '추천 배정'],
-      ['이용권', p ? p.name : '-']
+      ['회차권', p ? p.name : '-']
     ];
     if (p && p.price > 0) {
       var dc = discountFor(p);
@@ -11877,10 +11978,10 @@ body.is-keyboard #bookTotalBar{display:none}
       ['방문 일정', bk.dateLabel + ' (' + bk.dateDay + ') ' + bk.time],
       ['담당 선생님', bk.teacherId ? teacherName(bk.teacherId) : '추천 배정 (평가 후 확정)'],
       ['방문 지역', regionText],
-      ['이용권', p.name],
+      ['회차권', p.name],
       ['결제 금액', won(total) + (total > 0 ? ' · ' + bk.pay : '')]
     ];
-    if (remaining !== null) rows.push(['이용권 잔여', remaining + '회 (첫 방문 1회 차감)']);
+    if (remaining !== null) rows.push(['회차권 잔여', remaining + '회 (첫 방문 1회 차감)']);
     if (discount > 0) {
       rows.push(['정가', won(listTotal)]);
       if (usedCoupon) rows.push(['사용 쿠폰', usedCoupon.title]);
@@ -12109,7 +12210,7 @@ body.is-keyboard #bookTotalBar{display:none}
       'DTSTART;TZID=Asia/Seoul:' + icsLocal(start),
       'DTEND;TZID=Asia/Seoul:' + icsLocal(end),
       'SUMMARY:' + icsEscape('똑똑쌤 방문재활 · ' + who),
-      'DESCRIPTION:' + icsEscape('예약번호 ' + no + '\n담당 선생님: ' + whoDesc + '\n이용권 ' + (b.passName || '-') + '\n방문 전 선생님이 연락드립니다.'),
+      'DESCRIPTION:' + icsEscape('예약번호 ' + no + '\n담당 선생님: ' + whoDesc + '\n회차권 ' + (b.passName || '-') + '\n방문 전 선생님이 연락드립니다.'),
       'LOCATION:' + icsEscape(b.region || ''),
       'STATUS:CONFIRMED',
       'TRANSP:OPAQUE',
@@ -12172,14 +12273,14 @@ body.is-keyboard #bookTotalBar{display:none}
   var doneIcsBtn = $('#doneIcs');
   if (doneIcsBtn) doneIcsBtn.addEventListener('click', downloadIcs);
 
-  /* ================= 계정 (이용권·예약·결제) ================= */
+  /* ================= 계정 (회차권·예약·결제) ================= */
   var STORE_KEY = 'ttokttok_account_v3';
 
   function seedAccount() {
     return {
       profile: { name: '현수' },
       passes: [
-        { id: 'seed-pass', userId: 'usr-demo', passId: 'p8', name: '8회 방문권', total: 8, remaining: 5, purchased: '2026.10.28', expire: '2027.01.27', status: 'active' }
+        { id: 'seed-pass', userId: 'usr-demo', passId: 'p8', name: '8회권', total: 8, remaining: 5, purchased: '2026.10.28', expire: '2027.01.27', status: 'active' }
       ],
       bookings: [
         { id: 'res-tt-261021-7302', no: 'TT-261021-7302', userId: 'usr-demo', date: '11.27', day: '금', time: '10:30', teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구', status: 'confirmed', passId: 'p8', walletId: 'seed-pass', dateIso: nextIso(2), amount: 74000, paymentStatus: 'paid' },
@@ -12188,7 +12289,7 @@ body.is-keyboard #bookTotalBar{display:none}
         demoPastVisit()
       ],
       receipts: [
-        { id: 'pay-tt-261028-4192', no: 'TT-261028-4192', date: '2026.10.28', item: '8회 방문권', amount: 592000, method: '신용/체크카드', status: 'paid' },
+        { id: 'pay-tt-261028-4192', no: 'TT-261028-4192', date: '2026.10.28', item: '8회권', amount: 592000, method: '신용/체크카드', status: 'paid' },
         { id: 'pay-tt-261021-7302', no: 'TT-261021-7302', date: '2026.10.21', item: '첫 1:1 방문 평가권', amount: 0, method: '무료', status: 'paid' }
       ],
       sessions: defaultSessions(),
@@ -12213,7 +12314,7 @@ body.is-keyboard #bookTotalBar{display:none}
       teacher: '박서준 선생님', teacherId: 'park', region: '서울 강남구 대치동', regionId: 'reg-서울-강남구',
       status: 'completed', passId: '', walletId: '', dateIso: iso,
       symptomCodes: ['stroke'],
-      amount: 0, paymentStatus: 'paid', memo: '첫 1:1 방문 평가 (데모 시드) · 뇌졸중·편마비 보행 평가'
+      amount: 0, paymentStatus: 'paid', memo: '첫 1:1 방문 평가 (예시 데이터) · 뇌졸중·편마비 보행 평가'
     };
   }
 
@@ -12244,7 +12345,7 @@ body.is-keyboard #bookTotalBar{display:none}
       TtUI.alert({
         key: 'account-read',
         title: '저장된 예약 데이터를 읽지 못했어요',
-        message: '저장된 값이 손상되어 예시 데이터로 열었습니다. 기기 데이터는 지우지 않았어요.',
+        message: '저장된 값이 손상돼 있어 예시 데이터로 열었어요. 기기 데이터는 지우지 않았어요.',
         retry: 'account-read',
         retryLabel: '다시 읽기',
         onRetry: function () { return retryAccountRead(); }
@@ -12256,7 +12357,7 @@ body.is-keyboard #bookTotalBar{display:none}
       TtUI.alert({
         key: 'account-read',
         title: '저장된 예약 데이터를 읽지 못했어요',
-        message: '저장된 값의 형식이 맞지 않아 예시 데이터로 열었습니다.',
+        message: '저장된 값의 형식이 맞지 않아 예시 데이터로 열었어요.',
         retry: 'account-read',
         retryLabel: '다시 읽기',
         onRetry: function () { return retryAccountRead(); }
@@ -12269,7 +12370,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var ok = false;
     try { ok = TtStorage.set(STORE_KEY, account) !== false; } catch (e) { ok = false; }
     if (ok) TtUI.clearAlert('account-save');
-    else TtUI.storageError('account', '예약·이용권·일지', function () { return saveAccount(); });
+    else TtUI.storageError('account', '예약·회차권·일지', function () { return saveAccount(); });
     return ok;
   }
 
@@ -12506,7 +12607,7 @@ body.is-keyboard #bookTotalBar{display:none}
         ph += '<div class="sum-row"><span>만료 예정</span><b>' + esc(p.nearestExpire) + (p.nearestName ? ' · ' + esc(p.nearestName) : '') + '</b></div>';
       }
       ph += '<p class="fine mt-6">' + esc(p.guide.join(' · ')) + '</p>' +
-        '<button class="sec-link mt-8" type="button" data-summary="pass" style="padding:8px 0">이용권·잔여 회차 보기' + summaryChevron() + '</button>' +
+        '<button class="sec-link mt-8" type="button" data-summary="pass" style="padding:8px 0">회차권·잔여 회차 보기' + summaryChevron() + '</button>' +
         '</div>';
       ps.innerHTML = ph;
     }
@@ -12524,7 +12625,7 @@ body.is-keyboard #bookTotalBar{display:none}
       if (r.lastDateLabel) {
         rh += '<p class="fine mt-6">최근 일지 ' + esc(r.lastDateLabel) + ' · ' + esc(r.lastLine || '기록') + '</p>';
       } else {
-        rh += '<p class="fine mt-6">최근 4주 방문 일지가 아직 없어요. 방문 후 선생님이 2분 일지를 남기면 여기에 쌓입니다.</p>';
+        rh += '<p class="fine mt-6">최근 4주 방문 일지가 아직 없어요. 방문 후 선생님이 2분 일지를 남기면 여기에 쌓여요.</p>';
       }
       rh += '<button class="sec-link mt-8" type="button" data-summary="report" style="padding:8px 0">이번 주 리포트 열기' + summaryChevron() + '</button>' +
         '</div>';
@@ -12673,7 +12774,7 @@ body.is-keyboard #bookTotalBar{display:none}
           '<b>' + esc(s.round || '방문') + ' · ' + esc(t ? t.name + ' 선생님' : '선생님') + '</b>' +
           '<span class="tl-badge is-done">완료</span>' +
           '<span class="tl-when">' + esc(s.date || '') + '</span>' +
-        '</div><p class="tl-note">' + esc((s.pass || '방문권') + ' · ' + (s.reviewed ? '후기 등록' : '후기 남기기 가능')) + '</p></div>' +
+        '</div><p class="tl-note">' + esc((s.pass || '회차권') + ' · ' + (s.reviewed ? '후기 등록' : '후기 남기기 가능')) + '</p></div>' +
       '</div>');
     });
     el.innerHTML = rows.join('') || TtUI.emptyHtml('journal-timeline');
@@ -12752,7 +12853,7 @@ body.is-keyboard #bookTotalBar{display:none}
       checkinBtn.style.color = '#0B7A6B';
       checkStatus.textContent = '방문 중';
       checkStatus.classList.add('is-on');
-      toast('체크인 완료! 보호자에게 도착 알림을 보냈어요.', { ok: true });
+      toast('체크인 완료! 방문 시작 시각이 기록됐어요.', { ok: true });
     } else {
       checkinBtn.textContent = '도착 체크인';
       checkinBtn.style.background = '';
@@ -13018,7 +13119,7 @@ body.is-keyboard #bookTotalBar{display:none}
       parts.push('<text x="' + x.toFixed(1) + '" y="' + (axisTop + 9) + '" text-anchor="' + (i === 0 ? 'start' : (i === nn - 1 ? 'end' : 'middle')) + '" font-size="8.5" fill="#B0BAC8">' + (i + 1) + '회</text>');
     });
 
-    return '<svg class="rc-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="최근 5회기 회복 추이 그래프">' + parts.join('') + '</svg>';
+    return '<svg class="rc-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="최근 5회차 회복 추이 그래프">' + parts.join('') + '</svg>';
   }
 
   function renderReport() {
@@ -13036,12 +13137,12 @@ body.is-keyboard #bookTotalBar{display:none}
       '</div>' +
       '<div class="rc-facts">' +
         '<div class="rc-fact"><span>담당 선생님</span><b>' + esc(f.teacher) + '<small>' + esc(f.license) + '</small></b></div>' +
-        '<div class="rc-fact"><span>누적 회차</span><b>' + f.rounds + '회기<small>전체 ' + f.totalRounds + '회기</small></b></div>' +
+        '<div class="rc-fact"><span>누적 회차</span><b>' + f.rounds + '회차<small>전체 ' + f.totalRounds + '회차</small></b></div>' +
         '<div class="rc-fact"><span>다음 방문</span><b>' + esc(f.next) + '</b></div>' +
         '<div class="rc-fact"><span>방문 주기</span><b>' + esc(REPORT_PATIENT.cycle) + '</b></div>' +
       '</div>' +
       '<div class="rc-chart">' +
-        '<div class="rc-chart-head"><b>회복 추이</b><span>최근 5회기 · ' + f.pct + '% 진행</span></div>' +
+        '<div class="rc-chart-head"><b>회복 추이</b><span>최근 5회차 · ' + f.pct + '% 진행</span></div>' +
         '<div id="reportChart">' + reportChartSvg() + '</div>' +
       '</div>' +
       '<div class="rc-quote">' +
@@ -13061,11 +13162,11 @@ body.is-keyboard #bookTotalBar{display:none}
     lines.push(REPORT_PATIENT.name + ' · ' + REPORT_PATIENT.age + '세');
     lines.push(f.teacher + ' (' + f.license + ')');
     lines.push('');
-    lines.push('· 누적 ' + f.rounds + '회기 / 전체 ' + f.totalRounds + '회기 (' + f.pct + '%)');
+    lines.push('· 누적 ' + f.rounds + '회차 / 전체 ' + f.totalRounds + '회차 (' + f.pct + '%)');
     lines.push('· 다음 방문 ' + f.next);
     lines.push('· 방문 ' + REPORT_PATIENT.cycle + ' 진행');
     lines.push('');
-    lines.push('회복 추이 (최근 5회기)');
+    lines.push('회복 추이 (최근 5회차)');
     REPORT_METRICS.forEach(function (m) {
       lines.push('· ' + m.name + ' ' + metricValue(m.data[0], m) + m.unit + ' → ' + metricValue(m.data[m.data.length - 1], m) + m.unit + ' (' + metricDeltaText(m) + ')');
     });
@@ -13287,13 +13388,13 @@ body.is-keyboard #bookTotalBar{display:none}
       approvedAt: '2026.10.18',
       settlement: { visits: 14, gross: 1260000, fee: 280000, net: 980000, due: '2026.11.30', month: '11월' },
       requests: [
-        { id: 'r1', patient: '김순자 어르신', symptom: '뇌졸중·편마비', region: '서울 강남구 대치동', date: '12/01 (월)', time: '10:30', pass: '12회 집중 재활', payout: 54444, ago: '12분 전' },
-        { id: 'r2', patient: '이만복 어르신', symptom: '무릎·고관절 수술 후', region: '서울 서초구 반포동', date: '12/02 (화)', time: '15:00', pass: '4회 방문권', payout: 62222, ago: '38분 전' }
+        { id: 'r1', patient: '김순자 어르신', symptom: '뇌졸중·편마비', region: '서울 강남구 대치동', date: '12/01 (월)', time: '10:30', pass: '12회권', payout: 54444, ago: '12분 전' },
+        { id: 'r2', patient: '이만복 어르신', symptom: '무릎·고관절 수술 후', region: '서울 서초구 반포동', date: '12/02 (화)', time: '15:00', pass: '4회권', payout: 62222, ago: '38분 전' }
       ],
       schedule: [
-        { id: 's1', patient: '김순자 어르신', region: '서울 강남구 대치동', date: '오늘', day: '수', time: '14:00', pass: '12회 집중 재활 · 5회기', checked: false },
-        { id: 's2', patient: '박정호 어르신', region: '서울 서초구 반포동', date: '11/27', day: '금', time: '10:30', pass: '8회 방문권 · 3회기', checked: false },
-        { id: 's3', patient: '최은자 어르신', region: '서울 송파구 잠실동', date: '11/28', day: '토', time: '16:00', pass: '4회 방문권 · 2회기', checked: false }
+        { id: 's1', patient: '김순자 어르신', region: '서울 강남구 대치동', date: '오늘', day: '수', time: '14:00', pass: '12회권 · 5회차', checked: false },
+        { id: 's2', patient: '박정호 어르신', region: '서울 서초구 반포동', date: '11/27', day: '금', time: '10:30', pass: '8회권 · 3회차', checked: false },
+        { id: 's3', patient: '최은자 어르신', region: '서울 송파구 잠실동', date: '11/28', day: '토', time: '16:00', pass: '4회권 · 2회차', checked: false }
       ],
       journals: [
         { id: 'jnl-2026-11-25-1', date: '2026.11.25', patient: '김순자 어르신', gait: '0.66', rom: '118', pain: 3, memo: '무릎 안쪽 붕괴 패턴 감소. 다음 회차 계단 훈련 추가.' },
@@ -13319,7 +13420,7 @@ body.is-keyboard #bookTotalBar{display:none}
       ok = TtStorage.set(P_KEY, partner) !== false;
     } catch (e) { ok = false; }
     if (ok) TtUI.clearAlert('partner-save');
-    else TtUI.storageError('partner', '파트너 일지·정산', function () { return savePartner(); });
+    else TtUI.storageError('partner', '선생님 일지·정산', function () { return savePartner(); });
     return ok;
   }
 
@@ -13677,7 +13778,7 @@ body.is-keyboard #bookTotalBar{display:none}
     if (!r) { body.innerHTML = ''; return; }
     if (!r.rounds) {
       body.innerHTML = '<div class="sum-row"><span>이번 주 방문</span><b>0회</b></div>' +
-        '<p class="fine mt-6">이번 주 방문 일지가 아직 없어요. 방문 후 선생님이 2분 일지를 남기면 여기에 쌓입니다.</p>';
+        '<p class="fine mt-6">이번 주 방문 일지가 아직 없어요. 방문 후 선생님이 2분 일지를 남기면 여기에 쌓여요.</p>';
       return;
     }
     var html = '<div class="sum-row"><span>이번 주 방문</span><b>' + r.rounds + '회 · ' + r.visitedDays + '일</b></div>';
@@ -14124,7 +14225,7 @@ body.is-keyboard #bookTotalBar{display:none}
         regions: ov ? ov.regions : '', regionDetail: ov ? ov.regionDetail : '', saved: true
       };
     } catch (e) {}
-    toast('가능 시간·활동 지역을 저장했어요. 매칭 후보에 바로 반영됩니다.', { ok: true });
+    toast('가능 시간·활동 지역을 저장했어요. 매칭 후보에 바로 반영돼요.', { ok: true });
     try { TtUI.saved($('#tpAvailSave')); } catch (e) {}
     return { ok: true };
   }
@@ -14243,7 +14344,7 @@ body.is-keyboard #bookTotalBar{display:none}
       var vDone = function (k) { return vSt[k] === 'verified' ? '완료' : '진행 중'; };
       el.innerHTML =
         '<div class="card">' +
-          '<div class="card-head mb-10"><h2>파트너 심사 상태</h2><span class="status-badge is-on">심사 완료 · 활동중</span></div>' +
+          '<div class="card-head mb-10"><h2>선생님 심사 상태</h2><span class="status-badge is-on">심사 완료 · 활동중</span></div>' +
           '<div class="tp-detail">' +
             '<div class="row"><span>면허 확인</span><b>' + esc(partner.license) + ' · ' + vDone('license') + '</b></div>' +
             '<div class="row"><span>경력 확인</span><b>' + esc(partner.years) + ' · ' + vDone('career') + '</b></div>' +
@@ -14255,14 +14356,14 @@ body.is-keyboard #bookTotalBar{display:none}
     } else if (partnerStatus() === 'needs_update') {
       el.innerHTML =
         '<div class="card" style="border:1.5px solid rgba(190,18,60,.2)">' +
-          '<div class="card-head mb-8"><h2>파트너 심사 상태</h2><span class="status-badge is-warn">보완 요청</span></div>' +
-          '<p class="fs-12p c-muted" style="line-height:1.65">접수번호 <b class="c-ink">' + esc(partner.appNo || '-') + '</b><br>관리자가 서류 보완을 요청했습니다.</p>' +
+          '<div class="card-head mb-8"><h2>선생님 심사 상태</h2><span class="status-badge is-warn">보완 요청</span></div>' +
+          '<p class="fs-12p c-muted" style="line-height:1.65">접수번호 <b class="c-ink">' + esc(partner.appNo || '-') + '</b><br>관리자가 서류 보완을 요청했어요.</p>' +
           '<div class="admin-approved" style="background:var(--rose-50);border-color:rgba(190,18,60,.18);color:#9F1239;display:block">' +
             '<b class="fs-11h5p mb-3" style="display:flex;align-items:center;gap:5px">' + icon('alert') + '보완 사유</b>' +
             '<span class="fs-11h5p" style="line-height:1.55">' + esc(partner.reviewNote || '제출 서류를 다시 확인해 주세요.') + '</span>' +
           '</div>' +
           '<div class="steps-mini">' +
-            '<div class="mini-step done"><span class="n">1</span><div><b>접수 완료</b>서류가 접수됐습니다.</div></div>' +
+            '<div class="mini-step done"><span class="n">1</span><div><b>접수 완료</b>서류가 접수됐어요.</div></div>' +
             '<div class="mini-step warn"><span class="n">2</span><div><b>보완 요청</b>사유를 확인하고 서류를 보완해 주세요.</div></div>' +
             '<div class="mini-step"><span class="n">3</span><div><b>재검토 · 승인</b>다시 제출하면 순서대로 검토합니다.</div></div>' +
           '</div>' +
@@ -14271,14 +14372,14 @@ body.is-keyboard #bookTotalBar{display:none}
     } else {
       el.innerHTML =
         '<div class="card" style="border:1.5px solid #F3D5A7">' +
-          '<div class="card-head mb-8"><h2>파트너 심사 상태</h2><span class="status-badge is-wait">심사 대기</span></div>' +
+          '<div class="card-head mb-8"><h2>선생님 심사 상태</h2><span class="status-badge is-wait">심사 대기</span></div>' +
           '<p class="fs-12p c-muted" style="line-height:1.65">접수번호 <b class="c-ink">' + esc(partner.appNo || '-') + '</b><br>제출일 ' + esc(partner.submittedAt || '-') + ' · 영업일 2~3일 내 결과 안내</p>' +
           '<div class="steps-mini">' +
-            '<div class="mini-step done"><span class="n">1</span><div><b>접수 완료</b>제출 서류가 접수됐습니다.</div></div>' +
-            '<div class="mini-step"><span class="n">2</span><div><b>서류·면허 검증</b>면허 진위와 경력을 확인 중입니다.</div></div>' +
-            '<div class="mini-step"><span class="n">3</span><div><b>승인 후 활동</b>승인되면 방문 요청을 받을 수 있습니다.</div></div>' +
+            '<div class="mini-step done"><span class="n">1</span><div><b>접수 완료</b>제출 서류가 접수됐어요.</div></div>' +
+            '<div class="mini-step"><span class="n">2</span><div><b>서류·면허 검증</b>면허 진위와 경력을 확인 중이에요.</div></div>' +
+            '<div class="mini-step"><span class="n">3</span><div><b>승인 후 활동</b>승인되면 방문 요청을 받을 수 있어요.</div></div>' +
           '</div>' +
-          '<button class="btn btn-outline btn-sm mt-12" type="button" data-tp-approve>데모: 심사 승인 처리</button>' +
+          '<button class="btn btn-outline btn-sm mt-12" type="button" data-tp-approve>시연용: 심사 승인 처리</button>' +
         '</div>';
     }
   }
@@ -14396,7 +14497,7 @@ body.is-keyboard #bookTotalBar{display:none}
       } else if (!list.length) {
         full.innerHTML = TtUI.emptyHtml('tp-schedule', {
           title: schedDay ? schedDay + '요일 방문이 없어요' : '확정된 방문이 없어요',
-          desc: schedDay ? '다른 요일을 고르거나 전체 일정을 확인해 보세요.' : '예약이 확정되면 이번 주 일정이 여기에 표시됩니다.'
+          desc: schedDay ? '다른 요일을 고르거나 전체 일정을 확인해 보세요.' : '예약이 확정되면 이번 주 일정이 여기에 표시돼요.'
         });
       } else {
         full.innerHTML = list.map(function (s) { return schedHtml(s, true); }).join('');
@@ -14407,7 +14508,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var mini = $('#tpSchedMini');
     if (mini) {
       if (!isApproved()) {
-        mini.innerHTML = '<div class="locked" style="box-shadow:none"><p>심사 승인 후 일정이 표시됩니다.</p></div>';
+        mini.innerHTML = '<div class="locked" style="box-shadow:none"><p>심사 승인 후 일정이 표시돼요.</p></div>';
       } else {
         mini.innerHTML = all.slice(0, 3).map(function (s) { return schedHtml(s, false); }).join('') || TtUI.emptyHtml('tp-schedule', { style: 'box-shadow:none', title: '이번 주 일정이 없어요' });
       }
@@ -14480,7 +14581,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var wrap = $('#tpJournalFormWrap');
     if (locked) {
       locked.hidden = isApproved();
-      if (!isApproved()) locked.innerHTML = '<div class="locked mt-14"><div class="lk-ico" aria-hidden="true">' + icon('lock') + '</div><p>심사 승인 후 회복 일지를 작성할 수 있습니다.</p><button class="btn btn-outline btn-sm mt-12" type="button" data-tp-approve>데모: 심사 승인 처리</button></div>';
+      if (!isApproved()) locked.innerHTML = '<div class="locked mt-14"><div class="lk-ico" aria-hidden="true">' + icon('lock') + '</div><p>심사 승인 후 방문 일지를 작성할 수 있어요.</p><button class="btn btn-outline btn-sm mt-12" type="button" data-tp-approve>시연용: 심사 승인 처리</button></div>';
     }
     if (wrap) wrap.hidden = !isApproved();
   }
@@ -14705,9 +14806,9 @@ body.is-keyboard #bookTotalBar{display:none}
           (r.excluded ? '' : ' · 지급일 ' + esc(r.payoutDueDateLabel)) + '</p>' +
       '</div>';
     }).join('');
-    if (!s.rows.length) body = '<p class="fine" style="padding:10px 0">이 달에는 정산 내역이 없습니다.</p>';
+    if (!s.rows.length) body = '<p class="fine" style="padding:10px 0">이 달에는 정산 내역이 없어요.</p>';
     var foot = '<p class="sheet-note">* ' + esc(s.note) + '</p>' +
-      '<p class="sheet-note">* 상호 똑똑쌤 · 대표 임현수 · 문의 031-919-8577 · 로컬 데모 데이터입니다.</p>';
+      '<p class="sheet-note">* 상호 똑똑쌤 · 대표 임현수 · 문의 031-919-8577 · 시연용 예시 데이터예요.</p>';
     return head + summary + '<div class="mt-12">' + body + '</div>' + foot;
   }
 
@@ -14791,7 +14892,7 @@ body.is-keyboard #bookTotalBar{display:none}
         '실수령 예상 <b>' + settleWon(s.totals.netExpected) + '</b><clear></clear></div>' +
       '<table><thead><tr><th>방문일</th><th>예약번호</th><th>유형·상태</th><th>지급일</th><th class="r">세전</th><th class="r">원천징수</th><th class="r">실수령</th></tr></thead>' +
       '<tbody>' + (rowsHtml || '<tr><td colspan="7">이 달에는 정산 내역이 없습니다.</td></tr>') + '</tbody></table>' +
-      '<p class="note">* ' + esc(s.note) + '<br>* 상호 똑똑쌤 · 대표 임현수 · 문의 031-919-8577 · 로컬 데모 데이터이며 서버·정산 시스템과 연결되어 있지 않습니다.</p>' +
+      '<p class="note">* ' + esc(s.note) + '<br>* 상호 똑똑쌤 · 대표 임현수 · 문의 031-919-8577 · 시연용 예시 데이터이고 서버·정산 시스템과 연결되어 있지 않아요.</p>' +
       '</body></html>';
   }
 
@@ -15086,14 +15187,14 @@ body.is-keyboard #bookTotalBar{display:none}
     var title = $('#partnerDoneTitle');
     var desc = $('#partnerDoneDesc');
     if (wasApproved) {
-      if (title) title.textContent = '파트너 정보 수정 완료';
-      if (desc) desc.innerHTML = '수정한 정보가 저장됐습니다.<br>활동 상태는 그대로 유지됩니다.';
-      toast('파트너 정보가 수정됐습니다.');
+      if (title) title.textContent = '선생님 정보 수정 완료';
+      if (desc) desc.innerHTML = '수정한 정보가 저장됐어요.<br>활동 상태는 그대로예요.';
+      toast('선생님 정보가 수정됐어요.');
       showTab('tp-mypage');
       return;
     }
     if (title) title.textContent = '심사 접수 완료';
-    if (desc) desc.innerHTML = '제출하신 서류를 확인하고 있습니다.<br>영업일 기준 2~3일 내에 결과를 알려드립니다.';
+    if (desc) desc.innerHTML = '제출하신 서류를 확인하고 있어요.<br>영업일 기준 2~3일 내에 결과를 알려드려요.';
     $('#partnerWizard').hidden = true;
     $('#partnerDone').hidden = false;
     try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
@@ -15137,7 +15238,7 @@ body.is-keyboard #bookTotalBar{display:none}
     saveAdmin();
     renderPartner();
     renderAdmin();
-    toast('심사가 승인되어 파트너 활동을 시작합니다. (데모)', { ok: true });
+    toast('심사가 승인되어 선생님 활동을 시작해요. (시연용)', { ok: true });
     setRole('therapist', 'tp-home');
   }
 
@@ -15303,7 +15404,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var snap = currentSnapshot();
     countsEl.textContent = TtModel.snapshotSummaryText(snap.counts);
     var meta = $('#adminBackupMeta');
-    if (meta) meta.textContent = '백업 파일에는 빠른일지 초안(임시 입력)은 들어가지 않습니다. · 저장소: ' + storageModeText();
+    if (meta) meta.textContent = '백업 파일에는 빠른일지 초안(임시 입력)이 들어가지 않아요. · 저장소: ' + storageModeText();
   }
 
   /* 내려받기 — 파일 이름·내용을 window.__ttokttokBackup 에도 남긴다(검증용). */
@@ -15365,7 +15466,7 @@ body.is-keyboard #bookTotalBar{display:none}
         (pendingImport.warnings.length ? ' · 참고 ' + pendingImport.warnings.length + '건' : '');
     }
     if (box) box.hidden = false;
-    setBackupResult('파일을 확인했어요. 아래 「이 내용으로 복원」을 누르면 반영됩니다.', false);
+    setBackupResult('파일을 확인했어요. 아래 「이 내용으로 복원」을 누르면 반영돼요.', false);
     try { window.__ttokttokRestore = { ok: true, stage: 'preview', fileName: fileName || '', counts: res.counts, warnings: pendingImport.warnings }; } catch (e) {}
     return res;
   }
@@ -15555,8 +15656,8 @@ body.is-keyboard #bookTotalBar{display:none}
     var res = $('#adminHomeStageResult');
     if (res) {
       res.textContent = plan.preview
-        ? '지금은 첫 방문 전 화면을 미리 보는 중입니다. 「실제 상태로 보기」를 누르면 원래대로 돌아갑니다.'
-        : '미리보기를 보려면 버튼을 누르면 보호자 홈으로 이동합니다.';
+        ? '지금은 첫 방문 전 화면을 미리 보는 중이에요. 「실제 상태로 보기」를 누르면 원래대로 돌아가요.'
+        : '미리보기를 보려면 버튼을 누르세요. 보호자 홈으로 이동해요.';
     }
   }
 
@@ -15924,7 +16025,7 @@ body.is-keyboard #bookTotalBar{display:none}
     if (reEl) {
       reEl.innerHTML = (re.items && re.items.length)
         ? re.items.map(adminReevalCardHtml).join('')
-        : '<div class="admin-approved mt-0">' + icon('check-circle') + '4주 재평가 시점이 도래한 회원이 없어요.</div>';
+        : '<div class="admin-approved mt-0">' + icon('check-circle') + '4주 재평가 시점이 된 방문 대상이 없어요.</div>';
     }
     try { window.__ttokttokAdminOps = { counts: { queue: q.counts, exceptions: ex.counts, reeval: { total: re.total, due: re.due, soon: re.soon } }, total: { queue: q.total, exceptions: ex.total, reeval: re.total }, at: Date.now() }; } catch (e) {}
   }
@@ -15957,7 +16058,7 @@ body.is-keyboard #bookTotalBar{display:none}
       '가능한 시간대를 알려 주시면 선생님 일정을 맞춰 드립니다.';
     var okCopy = copyToClipboard(text);
     try { window.__ttokttokReeval = { key: it.key, text: text, copied: okCopy, at: Date.now() }; } catch (e) {}
-    toast(okCopy ? '재평가 안내 문구를 복사했어요. 발송은 하지 않았습니다.' : '복사가 막혀 있어요. 문구를 직접 전해 주세요.');
+    toast(okCopy ? '재평가 안내 문구를 복사했어요. 발송은 하지 않았어요.' : '복사가 막혀 있어요. 문구를 직접 전해 주세요.');
     return okCopy;
   }
   /* 예약 카드로 이동 — 상태에 맞는 필터를 고르고 그 카드를 화면 가운데로 */
@@ -16009,7 +16110,7 @@ body.is-keyboard #bookTotalBar{display:none}
     /* 검증용 훅(화면에는 영향 없음) */
     try { window.__ttokttokAdmin = { noticeNo: b.no, noticeText: text, copied: okCopy, at: Date.now() }; } catch (e) {}
     toast(okCopy
-      ? '보호자·선생님 안내 문구를 복사했어요. 발송은 하지 않았습니다.'
+      ? '보호자·선생님 안내 문구를 복사했어요. 발송은 하지 않았어요.'
       : '복사가 막혀 있어요. 안내 문구는 직접 전달해 주세요.');
     return okCopy;
   }
@@ -16091,7 +16192,7 @@ body.is-keyboard #bookTotalBar{display:none}
     saveAdmin();
     renderAdmin();
     renderPartner();
-    toast(app.name + ' 선생님을 승인했어요. 선생님 모드에 반영됩니다.');
+    toast(app.name + ' 선생님을 승인했어요. 선생님 모드에 반영돼요.');
   }
 
   var rejectTarget = null;
@@ -16106,7 +16207,7 @@ body.is-keyboard #bookTotalBar{display:none}
     $$('#rejectReasons .reject-reason').forEach(function (b) { b.classList.remove('is-on'); });
     var desc = $('#rejectDesc');
     var app = adminAppById(id);
-    if (desc && app) desc.innerHTML = '<b>' + esc(app.name) + '</b> 선생님에게 보완 사유를 알려주세요.<br>선생님 모드에 사유가 바로 표시됩니다.';
+    if (desc && app) desc.innerHTML = '<b>' + esc(app.name) + '</b> 선생님에게 보완 사유를 알려주세요.<br>선생님 모드에 사유가 바로 표시돼요.';
     $('#rejectSheet').classList.add('is-open');
     syncBodyState();
   }
@@ -16198,7 +16299,7 @@ body.is-keyboard #bookTotalBar{display:none}
         '<div class="row"><span>제출 서류</span><b>' + done + '/4 확인</b></div>' +
       '</div></div>' +
       '<div class="sheet-block"><p class="sheet-label">' + icon('shield-check') + '확인 절차 3단계</p><div>' + vRows + '</div>' +
-        '<p class="sheet-note">모든 단계가 통과해야 배지가 보호자에게 표시됩니다. 확인 전에는 어떤 배지도 붙지 않아요.</p></div>' +
+        '<p class="sheet-note">모든 단계가 통과해야 배지가 보호자에게 표시돼요. 확인 전에는 어떤 배지도 붙지 않아요.</p></div>' +
       '<div class="sheet-block"><p class="sheet-label">' + icon('user') + '보호자에게 보이는 프로필</p><div class="tp-detail">' +
         '<div class="row"><span>이름</span><b>' + esc(preview.displayName || '-') + '</b></div>' +
         '<div class="row"><span>자격·면허</span><b>' + esc(preview.licenseLine || '-') + '</b></div>' +
@@ -16239,7 +16340,7 @@ body.is-keyboard #bookTotalBar{display:none}
     if (e.target.closest('#adminStageFirst')) {
       setHomeStagePreview('first');
       closeAdmin();
-      toast('첫 방문 전 보호자 홈을 미리 보는 중이에요. 실제 데이터는 그대로입니다.');
+      toast('첫 방문 전 보호자 홈을 미리 보는 중이에요. 실제 데이터는 그대로예요.');
       return;
     }
     if (e.target.closest('#adminStageReset')) {
@@ -16469,13 +16570,13 @@ body.is-keyboard #bookTotalBar{display:none}
     closeGate();
     if (kind === 'admin') {
       openAdmin();
-      toast('관리자 심사 콘솔(데모)입니다.');                                                                    
+      toast('관리자 심사 콘솔(시연용)이에요.');                                                                    
     } else if (kind === 'therapist') {
       setRole('therapist');
-      toast(isApproved() ? '선생님 모드로 시작합니다.' : (partnerStatus() === 'needs_update' ? '보완 요청이 있는 파트너 계정입니다.' : '심사 대기 중인 파트너 계정입니다.'));
+      toast(isApproved() ? '선생님 모드로 시작합니다.' : (partnerStatus() === 'needs_update' ? '보완 요청이 있는 선생님 계정이에요.' : '심사 대기 중인 선생님 계정이에요.'));
     } else {
       setRole('customer');
-      toast(kind === 'demo' ? '로그인 없이 둘러보기 모드입니다.' : '고객 모드로 시작합니다.');
+      toast(kind === 'demo' ? '로그인 없이 둘러보기 모드예요.' : '보호자 모드로 시작합니다.');
     }
   }
 
@@ -17419,7 +17520,7 @@ body.is-keyboard #bookTotalBar{display:none}
       savePartner();
       renderPartner();
       showTab(role === 'therapist' ? 'tp-home' : 'mypage');
-      toast('예시 파트너 데이터로 초기화했어요.');
+      toast('예시 선생님 데이터로 초기화했어요.');
       return;
     }
 
@@ -17429,7 +17530,7 @@ body.is-keyboard #bookTotalBar{display:none}
       if (!isApproved()) partner.approvedAt = partner.approvedAt || todayLabel();
       savePartner();
       renderPartner();
-      toast(isApproved() ? '활동중 상태로 전환했습니다.' : '심사 대기 상태로 전환했습니다.');
+      toast(isApproved() ? '활동중 상태로 전환했어요.' : '심사 대기 상태로 전환했어요.');
       showTab(role === 'therapist' ? 'tp-home' : 'tp-mypage');
       return;
     }
@@ -17693,10 +17794,10 @@ body.is-keyboard #bookTotalBar{display:none}
       var kind = info.getAttribute('data-info');
       var msgs = {
         faq: '자주 묻는 질문은 상담 채팅으로 도와드려요. (예시)',
-        refund: '방문 24시간 전까지 무료 취소 · 이용권 잔여 회차는 전액 환불됩니다. (예시)',
+        refund: '방문 24시간 전까지 무료 취소 · 회차권 잔여 회차는 전액 환불됩니다. (예시)',
         cs: '고객센터 1670-0000 · 평일 09:00~20:00 (예시)'
       };
-      toast(msgs[kind] || '준비 중입니다.');
+      toast(msgs[kind] || '준비 중이에요.');
     }
   });
 
@@ -17840,7 +17941,7 @@ body.is-keyboard #bookTotalBar{display:none}
   }
 
   /* ===================================================================
-     1:1 인앱 채팅 (고객 ↔ 선생님)
+     1:1 인앱 채팅 (보호자 ↔ 선생님)
      =================================================================== */
   var CHAT_KEY = 'ttokttok_chat_v1';
   var chatStore = loadChats();
@@ -17940,8 +18041,8 @@ body.is-keyboard #bookTotalBar{display:none}
       ? '똑똑쌤 고객센터'
       : (mySide === 'teacher' ? (chatCtx.patient || '보호자') : (t ? t.name + ' 선생님' : '선생님'));
     var sub = chatCtx.support
-      ? '1:1 문의 · 평일 09:00~20:00 · 데모'
-      : (mySide === 'teacher' ? '고객과의 1:1 메시지 · 데모' : '보통 5분 내 답장 · 평일 09~20시');
+      ? '1:1 문의 · 평일 09:00~20:00 · 시연용'
+      : (mySide === 'teacher' ? '보호자와의 1:1 메시지 · 시연용' : '보통 5분 내 답장 · 평일 09~20시');
     var av = chatCtx.support
       ? '똑'
       : (mySide === 'teacher' ? (chatCtx.patient ? chatCtx.patient.charAt(0) : '보') : (t ? t.name.charAt(0) : '쌤'));
@@ -17971,7 +18072,7 @@ body.is-keyboard #bookTotalBar{display:none}
         '<input class="input" id="chatInput" type="text" maxlength="200" placeholder="메시지 입력" aria-label="메시지 입력" enterkeyhint="send" autocomplete="off">' +
         '<button class="chat-send" type="submit" aria-label="보내기">' + icon('arrow-r') + '</button>' +
       '</form>' +
-      '<p class="sheet-note">* 데모 채팅입니다. 실제 상대에게 전송되지 않습니다.</p>';
+      '<p class="sheet-note">* 시연용 채팅이에요. 실제 상대에게 전송되지 않아요.</p>';
     var logEl = $('#chatLog');
     if (logEl) logEl.scrollTop = logEl.scrollHeight;
   }
@@ -18046,8 +18147,8 @@ body.is-keyboard #bookTotalBar{display:none}
 
   function defaultSessions() {
     return [
-      { id: 'v1', teacherId: 'park', date: '2026.11.22', time: '10:30', round: '5회기', pass: '8회 방문권', reviewed: false },
-      { id: 'v2', teacherId: 'lee', date: '2026.11.08', time: '15:00', round: '8회기', pass: '8회 방문권', reviewed: false }
+      { id: 'v1', teacherId: 'park', date: '2026.11.22', time: '10:30', round: '5회차', pass: '8회권', reviewed: false },
+      { id: 'v2', teacherId: 'lee', date: '2026.11.08', time: '15:00', round: '8회차', pass: '8회권', reviewed: false }
     ];
   }
 
@@ -18323,7 +18424,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var r = receiptOf(b.no);
     if (r && r.amount) return r.amount;
     if (p && p.price) return p.price;
-    /* v19 · 결제 영수증·이용권이 없어도 예약에 기록된 금액을 쓴다(관리자 취소 견적이 0원이 되지 않도록). */
+    /* v19 · 결제 영수증·회차권이 없어도 예약에 기록된 금액을 쓴다(관리자 취소 견적이 0원이 되지 않도록). */
     return Math.max(0, Math.round(Number(b.amount) || 0));
   }
 
@@ -18366,7 +18467,7 @@ body.is-keyboard #bookTotalBar{display:none}
       '<div class="tp-detail mt-10">' +
         '<div class="row"><span>방문 일정</span><b>' + esc(b.date) + ' (' + esc(b.day) + ') ' + esc(b.time) + '</b></div>' +
         '<div class="row"><span>방문 지역</span><b>' + esc(b.region) + '</b></div>' +
-        '<div class="row"><span>이용권</span><b>' + esc((passById(b.passId) || {}).name || '첫 방문 평가') + '</b></div>' +
+        '<div class="row"><span>회차권</span><b>' + esc((passById(b.passId) || {}).name || '첫 방문 평가') + '</b></div>' +
       '</div>' +
       '<p class="sheet-note" id="manageSaved">' + intakeSavedHtml(TtModel.verifyReservationSaved(b.no)) + '</p>';
 
@@ -18599,7 +18700,7 @@ body.is-keyboard #bookTotalBar{display:none}
     return [
       { id: 'nt-visit', kind: 'visit', title: '방문이 확정됐어요', body: '박서준 선생님이 다가오는 방문을 확정했어요. 준비물과 집 안 동선을 확인해 주세요.', when: '오늘 ' + clockLabel(), read: false, go: 'account' },
       { id: 'nt-d1', kind: 'remind', title: '방문 D-1 리마인드', body: '내일 방문이 예정되어 있어요. 편한 옷과 복용약 목록을 준비해 주세요.', when: '어제 18:00', read: false, go: '' },
-      { id: 'nt-report', kind: 'report', title: '보호자 회복 리포트 업데이트', body: '5회기 회복 리포트가 새로 올라왔어요. 보행 안정성이 조금씩 좋아지고 있어요.', when: '2일 전', read: false, go: 'report' },
+      { id: 'nt-report', kind: 'report', title: '보호자 회복 리포트 업데이트', body: '5회차 회복 리포트가 새로 올라왔어요. 보행 안정성이 조금씩 좋아지고 있어요.', when: '2일 전', read: false, go: 'report' },
       { id: 'nt-coupon', kind: 'coupon', title: '첫 방문 평가 무료 쿠폰 발급', body: '첫 1:1 방문 평가 무료 쿠폰이 도착했어요. 쿠폰함에서 확인해 보세요.', when: '3일 전', read: false, go: 'coupon' }
     ];
   }
@@ -18816,7 +18917,7 @@ body.is-keyboard #bookTotalBar{display:none}
     try {
       window.__ttokttokNotifPreview = { id: pv.id, kind: pv.kind, category: pv.category, audience: which, title: pv.title, text: text, copied: okCopy, at: Date.now() };
     } catch (e) {}
-    toast(okCopy ? '발송 전 문구를 복사했어요. 실제 발송은 되지 않습니다.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
+    toast(okCopy ? '발송 전 문구를 복사했어요. 실제 발송은 하지 않았어요.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
     return okCopy;
   }
   function openTpNotiSheet() {
@@ -18925,7 +19026,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var sub = $('#adminReminderSub');
     if (sub) {
       sub.textContent = '오늘 ' + (q.total || 0) + '건 · 보호자 ' + (au.customer || 0) + '건 · 선생님 ' + (au.teacher || 0) +
-        '건 — 방문 D-1·4주 재평가·최근 변경/취소·정산 확정/지급 예정 문구를 모았습니다(발송 없음).';
+        '건 — 방문 D-1·4주 재평가·최근 변경/취소·정산 확정/지급 예정 문구를 모았어요(발송 없음).';
     }
     board.innerHTML = (q.items && q.items.length)
       ? q.items.map(adminReminderCardHtml).join('')
@@ -18948,7 +19049,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var text = TtModel.reminderPreviewText(it, which);
     var okCopy = copyToClipboard(text);
     try { window.__ttokttokReminderCopy = { id: id, audience: which, text: text, copied: okCopy, at: Date.now() }; } catch (e) {}
-    toast(okCopy ? '발송 전 문구를 복사했어요. 실제 발송은 하지 않았습니다.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
+    toast(okCopy ? '발송 전 문구를 복사했어요. 실제 발송은 하지 않았어요.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
     return okCopy;
   }
   function copyAllAdminReminders() {
@@ -18956,7 +19057,7 @@ body.is-keyboard #bookTotalBar{display:none}
     var text = TtModel.reminderQueueText(q);
     var okCopy = copyToClipboard(text);
     try { window.__ttokttokReminderCopy = { id: 'all', audience: 'all', text: text, copied: okCopy, at: Date.now() }; } catch (e) {}
-    toast(okCopy ? '오늘 리마인드 ' + (q.total || 0) + '건 문구를 복사했어요. 발송은 하지 않았습니다.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
+    toast(okCopy ? '오늘 리마인드 ' + (q.total || 0) + '건 문구를 복사했어요. 발송은 하지 않았어요.' : '복사가 막혀 있어요. 문구를 직접 확인해 주세요.');
     return okCopy;
   }
 
@@ -19200,8 +19301,8 @@ body.is-keyboard #bookTotalBar{display:none}
   /* ----- 쿠폰함 ----- */
   function seedCoupons() {
     return [
-      { id: 'cp-eval', title: '첫 1:1 방문 평가 무료', sub: '신규 회원 1회 · 평가권 예약 시 자동 적용', type: 'free', amount: 0, target: 'eval', used: false, expire: expireDate(30), code: '' },
-      { id: 'cp-10000', title: '정규 회차권 10,000원 할인', sub: '1회 이상 방문권 결제 시 사용', type: 'amount', amount: 10000, target: 'paid', used: false, expire: expireDate(60), code: '' }
+      { id: 'cp-eval', title: '첫 1:1 방문 평가 무료', sub: '첫 방문 1회 · 평가권 예약 시 자동 적용', type: 'free', amount: 0, target: 'eval', used: false, expire: expireDate(30), code: '' },
+      { id: 'cp-10000', title: '정규 회차권 10,000원 할인', sub: '1회권 이상 결제 시 사용', type: 'amount', amount: 10000, target: 'paid', used: false, expire: expireDate(60), code: '' }
     ];
   }
 
@@ -19378,17 +19479,17 @@ body.is-keyboard #bookTotalBar{display:none}
     {
       id: 'faq-diff', cat: 'reserve', keys: '병원 차이 방문재활',
       q: '방문재활과 병원 치료는 어떻게 다른가요?',
-      a: '병원 치료는 진단·검사·처치 중심이고, 방문재활은 이미 받은 진단을 바탕으로 <b>집에서 이어가는 기능 회복</b>에 집중해요. 선생님이 직접 방문해 걷기·계단·관절 가동범위를 확인하고, 집 구조에 맞는 운동을 알려드립니다. 통증이 심해지거나 새 증상이 생기면 병원 진료를 먼저 권해드려요.'
+      a: '병원 치료는 진단·검사·처치 중심이고, 방문재활은 이미 받은 진단을 바탕으로 <b>집에서 이어가는 기능 회복</b>에 집중해요. 선생님이 직접 방문해 걷기·계단·관절 가동범위를 확인하고, 집 구조에 맞는 운동을 알려드려요. 통증이 심해지거나 새 증상이 생기면 병원 진료를 먼저 권해드려요.'
     },
     {
       id: 'faq-first', cat: 'reserve', keys: '첫 방문 무료 평가 15분 60분',
       q: '첫 방문 무료 평가는 어떻게 진행되나요?',
-      a: '평가는 무료예요. 방문하면 <b>15분 동안</b> 걸음·관절·통증과 집 안 동선을 확인하고, 그 자리에서 주 몇 회·어떤 동작부터 할지 <b>맞춤 계획</b>을 함께 정해요. 이어서 <b>60분 본 수업</b>을 바로 시작할 수도 있고, 계획만 듣고 상담으로 마무리해도 됩니다. 평가만 받고 결정하지 않아도 결제는 없어요.'
+      a: '평가는 무료예요. 방문하면 <b>15분 동안</b> 걸음·관절·통증과 집 안 동선을 확인하고, 그 자리에서 주 몇 회·어떤 동작부터 할지 <b>맞춤 계획</b>을 함께 정해요. 이어서 <b>60분 본 수업</b>을 바로 시작할 수도 있고, 계획만 듣고 상담으로 마무리해도 돼요. 평가만 받고 결정하지 않아도 결제는 없어요.'
     },
     {
       id: 'faq-prepare', cat: 'reserve', keys: '준비물 복장 공간 진단서 복약',
       q: '방문 전에 무엇을 준비해야 하나요?',
-      a: '편한 옷과 미끄러지지 않는 양말, 누워서 다리를 펼 수 있는 <b>실내 공간 2m</b>, 최근 복용약 목록을 준비해 주세요. 기존 진단서가 있으면 평가 기록이 더 정확해지고, 없으면 말씀만 해 주셔도 됩니다. 밴드·공 같은 운동 도구는 선생님이 가져갑니다.'
+      a: '편한 옷과 미끄러지지 않는 양말, 누워서 다리를 펼 수 있는 <b>실내 공간 2m</b>, 최근 복용약 목록을 준비해 주세요. 기존 진단서가 있으면 평가 기록이 더 정확해지고, 없으면 말씀만 해 주셔도 돼요. 밴드·공 같은 운동 도구는 선생님이 가져갑니다.'
     },
     {
       id: 'faq-change', cat: 'reserve', keys: '일정 변경 취소 예약 시간',
@@ -19398,32 +19499,32 @@ body.is-keyboard #bookTotalBar{display:none}
     {
       id: 'faq-region', cat: 'reserve', keys: '지역 언제 열리나 오픈',
       q: '우리 지역은 언제 열리나요?',
-      a: '현재 서울·경기·인천·부산·대구 등 <b>17개 시·도</b>에서 연결되고 있어요. 준비 중인 지역은 내 정보 &gt; 서비스 지역에서 오픈 알림을 신청하면 가장 먼저 안내드립니다. 선생님 모집이 끝난 지역부터 순서대로 열려요.'
+      a: '현재 서울·경기·인천·부산·대구 등 <b>17개 시·도</b>에서 연결되고 있어요. 준비 중인 지역은 내 정보 &gt; 서비스 지역에서 오픈 알림을 신청하면 가장 먼저 안내드려요. 선생님 모집이 끝난 지역부터 순서대로 열려요.'
     },
     {
-      id: 'faq-pass', cat: 'refund', keys: '회차권 잔여 횟수 이용권 만료',
+      id: 'faq-pass', cat: 'refund', keys: '회차권 잔여 횟수 만료 이용권 패키지',
       q: '회차권은 어떻게 쓰나요?',
-      a: '1회권·4회권·8회권·12회권 중에서 고를 수 있어요. 방문할 때마다 <b>1회씩 차감</b>되고, 잔여 회차와 만료 예정일은 홈의 <b>한눈에 보기</b>와 내 정보에서 확인할 수 있습니다. 남은 회차는 환불 규정에 따라 돌려받을 수 있어요.'
+      a: '1회권·4회권·8회권·12회권 중에서 고를 수 있어요. 방문할 때마다 <b>1회씩 차감</b>되고, 잔여 회차와 만료 예정일은 홈의 <b>한눈에 보기</b>와 내 정보에서 확인할 수 있어요. 남은 회차는 환불 규정에 따라 돌려받을 수 있어요.'
     },
     {
       id: 'faq-refund', cat: 'refund', keys: '환불 취소 노쇼',
       q: '환불과 일정 변경은 어떻게 하나요?',
-      a: '방문 <b>24시간 전까지 무료</b>로 일정 변경·취소가 가능해요. 취소하면 이용권 잔여 회차가 그대로 복구되고, 카드 결제는 영업일 기준 3~5일 안에 환불됩니다. 방문 24시간 이내에는 회차 1회가 차감되거나 단건 결제의 50%가 환불되고, 방문 시각 이후·노쇼(방문 시각 +30분까지 연락 두절)는 환불이 어려워요. 자세한 기준은 아래 <b>서비스·환불</b> 탭(운영 기준 초안)에서 확인할 수 있어요.'
+      a: '방문 <b>24시간 전까지 무료</b>로 일정 변경·취소가 가능해요. 취소하면 회차권 잔여 회차가 그대로 복구되고, 카드 결제는 영업일 기준 3~5일 안에 환불됩니다. 방문 24시간 이내에는 회차 1회가 차감되거나 단건 결제의 50%가 환불되고, 방문 시각 이후·노쇼(방문 시각 +30분까지 연락 두절)는 환불이 어려워요. 자세한 기준은 아래 <b>서비스·환불</b> 탭(운영 기준 초안)에서 확인할 수 있어요.'
     },
     {
       id: 'faq-license', cat: 'safety', keys: '면허 검증 자격 선생님',
       q: '선생님 면허는 어떻게 검증하나요?',
-      a: '물리치료사·작업치료사 국가면허 원본, 경력증명서, 범죄경력조회 동의서, 신분증까지 <b>서류 4종</b>을 모두 확인한 선생님만 활동해요. 면허번호는 보건복지부 조회로 대조하고, 승인 뒤에도 후기와 방문 기록을 계속 확인합니다.'
+      a: '물리치료사·작업치료사 국가면허 원본, 경력증명서, 범죄경력조회 동의서, 신분증까지 <b>서류 4종</b>을 모두 확인한 선생님만 활동해요. 면허번호는 보건복지부 조회로 대조하고, 승인 뒤에도 후기와 방문 기록을 계속 확인해요.'
     },
     {
       id: 'faq-teacher-change', cat: 'safety', keys: '선생님 교체 바꾸기 불편',
       q: '선생님을 바꿀 수 있나요?',
-      a: '네. 맞지 않으면 1:1 문의로 <b>언제든 교체를 요청</b>할 수 있어요. 새 선생님이 배정될 때까지 남은 회차는 그대로 유지되고, 교체 때문에 추가 결제가 생기지 않습니다.'
+      a: '네. 맞지 않으면 1:1 문의로 <b>언제든 교체를 요청</b>할 수 있어요. 새 선생님이 배정될 때까지 남은 회차는 그대로 유지되고, 교체 때문에 추가 결제가 생기지 않아요.'
     },
     {
       id: 'faq-safety', cat: 'safety', keys: '응급 다치면 119 안전',
       q: '방문 중 다치거나 몸이 나빠지면 어떻게 하나요?',
-      a: '먼저 <b>119</b>에 연락하고, 이어서 센터(031-919-8577)로 알려 주세요. 앱의 <b>긴급 연락 · 안전 안내</b>에 응급 4단계와 연락처가 있어요. 선생님은 진단·처치가 아니라 운동 지도만 하고, 통증이 심해지면 병원 진료를 먼저 권합니다.'
+      a: '먼저 <b>119</b>에 연락하고, 이어서 센터(031-919-8577)로 알려 주세요. 앱의 <b>긴급 연락 · 안전 안내</b>에 응급 4단계와 연락처가 있어요. 선생님은 진단·처치가 아니라 운동 지도만 하고, 통증이 심해지면 병원 진료를 먼저 권해요.'
     }
   ];
 
@@ -19432,8 +19533,8 @@ body.is-keyboard #bookTotalBar{display:none}
       title: '똑똑쌤 이용약관 요약',
       items: [
         '<b>서비스</b> 똑똑쌤은 국가면허를 검증한 재활 선생님과 가정을 연결하는 방문재활 중개 플랫폼입니다.',
-        '<b>요금·결제</b> 이용권 금액은 예약 3단계에서 정찰제로 안내하며, 보유 쿠폰은 결제 화면에서 바로 적용됩니다.',
-        '<b>취소·환불</b> 방문 24시간 전까지 무료로 변경·취소할 수 있고, 이용권 잔여 회차는 전액 환불됩니다.',
+        '<b>요금·결제</b> 회차권 금액은 예약 3단계에서 정찰제로 안내하며, 보유 쿠폰은 결제 화면에서 바로 적용됩니다.',
+        '<b>취소·환불</b> 방문 24시간 전까지 무료로 변경·취소할 수 있고, 회차권 잔여 회차는 전액 환불됩니다.',
         '<b>책임 범위</b> 재활 프로그램은 선생님의 전문 판단에 따르며, 응급 상황에서는 119 또는 병원 진료를 우선합니다.'
       ]
     },
@@ -19696,7 +19797,7 @@ body.is-keyboard #bookTotalBar{display:none}
       var txt = $('#bookResumeText');
       if (txt) {
         var where = d.province ? d.province + (d.district ? ' ' + d.district : '') : '지역 미선택';
-        txt.textContent = '저장된 초안 · ' + where + ' · ' + (Number(d.step) || 1) + '/4 단계 — 이어서 작성하면 입력한 내용이 그대로 살아납니다.';
+        txt.textContent = '저장된 초안 · ' + where + ' · ' + (Number(d.step) || 1) + '/4 단계 — 이어서 작성하면 입력한 내용이 그대로 살아 있어요.';
       }
     }
     return show;
@@ -20937,7 +21038,7 @@ body.is-keyboard #bookTotalBar{display:none}
       },
       copyAdminMetricsText: function () { return copyAdminMetricsText(); },
       copyAdminMetricsCsv: function () { return copyAdminMetricsCsv(); },
-      /* v29 · 고객 후기 신뢰 배지·원클릭 재예약 */
+      /* v29 · 보호자 후기 신뢰 배지·원클릭 재예약 */
       trustVersion: TtModel.trustVersion,
       reviewTagMaster: TtModel.reviewTagMaster,
       reviewRuleNote: TtModel.reviewRuleNote,
@@ -20992,6 +21093,13 @@ body.is-keyboard #bookTotalBar{display:none}
           banner: (function () { var el = $('#rebookBanner'); return el && !el.hidden ? String(el.textContent || '') : ''; })()
         };
       },
+      /* v38 · 문구·용어 표준 */
+      copyVersion: TtModel.copyVersion,
+      copyTerms: TtModel.copyTerms,
+      copyBanned: TtModel.copyBanned,
+      copySearchAliases: TtModel.copySearchAliases,
+      auditCopy: function (text) { return TtModel.auditCopy(text); },
+      copyToneOf: function (text) { return TtModel.copyToneOf(text); },
       /* v37 · 입력 UX — 순수 함수와 화면 상태(터치 없이 확인) */
       inputVersion: TtModel.inputVersion,
       inputKinds: TtModel.inputKinds,
