@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v41">
+<meta name="app-version" content="v42">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -69,17 +69,20 @@
   --gap-card:12px;     /* 카드 사이 */
   --gap-block:20px;    /* 블록 사이 */
   --gap-section:28px;  /* 섹션 사이 */
-  /* ── 글자 크기 (값 이름 = 실제 px) ──────────────────────── */
-  --fs-9:9px; --fs-9h:9.5px; --fs-10:10px; --fs-10h:10.5px;
-  --fs-11:11px; --fs-11h:11.5px; --fs-12:12px; --fs-12h:12.5px;
-  --fs-13:13px; --fs-13h:13.5px; --fs-14:14px; --fs-15:15px;
-  --fs-16:16px; --fs-17:17px; --fs-18:18px; --fs-19:19px;
-  --fs-20:20px; --fs-21:21px; --fs-22:22px; --fs-23:23px;
-  --fs-24:24px; --fs-26:26px; --fs-28:28px; --fs-30:30px; --fs-32:32px;
-  --fs-8h:8.5px; --fs-14h:14.5px; --fs-15h:15.5px; --fs-16h:16.5px; --fs-22h:22.5px; --fs-25:25px; --fs-27:27px;
+  /* ── 글자 크기 (값 이름 = 실제 px) ────────────────────────
+     v42: 모든 타입 토큰이 --fs-scale 하나로 함께 커진다(1 = 기본, 1.15 = 크게, 1.3 = 아주 크게).
+     값을 토큰 안에서 곱하므로 화면 코드는 그대로 두고 사용자 설정만 바꾸면 된다. */
+  --fs-scale:1;
+  --fs-9:calc(9px * var(--fs-scale)); --fs-9h:calc(9.5px * var(--fs-scale)); --fs-10:calc(10px * var(--fs-scale)); --fs-10h:calc(10.5px * var(--fs-scale));
+  --fs-11:calc(11px * var(--fs-scale)); --fs-11h:calc(11.5px * var(--fs-scale)); --fs-12:calc(12px * var(--fs-scale)); --fs-12h:calc(12.5px * var(--fs-scale));
+  --fs-13:calc(13px * var(--fs-scale)); --fs-13h:calc(13.5px * var(--fs-scale)); --fs-14:calc(14px * var(--fs-scale)); --fs-15:calc(15px * var(--fs-scale));
+  --fs-16:calc(16px * var(--fs-scale)); --fs-17:calc(17px * var(--fs-scale)); --fs-18:calc(18px * var(--fs-scale)); --fs-19:calc(19px * var(--fs-scale));
+  --fs-20:calc(20px * var(--fs-scale)); --fs-21:calc(21px * var(--fs-scale)); --fs-22:calc(22px * var(--fs-scale)); --fs-23:calc(23px * var(--fs-scale));
+  --fs-24:calc(24px * var(--fs-scale)); --fs-26:calc(26px * var(--fs-scale)); --fs-28:calc(28px * var(--fs-scale)); --fs-30:calc(30px * var(--fs-scale)); --fs-32:calc(32px * var(--fs-scale));
+  --fs-8h:calc(8.5px * var(--fs-scale)); --fs-14h:calc(14.5px * var(--fs-scale)); --fs-15h:calc(15.5px * var(--fs-scale)); --fs-16h:calc(16.5px * var(--fs-scale)); --fs-22h:calc(22.5px * var(--fs-scale)); --fs-25:calc(25px * var(--fs-scale)); --fs-27:calc(27px * var(--fs-scale));
   /* 의미 이름(기존 v11 스케일 유지 — 새 코드는 이쪽을 쓴다) */
-  --fs-cap:11.5px; --fs-label:12.5px; --fs-body:13.5px; --fs-body-lg:15px;
-  --fs-title-s:17px; --fs-title:20px; --fs-page:23px;
+  --fs-cap:calc(11.5px * var(--fs-scale)); --fs-label:calc(12.5px * var(--fs-scale)); --fs-body:calc(13.5px * var(--fs-scale)); --fs-body-lg:15px;
+  --fs-title-s:17px; --fs-title:calc(20px * var(--fs-scale)); --fs-page:calc(23px * var(--fs-scale));
   --lh-cap:1.5; --lh-body:1.6; --lh-title:1.36;
   --ls-title:-.035em; --ls-body:-.02em;
   /* ── 모서리 ──────────────────────────────────────────────── */
@@ -113,8 +116,8 @@
   /* v37 · 가상 키보드가 덮은 높이(px) — visualViewport 로 갱신, 없으면 0 */
   --kb-inset:0px;
   /* ── v41 · 위계를 만드는 타입 8단 (역할 이름) ──────────────── */
-  --t-display:32px; --t-hero:28px; --t-h1:26px; --t-h2:18px; --t-h3:16.5px;
-  --t-lead:16px; --t-body:15px; --t-meta:13px; --t-micro:12px;
+  --t-display:calc(32px * var(--fs-scale)); --t-hero:calc(28px * var(--fs-scale)); --t-h1:calc(26px * var(--fs-scale)); --t-h2:calc(18px * var(--fs-scale)); --t-h3:calc(16.5px * var(--fs-scale));
+  --t-lead:calc(16px * var(--fs-scale)); --t-body:calc(15px * var(--fs-scale)); --t-meta:calc(13px * var(--fs-scale)); --t-micro:calc(12px * var(--fs-scale));
   --lh-tight:1.22; --lh-snug:1.4; --lh-read:1.62;
   --tr-tight:-.045em; --tr-head:-.035em; --tr-body:-.012em;
   /* ── v41 · 깊이 3단(겹침의 높이) ──────────────────────────── */
@@ -2404,8 +2407,8 @@ button:disabled,[aria-disabled="true"]{cursor:not-allowed}
 /* 회차권·리포트 블록은 '한 단 낮은 면'으로 떼어 낸다 — 카드 안의 리듬 */
 #homeSummaryPass,#homeSummaryReport,#homeSummaryRebook{
   background:#F6F8FC;border:1px solid rgba(10,25,49,.05);border-radius:16px;padding:14px 16px;margin-top:12px}
-#homeSummaryPass > div,#homeSummaryReport > div,#homeSummaryRebook > div{
-  border-top:0!important;margin-top:0!important;padding-top:0}
+/* v42: 카드가 나뉘어 안쪽 구분선이 필요 없다. margin-top은 유틸(.mt-*)이 쓰게 둔다. */
+#homeSummaryPass > div,#homeSummaryReport > div,#homeSummaryRebook > div{border-top:0!important;padding-top:0}
 #homeSummaryCard [data-summary]{background:transparent!important;border:0!important;box-shadow:none!important;
   padding:8px 0 0!important;color:var(--blue)!important;justify-content:flex-start!important;font-weight:700}
 #homeSummaryPass .sum-row:first-of-type > b{font-size:var(--t-lead);color:var(--navy)}
@@ -2660,6 +2663,148 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
   animation-delay:calc(var(--k,0) * 34ms)}
 @keyframes tt41Digit{to{opacity:1;transform:none}}
 @media(prefers-reduced-motion:reduce){.tt-dg{opacity:1!important;transform:none!important;animation:none!important}}
+
+/* ─────────────────────────────────────────────────────────────────────
+   v42 · 1. 홈 요약을 네 장으로 — 첫 화면에서 '남은 회차권'까지
+   v41은 한 카드 안에 4블록을 쌓아 회차권이 화면 밖으로 밀렸다.
+   히어로(다음 방문)와 보조 카드(회차권·최근 4주·다시 예약)를 분리하고
+   카드 안쪽 여백·행 높이를 한 단 줄여 390×844 첫 화면에 회차권 카드가 온전히 들어온다.
+   ───────────────────────────────────────────────────────────────────── */
+.hs-hero{padding:20px 22px 14px;border-radius:var(--r-xl);border:1px solid rgba(10,25,49,.08);
+  box-shadow:var(--elev-3);background:linear-gradient(180deg,#FFFFFF 0%,#FCFDFF 100%)}
+.hs-hero .card-head{margin-bottom:0}
+.hs-date{display:block;font-size:var(--t-hero);font-weight:800;letter-spacing:var(--tr-tight);
+  line-height:1.1;color:var(--navy);font-variant-numeric:tabular-nums}
+.hs-date.hs-none{font-size:var(--t-h1);color:var(--text-muted)}
+.hs-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.hs-chips .status,.hs-chips .tag{font-size:var(--t-micro)}
+.hs-chips .status{padding:5px 9px;border-radius:var(--r-pill)}
+.hs-rows{margin-top:10px;padding-top:8px;border-top:1px solid #F1F4F9}
+.hs-rows .sum-row{padding:2px 0}
+.hs-rows .sum-row > span{font-size:var(--t-meta)}
+.hs-rows .sum-row > b{font-size:var(--t-meta);font-weight:700}
+.hs-card{padding:17px 20px 12px;border-radius:var(--r-lg);box-shadow:var(--elev-1)}
+.hs-card .card-head{margin-bottom:0}
+.hs-card .card-head h2{font-size:var(--t-h3);font-weight:800;color:var(--ink);letter-spacing:var(--tr-head)}
+.hs-val{font-size:var(--t-h2);font-weight:800;color:var(--navy);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.hs-guide{font-size:var(--t-micro);line-height:1.55;color:var(--text-caption);margin:7px 0 0}
+.hs-link{display:inline-flex;align-items:center;gap:4px;width:auto;min-height:44px;
+  padding:6px 2px 0!important;font-size:var(--t-meta);font-weight:700;color:var(--blue);
+  background:transparent!important;border:0!important;box-shadow:none!important;justify-content:flex-start!important}
+.hs-link .ic{width:14px;height:14px}
+/* 카드가 곧 면이므로 예전 '카드 안 회색 블록'은 벗긴다 */
+#homeSummaryPass,#homeSummaryReport,#homeSummaryRebook{background:transparent!important;border:0!important;
+  border-radius:0!important;padding:0!important;margin:0!important}
+#homeSummaryPass .sum-row,#homeSummaryReport .sum-row,#homeSummaryRebook .sum-row{padding:3px 0}
+#homeSummaryPass .sum-row > b{font-size:var(--t-body)}
+#homeSummaryPass .sum-row > span,#homeSummaryReport .sum-row > span{font-size:var(--t-meta)}
+#homeSummaryReport .sum-row > b,#homeSummaryRebook .sum-row > b{font-size:var(--t-body)}
+#homeSummaryReport .hs-last{font-size:var(--t-micro);margin-top:6px}
+#homeSummaryRebook .btn-sm{width:100%}
+
+/* ─────────────────────────────────────────────────────────────────────
+   v42 · 2. 예약 3·4단계 — 밀도·열 맞춤·CTA 정돈
+   ───────────────────────────────────────────────────────────────────── */
+#passList .pass{padding:14px 15px;gap:11px;margin-bottom:10px;align-items:flex-start;border-radius:18px}
+#passList .pass-radio{margin-top:3px}
+#passList .pass-main{display:flex;flex-direction:column;gap:2px}
+#passList .pass-name{font-size:var(--t-lead);line-height:1.3;gap:6px}
+#passList .pass-sub{font-size:var(--t-meta);line-height:1.4;color:var(--text-muted);
+  word-break:keep-all;overflow-wrap:break-word;margin-top:0;text-wrap:balance}
+#passList .pass-price{flex:0 0 auto;min-width:92px;display:flex;flex-direction:column;align-items:flex-end;gap:0}
+#passList .pass-price b{font-size:var(--t-lead);font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1.25}
+#passList .pass-price s{font-size:var(--t-micro);line-height:1.3}
+#passList .pass-per{font-style:normal;font-size:var(--t-micro);color:var(--text-caption);
+  white-space:nowrap;font-variant-numeric:tabular-nums;margin-top:2px}
+#passList .pass-tag{font-size:var(--t-micro);padding:2px 6px}
+/* 3단계: 합계 바(78px)에 마지막 카드·안내가 가리지 않게 아래를 비운다 */
+#wstep-3{padding-bottom:84px}
+#wstep-3 .wiz-nav{margin-top:16px;padding-bottom:0}
+#wstep-3 .pass-note{margin-top:2px}
+/* 4단계: 요약 표 + 예약자 정보 */
+#bookSummary{padding:14px 16px;border-radius:16px}
+/* 4단계 요약은 .sum-line(라벨·값 한 줄)으로 그려진다 — 열 폭을 고정해 값이 세로로 맞는다 */
+#bookSummary .sum-line{padding:5px 0;align-items:flex-start;gap:12px}
+#bookSummary .sum-line > span{flex:0 0 74px;font-size:var(--t-meta);line-height:1.45;color:var(--text-muted)}
+#bookSummary .sum-line > b{flex:1;font-size:var(--t-body);line-height:1.45;font-variant-numeric:tabular-nums}
+.form-group-title{font-size:var(--t-meta);font-weight:800;color:var(--text-caption);
+  letter-spacing:.01em;margin:0 0 8px}
+#wstep-4 .field > label{font-size:var(--t-meta)}
+#wstep-4 .total b{font-variant-numeric:tabular-nums}
+.prev-step{margin-top:12px;min-height:46px;font-size:var(--t-meta);border-radius:13px}
+
+/* ─────────────────────────────────────────────────────────────────────
+   v42 · 3. 관리자 콘솔 표 — 열 폭 고정·숫자 우측 정렬·배지 한 줄
+   ───────────────────────────────────────────────────────────────────── */
+.adm-tbl{display:flex;flex-direction:column;margin-top:6px}
+.adm-row{display:grid;grid-template-columns:minmax(70px,auto) minmax(0,1fr) auto;
+  align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid rgba(10,25,49,.055)}
+.adm-row:last-child{border-bottom:0}
+.adm-k{font-size:var(--t-meta);color:var(--text-muted);letter-spacing:-.01em;line-height:1.4}
+.adm-n{font-size:var(--t-body);font-weight:700;color:var(--ink);text-align:right;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.4;white-space:nowrap}
+.adm-r{font-size:var(--t-micro);color:var(--text-caption);text-align:right;
+  font-variant-numeric:tabular-nums;line-height:1.35;max-width:96px;justify-self:end}
+.adm-fine{margin:8px 0 0}
+.adm-reg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+.adm-reg > span{display:flex;align-items:baseline;justify-content:space-between;gap:4px;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:6px 8px;
+  font-size:var(--t-micro);color:var(--text-caption);min-width:0}
+.adm-reg b{color:var(--ink);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* KPI 타일: 높이 균일·숫자 고정폭·배지 한 줄 */
+#adminMetricsKpis .settle-cell{display:flex;flex-direction:column;justify-content:flex-start;min-width:0}
+#adminMetricsKpis .settle-cell b{font-variant-numeric:tabular-nums;letter-spacing:-.03em;line-height:1.2}
+#adminMetricsKpis .settle-cell span{overflow-wrap:break-word;word-break:keep-all}
+#adminMetricsKpis{grid-auto-rows:1fr}
+.admin-name .status-badge{flex:0 0 auto}
+#adminMetricsSec .admin-card .sum-row,
+#adminMetricsSec .admin-card .adm-row{padding:6px 0}
+
+/* ─────────────────────────────────────────────────────────────────────
+   v42 · 4. 글자 크기(사용자 설정) — 타입 토큰 하나로 전 화면 확대
+   ───────────────────────────────────────────────────────────────────── */
+html[data-textsize="lg"]{--fs-scale:1.15}
+html[data-textsize="xl"]{--fs-scale:1.3}
+.mp-text-card{margin:12px var(--pad-x) 0;padding:16px 18px 12px}
+.mp-text-card .card-head{margin-bottom:6px}
+.mp-text-card .card-head h2{font-size:var(--t-h3);font-weight:800;color:var(--ink);letter-spacing:var(--tr-head)}
+.mp-text-card .segmented button{min-height:44px;padding:0 8px}
+.mp-text-preview{margin:9px 0 0;font-size:var(--t-body);color:var(--text-muted);letter-spacing:-.01em;
+  line-height:1.5;word-break:keep-all}
+/* 확대해도 열이 넘치지 않게 — 3열 지표 타일은 최소 폭을 지키고 줄을 바꾼다 */
+.settle-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+html[data-textsize] .settle-grid{grid-template-columns:repeat(auto-fit,minmax(92px,1fr))}
+/* 배지·칩은 글자가 커져도 한 줄 안에서 자기 폭만 쓴다 */
+html[data-textsize] .status,html[data-textsize] .status-badge,html[data-textsize] .tag{flex:0 0 auto}
+/* 시트 바닥 두 버튼: 글자가 커지면 비율을 유지한 채 높이가 늘어난다 */
+html[data-textsize] .sheet-foot .btn{min-height:52px;padding-top:12px;padding-bottom:12px}
+
+/* ─~~~~~~~~~~~~~~~~────────────────────────────────────────────────────
+   v42 · 5. 손짓: 시트 끌어 닫기 + 상태 배지 전환
+   ─~~~~~~~~~~~~~~~~──────────────────────────────────────────────────── */
+.sheet-handle,.sheet-head{touch-action:none}
+.tt-badge-swap{animation:tt42Badge 220ms var(--ease-out) both}
+@keyframes tt42Badge{0%{opacity:.45;transform:translateY(3px) scale(.94)}100%{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.tt-badge-swap{animation:none!important}}
+
+/* 짧은 화면(≤640px 높이, 320×568 등): 여백과 큰 날짜만 한 단 줄인다.
+   내용은 지우지 않는다 — 회차권 안내 문장만 접어 카드 제목과 잔여 수치가 먼저 보이게. */
+@media(max-height:640px){
+  .hs-hero{padding:16px 20px 10px}
+  .hs-date{font-size:calc(24px * var(--fs-scale))}
+  .hs-rows{margin-top:8px;padding-top:6px}
+  .hs-rows .sum-row{padding:1px 0}
+  .hs-card{padding:14px 18px 8px}
+  #homeSummaryPass .hs-guide{display:none}
+  .hs-link{min-height:40px;padding-top:2px!important}
+  .home-notice{min-height:48px}
+}
+
+/* 글자가 아주 클 때: 나란히 놓인 두 버튼은 세로로 세워 한 줄씩 읽히게 한다 */
+html[data-textsize="xl"] .sheet-foot > div{flex-direction:column}
+html[data-textsize="xl"] .sheet-foot .btn,
+html[data-textsize="xl"] .reject-foot .btn{width:100%!important;flex:1 1 auto!important}
+html[data-textsize="xl"] .reject-foot{flex-direction:column}
 </style>
 </head>
 <body>
@@ -2741,6 +2886,9 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
   <p class="desk-note">모바일에서 열면 앱처럼 쓸 수 있어요. 화면은 실제 앱과 같습니다.</p>
 </aside>
 
+<script>/* v42 · 글자 크기 설정을 첫 페인트 전에 적용한다(깜빡임 없이). */
+try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='xl'){document.documentElement.setAttribute('data-textsize',_ts);}}catch(e){}</script>
+
 <div class="app" id="appRoot">
 
   <!-- JS가 실행되지 않는 미리보기(QuickLook 등)에서만 보이는 안내. 스크립트가 즉시 숨긴다. -->
@@ -2796,16 +2944,40 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
       </button>
 
       <div class="home-body">
-        <!-- v25 · 보호자 홈 통합 요약(다음 방문 · 보유 회차권 · 최근 4주 리포트) -->
-        <section class="card mt-14" id="homeSummaryCard" aria-labelledby="homeSummaryTitle">
+        <!-- v25 · 보호자 홈 통합 요약 — v42에 네 장으로 나눴다.
+             다음 방문(히어로) → 보유 회차권 → 최근 4주 → 다시 예약.
+             목적: 390×844 첫 화면 안에서 '남은 회차권'까지 스크롤 없이 읽히게 한다.
+             (v41은 한 카드 안에 4블록이 쌓여 회차권이 화면 밖으로 밀렸다) -->
+        <section class="card mt-14 hs-hero" id="homeSummaryCard" aria-labelledby="homeSummaryTitle">
           <div class="card-head mb-6">
-            <h2 id="homeSummaryTitle">한눈에 보기</h2>
+            <h2 id="homeSummaryTitle">다음 방문</h2>
             <span class="fs-micro c-cap" id="homeSummaryDate"></span>
           </div>
           <div id="homeSummaryNext"></div>
-          <div id="homeSummaryRebook"></div>
-          <div id="homeSummaryPass"></div>
+        </section>
+
+        <section class="card mt-12 hs-card" id="homePassCard" aria-label="보유 회차권">
+          <div id="homeSummaryPass">
+            <div class="card-head mb-6">
+              <h2>보유 회차권</h2>
+              <span class="hs-val" id="homePassCount">-</span>
+            </div>
+            <div id="homePassRows"></div>
+            <button class="sec-link hs-link" type="button" data-summary="pass">회차권·잔여 회차 보기<svg class="ic" aria-hidden="true"><use href="#i-chev-r"/></svg></button>
+          </div>
+        </section>
+
+        <section class="card mt-12 hs-card" id="homeReportCard" aria-label="최근 4주 리포트">
+          <div class="card-head mb-6">
+            <h2>최근 4주</h2>
+            <span class="fs-micro c-cap" id="homeReportRange"></span>
+          </div>
           <div id="homeSummaryReport"></div>
+        </section>
+
+        <section class="card mt-12 hs-card" id="homeRebookCard" aria-label="다시 예약" hidden>
+          <div class="card-head mb-6"><h2>다시 예약</h2></div>
+          <div id="homeSummaryRebook"></div>
         </section>
 
         <!-- v33 · 첫 방문 전 보호자: 브랜드 가치 + 첫 방문 안내가 첫 카드(이용 중이면 위 요약 카드가 첫 카드) -->
@@ -3115,6 +3287,7 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
           <div class="sum-card" id="bookSummary"></div>
 
           <div class="form mt-10">
+            <p class="form-group-title">예약자 정보</p>
             <div class="field" id="f-bookName">
               <label for="bookName">예약자 이름 <span class="req-mark">*</span></label>
               <input class="input" id="bookName" type="text" placeholder="예: 김순자" autocomplete="name" maxlength="20" enterkeyhint="next" data-tt-rule="name">
@@ -3127,7 +3300,7 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
               <p class="err">연락처를 정확히 입력해 주세요.</p>
             </div>
 
-            <div class="field" id="f-pays">
+            <div class="field mt-14" id="f-pays">
               <label>결제 수단 <span class="req-mark">*</span></label>
               <div class="pays" id="payMethods">
                 <button type="button" class="pay" data-pay="신용/체크카드"><span class="pay-ico" aria-hidden="true"><svg class="ic"><use href="#i-card"/></svg></span>신용·체크카드</button>
@@ -3154,10 +3327,8 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
             <div class="mt-10" id="payBusy" hidden></div>
             <div class="mt-10" id="bookError"></div>
             <button class="btn btn-teal" type="button" id="payBtn">결제하고 예약 완료</button>
-            <p class="pay-note">시연용 화면이에요. 실제 결제는 이루어지지 않아요.<br>취소·환불은 방문 24시간 전까지 무료이며, 자세한 기준은 FAQ &gt; 서비스·환불(운영 기준 초안)에서 확인할 수 있어요.</p>          </div>
-
-          <div class="wiz-nav">
-            <button class="btn btn-back" type="button" data-back="4">이전</button>
+            <p class="pay-note">시연용 화면이에요. 실제 결제는 이루어지지 않아요.<br>취소·환불은 방문 24시간 전까지 무료이며, 자세한 기준은 FAQ &gt; 서비스·환불(운영 기준 초안)에서 확인할 수 있어요.</p>
+            <button class="btn btn-ghost prev-step" type="button" data-back="4">이전 단계로</button>
           </div>
         </div>
       </div>
@@ -3433,6 +3604,22 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
           <span class="chev" aria-hidden="true"><svg class="ic"><use href="#i-chev-r"/></svg></span>
         </button>
       </div>
+
+      <!-- v42 · 글자 크기: 40~70대 보호자·선생님이 쓰는 앱이라 화면 글자를 키울 수 있어야 한다.
+           설정은 이 기기에 저장되고, 타입 토큰(--fs-scale) 하나로 전 화면이 함께 커진다. -->
+      <section class="card mp-text-card" id="mpTextCard" aria-labelledby="mpTextTitle">
+        <div class="card-head mb-6">
+          <h2 id="mpTextTitle">글자 크기</h2>
+          <span class="fs-micro c-cap" id="mpTextHint">보통</span>
+        </div>
+        <div class="segmented" id="mpTextSize" role="radiogroup" aria-label="글자 크기">
+          <button type="button" role="radio" data-textsize="md" aria-checked="true">보통</button>
+          <button type="button" role="radio" data-textsize="lg" aria-checked="false">크게</button>
+          <button type="button" role="radio" data-textsize="xl" aria-checked="false">아주 크게</button>
+        </div>
+        <p class="mp-text-preview" id="mpTextPreview" aria-hidden="true">가나다 ABC 123 · 다음 방문 11.29</p>
+        <p class="fine" id="mpTextNote">휴대폰 설정의 글자 크기와 함께 적용돼요. 화면이 좁으면 카드가 세로로 늘어나요.</p>
+      </section>
 
       <p class="mp-fine">* 시연용 화면이에요. 결제·예약 정보는 이 브라우저에만 저장돼요.</p>
     </section>
@@ -12025,13 +12212,15 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
       var priceHtml = p.price === 0
         ? '<b>무료</b><s>' + won(p.listPrice) + '</s>'
         : '<b>' + won(p.price) + '</b>' + (p.listPrice ? '<s>' + won(p.listPrice) + '</s>' : '');
+      /* v42 · 가격 열은 폭을 고정하고 회당 가격을 그 아래로 내렸다.
+         설명이 길어도 카드 높이가 낱개마다 달라지지 않는다. */
       return '<button class="pass' + (on ? ' is-on' : '') + (p.best ? ' pass-best' : '') + '" type="button" data-pass="' + p.id + '" aria-pressed="' + on + '">' +
         '<span class="pass-radio" aria-hidden="true"></span>' +
         '<span class="pass-main">' +
           '<span class="pass-name">' + p.name + (p.tag ? '<span class="pass-tag">' + p.tag + '</span>' : '') + '</span>' +
-          '<span class="pass-sub">' + p.sub + (p.sessions > 1 ? ' · ' + p.per : '') + '</span>' +
+          '<span class="pass-sub">' + p.sub + '</span>' +
         '</span>' +
-        '<span class="pass-price">' + priceHtml + '</span>' +
+        '<span class="pass-price">' + priceHtml + (p.sessions > 1 ? '<em class="pass-per">' + p.per + '</em>' : '') + '</span>' +
       '</button>';
     }).join('');
   }
@@ -12107,7 +12296,9 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
     btn.textContent = total === 0 ? '무료로 예약 완료' : '결제하고 예약 완료';
     var bar = $('#bookTotalBar');
     if (bar) {
-      var showBar = !!(p && (bk.step === 3 || bk.step === 4));
+      /* v42 · 합계 바는 회차권을 고르는 3단계에서만 띄운다.
+         4단계는 카드 안에 총액·결제 버튼이 이미 있어 바가 폼을 덮고 숫자를 두 번 보여줬다. */
+      var showBar = !!(p && bk.step === 3);
       bar.hidden = !showBar;
       var sc = $('#screen-booking');
       if (sc) sc.classList.toggle('has-total', showBar);
@@ -12976,13 +13167,22 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
     if (!card || !summary || !summary.parentNode) return;
     var body = summary.parentNode;
     var first = plan.stage === 'pre_first';
+    /* v42 · 요약은 네 장(다음 방문·회차권·최근 4주·다시 예약)이다. 넷을 한 묶음으로 보였다 접었다. */
+    var rebookCard = $('#homeRebookCard');
+    var rest = ['#homePassCard', '#homeReportCard', '#homeRebookCard'].map(function (s) { return $(s); }).filter(Boolean);
     if (first) {
       if (card.nextElementSibling !== summary) body.insertBefore(card, summary);
       card.hidden = false;
       summary.hidden = true;
+      rest.forEach(function (el) { el.hidden = true; });
     } else {
-      if (summary.nextElementSibling !== card) body.insertBefore(summary, card);
       summary.hidden = false;
+      var last = summary;
+      rest.forEach(function (el) {
+        el.hidden = (el === rebookCard && el.getAttribute('data-empty') === '1');
+        if (!el.hidden) last = el;
+      });
+      if (last.nextElementSibling !== card) body.insertBefore(card, last.nextElementSibling);
       card.hidden = true;
     }
     var lead = $('#homeFirstVisitLead');
@@ -13033,75 +13233,81 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
       var nv = s.nextVisit;
       if (!nv) {
         nx.innerHTML =
-          '<div class="sum-row"><span>다음 방문</span><b>예정 없음</b></div>' +
-          '<p class="fine mt-6">첫 방문 평가는 무료예요. 지역과 증상만 고르면 1분이면 끝나요.</p>' +
-          '<button class="btn btn-navy btn-sm mt-8" type="button" data-summary="book" style="width:100%">무료 평가 예약</button>';
+          '<div class="hs-when"><b class="hs-date hs-none">예정 없음</b></div>' +
+          '<p class="fine hs-guide">첫 방문 평가는 무료예요. 지역과 증상만 고르면 1분이면 끝나요.</p>' +
+          '<button class="btn btn-navy btn-sm mt-10" type="button" data-summary="book" style="width:100%">무료 평가 예약</button>';
       } else {
         nx.innerHTML =
-          '<div class="sum-row"><span>다음 방문</span><b>' + esc(nv.dateLabel + (nv.weekday ? ' (' + nv.weekday + ') ' : ' ') + nv.time) + '</b></div>' +
-          '<div class="sum-row"><span>선생님</span><b>' + esc(nv.teacher || '배정 중') + '</b></div>' +
-          '<div class="sum-row"><span>예약번호</span><b>' + esc(nv.bookingNo || '-') + '</b></div>' +
-          '<div class="mt-8" style="display:flex;gap:6px;flex-wrap:wrap">' +
-            '<span class="status' + (nv.status === 'confirmed' ? ' is-on' : '') + '">' + esc(nv.ddayLabel + ' · ' + nv.statusLabel) + '</span>' +
-            (nv.passName ? '<span class="tag">' + esc(nv.passName) + '</span>' : '') +
+          '<div class="hs-when">' +
+            '<b class="hs-date">' + esc(nv.dateLabel + (nv.weekday ? ' (' + nv.weekday + ') ' : ' ') + nv.time) + '</b>' +
+            '<div class="hs-chips">' +
+              '<span class="status' + (nv.status === 'confirmed' ? ' is-on' : '') + '">' + esc(nv.ddayLabel + ' · ' + nv.statusLabel) + '</span>' +
+              (nv.passName ? '<span class="tag">' + esc(nv.passName) + '</span>' : '') +
+            '</div>' +
           '</div>' +
-          '<button class="sec-link mt-10" type="button" data-summary="visit" style="padding:8px 0">방문 일정 보기' + summaryChevron() + '</button>';
+          '<div class="hs-rows">' +
+            '<div class="sum-row"><span>선생님</span><b>' + esc(nv.teacher || '배정 중') + '</b></div>' +
+            '<div class="sum-row hs-bookno"><span>예약번호</span><b>' + esc(nv.bookingNo || '-') + '</b></div>' +
+          '</div>' +
+          '<button class="sec-link hs-link" type="button" data-summary="visit">방문 일정 보기' + summaryChevron() + '</button>';
       }
     }
 
-    var ps = $('#homeSummaryPass');
+    /* v42 · 회차권 카드는 자기 카드 한 장을 갖는다 — 첫 화면에서 보이도록. */
+    var ps = $('#homePassRows');
     if (ps) {
       var p = s.passes;
-      var ph = '<div class="mt-6" style="border-top:1px solid #F1F4F9;padding-top:8px">' +
-        '<div class="sum-row"><span>보유 회차권</span><b>' + (p.total > 0 ? '잔여 ' + p.total + '회' : '아직 없음') + '</b></div>';
+      var cnt = $('#homePassCount');
+      if (cnt) cnt.textContent = p.total > 0 ? '잔여 ' + p.total + '회' : '아직 없음';
+      var ph = '';
       p.items.forEach(function (it) {
         ph += '<div class="sum-row"><span>' + esc(it.name) + '</span><b>' + it.remaining + '회 / ' + it.total + '회</b></div>';
       });
       if (p.nearestExpire) {
         ph += '<div class="sum-row"><span>만료 예정</span><b>' + esc(p.nearestExpire) + (p.nearestName ? ' · ' + esc(p.nearestName) : '') + '</b></div>';
       }
-      ph += '<p class="fine mt-6">' + esc(p.guide.join(' · ')) + '</p>' +
-        '<button class="sec-link mt-8" type="button" data-summary="pass" style="padding:8px 0">회차권·잔여 회차 보기' + summaryChevron() + '</button>' +
-        '</div>';
+      ph += '<p class="fine hs-guide">' + esc(p.guide.join(' · ')) + '</p>';
       ps.innerHTML = ph;
     }
 
     var rp = $('#homeSummaryReport');
     if (rp) {
       var r = s.report;
-      var rh = '<div class="mt-6" style="border-top:1px solid #F1F4F9;padding-top:8px">' +
-        '<div class="sum-row"><span>최근 4주 방문</span><b>' + r.rounds + '회' + (r.visitedDays ? ' · ' + r.visitedDays + '일' : '') + '</b></div>';
+      var range = $('#homeReportRange');
+      if (range) range.textContent = '최근 4주 방문 ' + r.rounds + '회' + (r.visitedDays ? ' · ' + r.visitedDays + '일' : '');
+      var rh = '<div class="sum-row"><span>최근 4주 방문</span><b>' + r.rounds + '회' + (r.visitedDays ? ' · ' + r.visitedDays + '일' : '') + '</b></div>';
       rh += trendRowHtml('컨디션 (1~5)', r.condition, '점');
       rh += trendRowHtml('통증 (1~5)', r.pain, '점');
       if (r.reeval && r.reeval.badge) {
         rh += '<div class="sum-row"><span>4주 재평가</span><b>' + esc(r.reeval.badge) + '</b></div>';
       }
       if (r.lastDateLabel) {
-        rh += '<p class="fine mt-6">최근 일지 ' + esc(r.lastDateLabel) + ' · ' + esc(r.lastLine || '기록') + '</p>';
+        rh += '<p class="fine mt-6 hs-last">최근 일지 ' + esc(r.lastDateLabel) + ' · ' + esc(r.lastLine || '기록') + '</p>';
       } else {
-        rh += '<p class="fine mt-6">최근 4주 방문 일지가 아직 없어요. 방문 후 선생님이 2분 일지를 남기면 여기에 쌓여요.</p>';
+        rh += '<p class="fine mt-6 hs-last">최근 4주 방문 일지가 아직 없어요. 방문 후 선생님이 2분 일지를 남기면 여기에 쌓여요.</p>';
       }
-      rh += '<button class="sec-link mt-8" type="button" data-summary="report" style="padding:8px 0">이번 주 리포트 열기' + summaryChevron() + '</button>' +
-        '</div>';
+      rh += '<button class="sec-link hs-link" type="button" data-summary="report">이번 주 리포트 열기' + summaryChevron() + '</button>';
       rp.innerHTML = rh;
     }
 
     /* v29 · 완료/최근 방문 → 같은 선생님으로 다시 예약 · 후기 */
     var rb = $('#homeSummaryRebook');
+    var rbCard = $('#homeRebookCard');
     if (rb) {
       var last = latestCompleted();
       if (!last) {
         rb.innerHTML = '';
+        if (rbCard) { rbCard.hidden = true; rbCard.setAttribute('data-empty', '1'); }
       } else {
+        /* 첫 방문 전 미리보기에서는 요약 네 장이 모두 접힌 채여야 한다. */
+        if (rbCard) { rbCard.hidden = plan.stage === 'pre_first'; rbCard.setAttribute('data-empty', '0'); }
         var lt = teacherById(last.teacherId);
         var lchk = TtModel.canReviewReservation(reviewCtxOf(), last);
-        rb.innerHTML = '<div class="mt-6" style="border-top:1px solid #F1F4F9;padding-top:8px">' +
-          '<div class="sum-row"><span>최근 방문</span><b>' + esc((last.date || TtModel.dateLabelOf(last.dateIso)) + (lt ? ' · ' + lt.name + ' 선생님' : '')) + '</b></div>' +
-          '<div class="mt-8" style="display:flex;gap:6px;flex-wrap:wrap">' +
+        rb.innerHTML = '<div class="sum-row"><span>최근 방문</span><b>' + esc((last.date || TtModel.dateLabelOf(last.dateIso)) + (lt ? ' · ' + lt.name + ' 선생님' : '')) + '</b></div>' +
+          '<div class="mt-10" style="display:flex;gap:6px;flex-wrap:wrap">' +
             '<button class="btn btn-navy btn-sm" type="button" data-rebook="' + esc(last.no) + '">같은 선생님으로 다시 예약</button>' +
             (lchk.ok ? '<button class="btn btn-outline btn-sm" type="button" data-review-booking="' + esc(last.no) + '">후기 남기기</button>' : '') +
-          '</div>' +
-        '</div>';
+          '</div>';
       }
     }
   }
@@ -17332,10 +17538,58 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
     s.classList.remove('is-open');
     syncBodyState();
   }
+  /* v42 · 제스처 계층(아래로 스와이프해 닫기)이 같은 문을 쓰도록 노출한다. */
+  try { window.__ttokttokSheets = { open: openSheetEl, close: closeSheetEl }; } catch (e) {}
   function openGuideSheet() { openSheetEl('#guideSheet'); }
   function openAccountSheet() { renderAccount(); renderReviews(); openSheetEl('#accountSheet'); }
   function openPaySheet() { renderAccount(); renderCards(); openSheetEl('#paySheet'); }
   function openRoleSheet() { openSheetEl('#roleSheet'); }
+
+  /* ================= v42 · 글자 크기(보통·크게·아주 크게) =================
+     타입 토큰(:root --fs-*, --t-*)이 전부 --fs-scale을 곱해 쓰이므로
+     html[data-textsize] 한 곳만 바꾸면 전 화면 글자가 함께 커진다.
+     브라우저 기본 글자 크기를 바꾸지 않으므로 레이아웃 폭·px 여백은 그대로다. */
+  var TEXT_SIZE_KEY = 'ttokttok_textsize_v1';
+  var TEXT_SIZE_LABEL = { md: '보통', lg: '크게', xl: '아주 크게' };
+  function currentTextSize() {
+    var v = 'md';
+    try { v = SafeStorage.getItem(TEXT_SIZE_KEY) || 'md'; } catch (e) { v = 'md'; }
+    return TEXT_SIZE_LABEL[v] ? v : 'md';
+  }
+  function renderTextSize() {
+    var cur = currentTextSize();
+    var box = $('#mpTextSize');
+    if (box) {
+      var btns = box.querySelectorAll('[data-textsize]');
+      for (var i = 0; i < btns.length; i++) {
+        var on = btns[i].getAttribute('data-textsize') === cur;
+        btns[i].classList.toggle('is-on', on);
+        btns[i].setAttribute('aria-checked', on ? 'true' : 'false');
+      }
+    }
+    var hint = $('#mpTextHint');
+    if (hint) hint.textContent = TEXT_SIZE_LABEL[cur];
+    try {
+      window.__ttokttokTextSize = { version: 'v42', current: cur, label: TEXT_SIZE_LABEL[cur], scale: cur === 'xl' ? 1.3 : (cur === 'lg' ? 1.15 : 1) };
+    } catch (e) {}
+    return cur;
+  }
+  function setTextSize(size, announce) {
+    var key = TEXT_SIZE_LABEL[size] ? size : 'md';
+    try { SafeStorage.setItem(TEXT_SIZE_KEY, key); } catch (e) {}
+    var root = document.documentElement;
+    if (key === 'md') root.removeAttribute('data-textsize');
+    else root.setAttribute('data-textsize', key);
+    renderTextSize();
+    if (announce) toast('글자 크기를 ' + TEXT_SIZE_LABEL[key] + '(으)로 바꿨어요.');
+    return renderTextSize();
+  }
+  try {
+    var _initialTextSize = currentTextSize();
+    if (_initialTextSize === 'md') document.documentElement.removeAttribute('data-textsize');
+    else document.documentElement.setAttribute('data-textsize', _initialTextSize);
+  } catch (e) {}
+  renderTextSize();
 
   /* ================= v24 접근성: 시트 포커스 이동·복귀 =================
      시트/모달이 열리면 그 안으로 초점을 옮겨 키보드·스크린리더가 내용을 읽게 하고,
@@ -17879,6 +18133,8 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
     if (e.target.closest('#mpRoleRow')) { openRoleSheet(); return; }
     if (e.target.closest('[data-role-close]') || e.target.id === 'roleSheet') { closeSheetEl('#roleSheet'); return; }
     if (e.target.closest('#mpInquiry')) { openChat('park', { as: 'customer', support: true }); return; }
+    var textBtn = e.target.closest('#mpTextSize [data-textsize]');
+    if (textBtn) { setTextSize(textBtn.getAttribute('data-textsize'), true); return; }
     /* 시트 안의 이동 버튼은 시트를 닫고 이동한다 */
     if (e.target.closest('#accountSheet [data-book], #accountSheet [data-go]')) closeSheetEl('#accountSheet');
     if (e.target.closest('#roleSheet [data-role-switch], #roleSheet [data-admin-open]')) closeSheetEl('#roleSheet');
@@ -19649,29 +19905,38 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
         ' data-metrics-period="' + esc(p.key) + '">' + esc(p.label) + '</button>';
     }).join('');
   }
+  /* v42 · 운영 표는 열을 맞춘다 — 왼쪽 라벨 / 오른쪽 숫자 / 오른쪽 보조값.
+     숫자는 고정폭(tabular-nums)이라 자리수가 달라도 세로로 정렬된다. */
+  function adminMetricsTableRow(opts) {
+    var o = opts || {};
+    return '<div class="adm-row"' + (o.attr || '') + '>' +
+      '<span class="adm-k">' + esc(o.label) + '</span>' +
+      '<b class="adm-n">' + esc(o.value) + '</b>' +
+      '<span class="adm-r">' + esc(o.note || '') + '</span>' +
+      '</div>';
+  }
   function adminMetricsFunnelHtml(m) {
     var f = m.funnel || {};
     var rows = (f.steps || []).map(function (s) {
-      return '<div class="sum-row" data-metrics-step="' + esc(s.key) + '"><span>' + esc(s.label) + '</span>' +
-        '<b>' + s.count + '건 <span class="fw-600 c-muted fs-meta">' + s.rate + '%</span></b></div>';
+      return adminMetricsTableRow({ attr: ' data-metrics-step="' + esc(s.key) + '"', label: s.label, value: s.count + '건', note: s.rate + '%' });
     }).join('');
     var closed = (f.closed || []).map(function (s) {
-      return '<div class="sum-row" data-metrics-step="' + esc(s.key) + '"><span>' + esc(s.label) + '</span>' +
-        '<b>' + s.count + '건 <span class="fw-600 c-muted fs-meta">' + s.rate + '%</span></b></div>';
+      return adminMetricsTableRow({ attr: ' data-metrics-step="' + esc(s.key) + '"', label: s.label, value: s.count + '건', note: s.rate + '%' });
     }).join('');
-    return rows + closed +
-      '<p class="fine" style="margin:8px 0 0">취소·노쇼는 도달했던 단계까지 누적해 세고, 취소·노쇼율은 신청 건수 대비입니다.</p>';
+    return '<div class="adm-tbl">' + rows + closed + '</div>' +
+      '<p class="fine adm-fine">취소·노쇼는 도달했던 단계까지 누적해 세고, 취소·노쇼율은 신청 건수 대비입니다.</p>';
   }
   function adminMetricsRevenueHtml(m) {
     var r = m.revenue || {};
     var j = m.journal || {};
-    return '' +
-      '<div class="sum-row" data-metrics-rev="sessions"><span>회차</span><b>' + r.sessions + '회 <span class="fw-600 c-muted fs-meta">완료 ' + r.completedSessions + ' · 확정 ' + r.confirmedSessions + '</span></b></div>' +
-      '<div class="sum-row" data-metrics-rev="guardian"><span>보호자 결제</span><b>' + mMoney(r.guardianTotal) + '</b></div>' +
-      '<div class="sum-row" data-metrics-rev="teacher"><span>선생님 정산</span><b>' + mMoney(r.teacherTotal) + '</b></div>' +
-      '<div class="sum-row" data-metrics-rev="margin"><span>플랫폼 마진</span><b>' + mMoney(r.platformMargin) + ' <span class="fw-600 c-muted fs-meta">' + r.marginRate + '%</span></b></div>' +
-      '<div class="sum-row" data-metrics-rev="journal"><span>일지 기록률</span><b>' + j.rate + '% <span class="fw-600 c-muted fs-meta">완료 ' + j.completed + '회 중 ' + j.withJournal + '회</span></b></div>' +
-      '<p class="fine" style="margin:8px 0 0">완료 회차는 정산 원장의 실제 금액, 확정 회차는 단가(90,000 / 70,000원) 기준 예상치입니다.' +
+    return '<div class="adm-tbl">' +
+      adminMetricsTableRow({ attr: ' data-metrics-rev="sessions"', label: '회차', value: r.sessions + '회', note: '완료 ' + r.completedSessions + ' · 확정 ' + r.confirmedSessions }) +
+      adminMetricsTableRow({ attr: ' data-metrics-rev="guardian"', label: '보호자 결제', value: mMoney(r.guardianTotal) }) +
+      adminMetricsTableRow({ attr: ' data-metrics-rev="teacher"', label: '선생님 정산', value: mMoney(r.teacherTotal) }) +
+      adminMetricsTableRow({ attr: ' data-metrics-rev="margin"', label: '플랫폼 마진', value: mMoney(r.platformMargin), note: r.marginRate + '%' }) +
+      adminMetricsTableRow({ attr: ' data-metrics-rev="journal"', label: '일지 기록률', value: j.rate + '%', note: '완료 ' + j.completed + '회 중 ' + j.withJournal + '회' }) +
+      '</div>' +
+      '<p class="fine adm-fine">완료 회차는 정산 원장의 실제 금액, 확정 회차는 단가(90,000 / 70,000원) 기준 예상치입니다.' +
         (r.freeSessions ? ' 무료 평가 ' + r.freeSessions + '회는 매출에서 빠집니다.' : '') + '</p>';
   }
   function adminMetricsRegionCardHtml(row) {
@@ -19685,7 +19950,11 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
         '<div class="admin-av" aria-hidden="true" style="' + ava + '">' + row.demand + '</div>' +
         '<div style="min-width:0;flex:1">' +
           '<p class="admin-name">' + esc(row.label) + ' <span class="status-badge ' + (warn ? 'is-warn' : 'is-on') + '">' + esc(row.badge) + '</span></p>' +
-          '<p class="admin-meta">' + esc(row.note) + '</p>' +
+          '<div class="adm-reg">' +
+            '<span>수요<b>' + row.demand + '건</b></span>' +
+            '<span>필요<b>' + (row.need || 0) + '명</b></span>' +
+            '<span>등록<b>' + row.supply + '명</b></span>' +
+          '</div>' +
           (names
             ? '<p class="admin-meta mt-4" style="color:#475569">활동 선생님 ' + esc(names + more) + '</p>'
             : '<p class="admin-meta mt-4" style="color:#B23B3B">등록된 선생님이 없어요 — 모집이 필요합니다.</p>') +
@@ -22136,6 +22405,256 @@ p,h1,h2,h3,li,span,b,strong,small,button,label,td,th{
     el.classList.add('is-done');
     setTimeout(function () { el.hidden = true; }, 60);
   };
+})();
+</script>
+
+<!-- =========================================================================
+     v42 · TtGesture — 손짓 계층 (2026.11.27)
+       · B1  바텀시트를 아래로 끌어 닫기(핸들·머리에서 시작, 90px 또는 빠른 손짓)
+       · B2  예약·정산 상태 배지가 바뀔 때의 전환 모션(같은 자리의 글자가 달라졌을 때만)
+     화면 구조·상태·문구는 건드리지 않는다. 움직임은 transform·opacity만 쓴다.
+     prefers-reduced-motion이면 애니메이션 없이 즉시 결과만 남는다.
+     ========================================================================= -->
+<script>
+(function () {
+  'use strict';
+  var W = window, D = document;
+  if (!D || !D.querySelector) return;
+
+  var reduce = false;
+  try { reduce = !!(W.matchMedia && W.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { reduce = false; }
+
+  function on(el, ev, fn, opt) { try { el.addEventListener(ev, fn, opt || false); } catch (e) {} }
+  function q(sel, root) { try { return (root || D).querySelector(sel); } catch (e) { return null; } }
+  function qa(sel, root) { try { return Array.prototype.slice.call((root || D).querySelectorAll(sel)); } catch (e) { return []; } }
+  function norm(t) { return String(t == null ? '' : t).replace(/\s+/g, ' ').trim(); }
+
+  var G = { version: 'v42', sheets: 0, bound: [], closes: 0, badgeSwaps: 0, lastBadge: null, lastClose: null };
+  try { W.__ttokttokGesture = G; } catch (e) {}
+
+  /* ── 1. 시트 아래로 끌어 닫기 ─────────────────────────────────────────
+     시작점: 핸들·머리(제목) 영역만. 본문 스크롤과 싸우지 않는다.
+     기준: 90px 이상 내렸거나, 40px 이상 내리면서 빠르게(0.5px/ms) 던졌을 때. */
+  var DRAG_CLOSE_PX = 90;
+  var DRAG_FLICK_PX = 40;
+  var DRAG_FLICK_V = 0.5;
+
+  function backdropOf(sheet) {
+    var p = sheet && sheet.parentNode;
+    while (p && p !== D.body) {
+      if (p.classList && p.classList.contains('sheet-backdrop')) return p;
+      p = p.parentNode;
+    }
+    return null;
+  }
+  function openBackdrop(bd) { return !!bd && bd.classList && bd.classList.contains('is-open'); }
+
+  function bindSheet(sheet) {
+    if (!sheet || sheet.__ttDragBound) return;
+    var bd = backdropOf(sheet);
+    if (!bd || bd.classList.contains('is-gate')) return;   /* 시작 화면 시트는 닫지 않는다 */
+    sheet.__ttDragBound = true;
+    G.sheets += 1;
+    G.bound.push(bd.id ? ('#' + bd.id) : '');
+
+    var startY = 0, startX = 0, startT = 0, dy = 0, dragging = false, tracking = false;
+
+    function headerTarget(t) {
+      if (!t || !t.closest) return false;
+      return !!t.closest('.sheet-handle, .sheet-head, .sheet-title, .sheet-desc, .sheet-av');
+    }
+    function apply(y) {
+      sheet.style.transition = 'none';
+      sheet.style.transform = 'translate(-50%,' + y + 'px)';
+      if (bd && bd.style) bd.style.opacity = String(Math.max(0.25, 1 - y / 520));
+    }
+    function reset(animate) {
+      sheet.style.transition = animate && !reduce ? 'transform 220ms cubic-bezier(.22,.8,.24,1)' : 'none';
+      sheet.style.transform = '';
+      if (bd && bd.style) bd.style.opacity = '';
+      W.setTimeout(function () {
+        sheet.style.transition = '';
+        sheet.style.transform = '';
+        if (bd && bd.style) bd.style.opacity = '';
+      }, reduce ? 0 : 240);
+    }
+    function finishClose() {
+      var id = bd && bd.id ? ('#' + bd.id) : null;
+      sheet.style.transition = reduce ? 'none' : 'transform 180ms cubic-bezier(.22,.8,.24,1)';
+      sheet.style.transform = 'translate(-50%,105%)';
+      if (bd && bd.style) bd.style.opacity = '0';
+      G.closes += 1;
+      G.lastClose = { id: id, at: Date.now() };
+      W.setTimeout(function () {
+        sheet.style.transition = '';
+        sheet.style.transform = '';
+        if (bd && bd.style) bd.style.opacity = '';
+        try {
+          if (W.__ttokttokSheets && id) W.__ttokttokSheets.close(id);
+          else if (bd) bd.classList.remove('is-open');
+        } catch (e) {}
+      }, reduce ? 0 : 190);
+    }
+
+    on(sheet, 'pointerdown', function (e) {
+      if (!openBackdrop(bd)) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (!headerTarget(e.target)) return;
+      tracking = true; dragging = false; dy = 0;
+      startY = e.clientY; startX = e.clientX; startT = Date.now();
+    }, { passive: true });
+
+    on(sheet, 'pointermove', function (e) {
+      if (!tracking) return;
+      var d = e.clientY - startY;
+      var dx = Math.abs(e.clientX - startX);
+      if (!dragging) {
+        if (d <= 2 || dx > Math.abs(d)) { if (d < -8) { tracking = false; } return; }
+        if (d < 6) return;
+        dragging = true;
+        try { sheet.setPointerCapture(e.pointerId); } catch (err) {}
+      }
+      dy = Math.max(0, d);
+      apply(dy);
+    }, { passive: true });
+
+    function end() {
+      if (!tracking && !dragging) return;
+      var dt = Math.max(1, Date.now() - startT);
+      var v = dy / dt;
+      var shouldClose = dragging && (dy >= DRAG_CLOSE_PX || (dy >= DRAG_FLICK_PX && v >= DRAG_FLICK_V));
+      tracking = false; dragging = false;
+      if (shouldClose) finishClose();
+      else if (dy > 0) reset(true);
+      dy = 0;
+    }
+    on(sheet, 'pointerup', end);
+    on(sheet, 'pointercancel', function () { tracking = false; dragging = false; if (dy > 0) reset(true); dy = 0; });
+  }
+
+  /* ── 2. 상태 배지 전환 ────────────────────────────────────────────────
+     배지가 새로 그려질 때 '같은 자리(같은 예약/정산 행)의 글자가 달라졌는지'만 본다.
+     처음 보는 자리는 기록만 하고 움직이지 않는다(화면 진입 시 우르르 뜨지 않게). */
+  var badgeSeen = Object.create(null);
+
+  function badgeKey(el) {
+    var box = el.closest('[data-resv], [data-stl-row], [data-booking], [id]');
+    if (!box) return '';
+    var id = box.getAttribute('data-resv') || box.getAttribute('data-stl-row') || box.getAttribute('data-booking') || box.id || '';
+    if (!id) return '';
+    var sibs = qa('.status, .status-badge', box);
+    var idx = sibs.indexOf(el);
+    if (idx < 0) idx = 0;
+    return id + ':' + idx;
+  }
+  function animateBadge(el) {
+    if (!el || el.nodeType !== 1) return;
+    el.classList.remove('tt-badge-swap');
+    void el.offsetWidth;
+    el.classList.add('tt-badge-swap');
+    G.badgeSwaps += 1;
+    G.lastBadge = { text: norm(el.textContent), at: Date.now() };
+    W.setTimeout(function () { try { el.classList.remove('tt-badge-swap'); } catch (e) {} }, 320);
+  }
+  function scanBadges(node) {
+    if (!node || node.nodeType !== 1) return;
+    var list = [];
+    if (node.matches && node.matches('.status, .status-badge')) list.push(node);
+    qa('.status, .status-badge', node).forEach(function (el) { list.push(el); });
+    list.forEach(function (el) {
+      var key = badgeKey(el);
+      if (!key) return;
+      var text = norm(el.textContent);
+      if (!(key in badgeSeen)) { badgeSeen[key] = text; return; }
+      if (badgeSeen[key] === text) return;
+      badgeSeen[key] = text;
+      if (!reduce && !W.__ttBootQuiet) animateBadge(el);
+    });
+  }
+  function seedBadges() {
+    qa('.status, .status-badge').forEach(function (el) {
+      var key = badgeKey(el);
+      if (key && !(key in badgeSeen)) badgeSeen[key] = norm(el.textContent);
+    });
+  }
+
+  function bindBadges() {
+    seedBadges();
+    if (typeof W.MutationObserver !== 'function') return;
+    var pending = [];
+    var scheduled = false;
+    function flush() {
+      scheduled = false;
+      var list = pending; pending = [];
+      list.forEach(scanBadges);
+    }
+    var mo = new W.MutationObserver(function (muts) {
+      for (var i = 0; i < muts.length; i++) {
+        var m = muts[i];
+        if (m.type === 'childList') {
+          for (var j = 0; j < m.addedNodes.length; j++) pending.push(m.addedNodes[j]);
+        } else if (m.type === 'attributes') {
+          /* 상태 변경의 확실한 신호(data-resv-status)면 카드 안 배지를 바로 움직인다 */
+          if (m.attributeName === 'data-resv-status' && m.target && m.target.nodeType === 1) {
+            var b = q('.status, .status-badge', m.target);
+            if (b && !reduce) animateBadge(b);
+          }
+        } else if (m.type === 'characterData') {
+          if (m.target && m.target.parentNode) pending.push(m.target.parentNode);
+        }
+      }
+      if (!pending.length || scheduled) return;
+      scheduled = true;
+      W.setTimeout(flush, 0);
+    });
+    try { mo.observe(D.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['data-resv-status', 'class'] }); } catch (e) {}
+  }
+
+  function start() {
+    try { W.__ttBootQuiet = true; } catch (e) {}
+    qa('.sheet').forEach(bindSheet);
+    try { bindBadges(); } catch (e) {}
+    W.setTimeout(function () { try { W.__ttBootQuiet = false; seedBadges(); } catch (e) {} }, 900);
+  }
+
+  /* ── 검증·캡처용 훅 ────────────────────────────────────────────────── */
+  G.dragStart = function (id) {
+    var bd = q(id);
+    var sheet = bd && q('.sheet', bd);
+    return !!(sheet && openBackdrop(bd));
+  };
+  G.dragTo = function (id, px) {
+    var bd = q(id);
+    var sheet = bd && q('.sheet', bd);
+    if (!sheet || !openBackdrop(bd)) return false;
+    sheet.style.transition = 'none';
+    sheet.style.transform = 'translate(-50%,' + Math.max(0, px) + 'px)';
+    return true;
+  };
+  G.swipeClose = function (id, px) {
+    var bd = q(id);
+    var sheet = bd && q('.sheet', bd);
+    if (!sheet || !openBackdrop(bd)) return false;
+    G.closes += 1;
+    G.lastClose = { id: id, at: Date.now(), programmatic: true };
+    try { if (W.__ttokttokSheets) W.__ttokttokSheets.close(id); else bd.classList.remove('is-open'); } catch (e) { return false; }
+    return true;
+  };
+  G.badgeCount = function () { return Object.keys(badgeSeen).length; };
+  G.has = function (id) { return G.bound.indexOf(id) !== -1; };
+  G.animateBadge = animateBadge;
+
+  /* v42 · DCL을 막지 않게 부팅 직후(유휴)에 붙인다. 시트 바인딩·배지 기준선 채우기는
+     첫 화면이 그려진 뒤에 해도 사용자 동작(끌기)에 늦지 않는다. */
+  function schedule() {
+    var run = function () { try { start(); } catch (e) {} };
+    try {
+      if (W.requestIdleCallback) W.requestIdleCallback(run, { timeout: 1200 });
+      else W.setTimeout(run, 300);
+    } catch (e) { W.setTimeout(run, 300); }
+  }
+  if (D.readyState === 'loading') on(D, 'DOMContentLoaded', schedule, { once: true });
+  else schedule();
 })();
 </script>
 
