@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v45">
+<meta name="app-version" content="v46">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3046,8 +3046,8 @@ h1,h2,.hh-title,.wstep-title,.sec-title,.mp-title,.sheet-title{text-wrap:balance
 /* v44 · 아주 낮은 화면(320×568): 시작 화면도 한 화면에 — 장점 설명은 접고 제목만 남긴다 */
 @media(max-height:600px){
   .gate-brand{padding-top:0;gap:8px}
-  .gate-points{margin-top:14px;gap:6px}
-  .gate-point{padding:10px 13px;gap:12px}
+  .gate-points{margin-top:10px;gap:5px}
+  .gate-point{padding:8px 12px;gap:10px}
   .gate-point-ico{width:40px;height:40px;border-radius:12px}
   .gate-point-ico .ic{width:18px;height:18px}
   .gate-point-body p{display:none}
@@ -3055,7 +3055,132 @@ h1,h2,.hh-title,.wstep-title,.sec-title,.mp-title,.sheet-title{text-wrap:balance
   /* 지역 선택은 아래 '서비스 지역 확인하기'와 같은 일을 하므로 하나만 남긴다 */
   .gate-brand .gate-region{display:none}
   .gate-legal{font-size:11px;line-height:1.5}
-  .gate-bottom{gap:8px}
+  .gate-bottom{gap:8px;padding-top:10px}
+  .gate-tip{margin-bottom:8px}
+  .gate-links{gap:8px}
+}
+/* v46 · 320×568에서 법적 고지까지 한 화면에 — 남은 몇 px은 바깥 여백에서 덜어 낸다
+   (글자 크기·44px 버튼은 그대로 두고, 위아래 숨 쉴 여백만 줄인다) */
+@media(max-width:340px) and (max-height:600px){
+  #entryGate{padding-top:10px;padding-bottom:8px}
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   12. v46 · 넓은 화면 — 태블릿은 폭을 키우고, 데스크톱은 '목록 + 요약/상세' 2단
+      · 태블릿(≥768): 앱·탭바·시트 폭을 함께 넓히고 카드는 두 열
+      · 데스크톱(≥1024): 작업면 1,180px · 화면마다 2단(선생님 찾기·일지·관리자·정산)
+      · 2단 묶음(.tt46-col)은 1024 미만에서 display:contents — 기존 1단 흐름 그대로
+   ───────────────────────────────────────────────────────────────────── */
+.tt46-cols{display:block}
+.tt46-col{display:contents}
+.tt46-flow{display:contents}
+/* v46 · 선생님 상세 열은 1280px 이상에서만 — 좁은 화면에서는 같은 내용이 시트로 열린다 */
+.teacher-pane{display:none}
+
+@media(min-width:768px){
+  body{padding:20px 0}
+  .app{max-width:720px;min-height:calc(100vh - 40px);border-radius:32px}
+  .app-header{border-radius:32px 32px 0 0;padding:12px 22px}
+  .screen{padding:18px 22px 12px}
+  .home-body{padding:18px 22px 0}
+  .tabbar{max-width:720px;bottom:20px;border-radius:0 0 32px 32px}
+  .sheet{max-width:640px}
+  .toast{max-width:520px;bottom:112px}
+  /* 카드는 두 열 — 한 장이 남으면 그 줄을 가득 채운다 */
+  .home-body{display:flex;flex-wrap:wrap;gap:14px}
+  .home-body > *{flex:1 1 100%;margin-top:0!important}
+  .home-body > #homePassCard,.home-body > #homeReportCard,.home-body > #homeRebookCard{flex:1 1 300px}
+  #teacherList,#dongClusterList{display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
+  #teacherList > *,#dongClusterList > *{flex:1 1 300px;min-width:0;margin:0!important}
+  /* 시작 화면: 넓은 화면에서는 로그인 카드 하나 — 장점은 두 장씩 */
+  .gate.is-open{display:grid;place-items:center;background:var(--bg)}
+  .gate-inner{max-width:680px;background:var(--surface);border-radius:28px;padding:34px 36px 28px;
+    box-shadow:0 40px 120px -50px var(--shade-5),0 0 0 1px var(--line);justify-content:center;min-height:0}
+  .gate-bottom{margin-top:0;padding-top:24px}
+  .gate-points{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-height:820px){.gate.is-open{place-items:start center}}
+}
+
+@media(min-width:1024px){
+  body{padding:0;gap:0}
+  .desk-brand{display:none}
+  .app{max-width:1180px;flex:0 1 1180px;width:100%;height:calc(100vh - 48px);min-height:0;max-height:none;
+    border-radius:26px;padding-bottom:0;
+    box-shadow:0 60px 140px -60px var(--shade-5),0 0 0 1px var(--shade-white-1)}
+  .app-header{border-radius:26px 26px 0 0;padding:12px 28px}
+  .screen{padding:24px 32px 20px}
+  .screen.home-v6{padding:0 0 24px}
+  .home-body{padding:22px 32px 0}
+  .tabbar{position:sticky;bottom:0;left:auto;transform:none;max-width:none;width:100%;border-radius:0 0 26px 26px}
+  .sheet{max-width:600px;bottom:24px;border-radius:22px;max-height:calc(100vh - 72px)}
+  .sheet-handle{display:none}
+  .toast{left:50%;max-width:520px;bottom:104px}
+  .book-total{max-width:760px;bottom:100px}
+  #screen-booking > .page-head,#screen-booking > .notice{max-width:760px}
+  #bookingWizard{max-width:760px}
+  /* 2단 골격: 왼쪽/오른쪽 묶음이 각자 위에서 아래로 쌓인다 */
+  .tt46-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:start}
+  .tt46-col{display:flex;flex-direction:column;gap:16px;min-width:0}
+  .tt46-col > *{margin-top:0!important;margin-bottom:0!important}
+  .tt46-col.is-sticky{position:sticky;top:78px}
+  #screen-teachers .tt46-cols{grid-template-columns:312px minmax(0,1fr)}
+  #screen-admin .tt46-cols{grid-template-columns:456px minmax(0,1fr)}
+  #screen-tp-settle .tt46-cols{grid-template-columns:352px minmax(0,1fr)}
+  #screen-mypage .tt46-cols{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)}
+  #screen-tp-home .tt46-cols{grid-template-columns:minmax(0,1.15fr) minmax(0,1fr)}
+  /* 일지: 왼쪽 = 요약·최근 일지(상세), 오른쪽 = 일정·타임라인·추이 */
+  #screen-journal .journal{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px 26px;align-items:start}
+  #screen-journal .journal > .tt46-flow{display:flex;flex-wrap:wrap;gap:16px;grid-column:1/-1}
+  #screen-journal .journal > .tt46-flow > *{flex:1 1 340px;min-width:0;margin:0!important}
+  #screen-journal .journal > .share-btn,
+  #screen-journal .journal > .fine,
+  #screen-journal .journal > #journalReviewSec{grid-column:1/-1}
+  #screen-journal .journal > .share-btn{margin-top:0}
+  #screen-journal .role-switch{max-width:460px}
+  /* 선생님 찾기: 필터는 왼쪽 레일, 결과는 두 열 카드 */
+  #screen-teachers .tt46-col .segmented{flex-wrap:wrap;overflow:visible;border-radius:16px}
+  #screen-teachers .tt46-col .chips{flex-wrap:wrap;overflow:visible}
+  #screen-teachers .tt46-col #teacherFilters button{flex:1 1 42%;white-space:normal;line-height:1.25;padding:6px 8px}
+  #teacherSideCol{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:16px 16px 12px}
+  #teacherSideCol .home-search{margin-top:0}
+  #teacherSideCol .trust-strip{margin-top:10px}
+  #teacherList{display:flex;flex-wrap:wrap;gap:14px;align-items:stretch}
+  #teacherList > *{flex:1 1 300px;min-width:0;margin:0!important}
+  /* 홈: 요약 두 장 → 추이/재예약 → 브랜드·증상 */
+  .home-body{display:flex;flex-wrap:wrap;gap:16px}
+  .home-body > *{flex:1 1 100%;margin-top:0!important}
+  .home-body > .hs-hero{flex:1 1 560px}
+  .home-body > #homePassCard{flex:1 1 352px}
+  .home-body > #homeReportCard,.home-body > #homeRebookCard{flex:1 1 320px}
+  .home-body > .home-hero{flex:1 1 100%}
+  .home-body > .home-link-card{flex:1 1 320px}
+  .home-body > .home-programs{flex:1 1 520px}
+  .home-programs .hp-rail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+  /* 시작 화면 */
+  .gate-brand{padding-top:0}
+}
+@media(min-width:1024px) and (max-width:1279px){
+  #screen-admin .tt46-cols{grid-template-columns:minmax(0,1fr) 396px}
+}
+
+/* 1280px 이상: 선생님 찾기를 '필터 | 목록 | 상세' 세 칸으로 — 카드를 누르면 오른쪽에 프로필이 열린다.
+   (DOM 순서는 목록 → 상세 그대로라 탭 순서는 모바일과 같다) */
+@media(min-width:1280px){
+  #screen-teachers .tt46-cols{grid-template-columns:288px minmax(0,1fr)}
+  #teacherMainCol{display:grid;grid-template-columns:minmax(0,1fr) 348px;gap:16px;align-items:start}
+  #teacherMainCol > #teacherQueryBar,
+  #teacherMainCol > #nearPanel,
+  #teacherMainCol > .fine{grid-column:1/-1}
+  #teacherPane{display:block;grid-column:2;background:var(--surface);border:1px solid var(--line);border-radius:22px;
+    padding:18px 18px 6px;position:sticky;top:78px;max-height:calc(100vh - 160px);overflow-y:auto;
+    box-shadow:var(--shadow-card)}
+  #teacherPane[hidden]{display:none}
+  #teacherPane .sheet-head{padding-right:0}
+  #teacherPane .pane-cta{display:flex;gap:8px;margin:4px 0 14px}
+  #teacherPane .pane-cta .btn{flex:1}
+  #teacherList{flex-direction:column}
+  #teacherList > *{flex:1 1 auto;width:100%;max-width:none}
+  #teacherList .teacher.is-selected{border-color:var(--line-blue);box-shadow:0 0 0 2px var(--tint-blue),var(--shadow-card)}
 }
 </style>
 </head>
@@ -3366,6 +3491,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <h1>선생님 찾기</h1>
         <p>면허·전문분야·후기를 한눈에.</p>
       </div>
+      <!-- v46 · 넓은 화면에서는 검색·필터가 왼쪽 레일, 결과가 오른쪽 두 열 -->
+      <div class="tt46-cols" id="teacherCols">
+      <div class="tt46-col is-sticky" id="teacherSideCol">
       <div class="home-search">
         <div class="search-field">
           <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
@@ -3408,8 +3536,12 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <button class="chip" type="button" data-reg="충청" role="tab" aria-selected="false">대전·충청</button>
         <button class="chip" type="button" data-reg="호남" role="tab" aria-selected="false">광주·전라</button>
       </div>
+      </div><!-- /tt46-col (레일) -->
+      <div class="tt46-col" id="teacherMainCol">
       <div class="query-bar" id="teacherQueryBar"></div>
       <div id="teacherList"></div>
+      <!-- v46 · 1280px 이상: 카드를 누르면 프로필이 이 열에 열린다(모바일·태블릿은 시트 그대로) -->
+      <aside class="teacher-pane" id="teacherPane" aria-label="선생님 프로필" hidden></aside>
       <!-- v22 · 내 주변(동 단위): 시·도 → 시·군·구 → 동네 클러스터 요약 카드 -->
       <div id="nearPanel" hidden>
         <p class="fine" style="margin:8px 2px 0">개인 주소·정확한 위치는 보여드리지 않아요. 시·군·구와 동네 단위로만 묶어서 알려드려요.</p>
@@ -3419,6 +3551,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <p class="fine" style="margin:10px 2px 0">* 동네는 선생님이 등록한 활동 지역 기준이에요. 실제 배정은 무료 방문 평가 후 확정돼요.</p>
       </div>
       <p class="fine">* 시연용 예시 프로필이에요. 실제 배정은 무료 방문 평가 뒤 지역·증상에 맞춰 안내드려요.</p>
+      </div><!-- /tt46-col (결과) -->
+      </div><!-- /tt46-cols -->
     </section>
 
     <!-- ================= 예약 (고객) ================= -->
@@ -3663,6 +3797,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       </div>
 
       <div class="journal" id="journal">
+        <!-- v46 · 넓은 화면: 왼쪽 = 요약·최근 일지(상세), 오른쪽 = 오늘 일정·타임라인·추이 -->
+        <div class="tt46-col" id="journalSideCol">
         <div class="patient">
           <div class="p-top">
             <div>
@@ -3713,7 +3849,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           <button class="btn btn-outline" id="checkinBtn" type="button">도착 체크인</button>
           <button class="btn btn-ghost mt-8" type="button" data-safety-open>긴급 연락 · 안전 안내</button>
         </div>
+        </div><!-- /tt46-col (요약·상세) -->
 
+        <div class="tt46-col" id="journalMainCol">
         <section class="jl-timeline" aria-labelledby="jlTlTitle">
           <div class="jl-tl-head">
             <h2 id="jlTlTitle">회복 타임라인</h2>
@@ -3766,7 +3904,10 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
             <div class="bar"><span style="width:66%"></span></div>
           </div>
         </div>
+        </div><!-- /tt46-col (기록·추이) -->
 
+        <!-- v46 · 화면 폭을 다 쓰는 기록 묶음: 운동·통증·메모는 두 장씩 -->
+        <div class="tt46-flow" id="journalFlow">
         <div class="card checklist-card mt-10">
           <div class="card-head mb-4">
             <h2>오늘의 운동</h2>
@@ -3798,6 +3939,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <div class="guardian-note guardian-only">
           <b>보호자님께</b><br>이번 주는 앉았다 일어서기를 집에서 5회씩 도와주세요. 통증이 4점 이상이거나 어지럼증이 있으면 바로 선생님께 알려 주세요.
         </div>
+        </div><!-- /tt46-flow -->
 
         <button class="btn btn-navy share-btn" id="shareBtn" type="button">보호자에게 일지 공유</button>
         <p class="fine ta-c">일지 링크는 우리 가족만 볼 수 있어요.</p>
@@ -3814,6 +3956,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
 
     <!-- ================= 내 정보 (고객) ================= -->
     <section class="screen mypage-v6" id="screen-mypage" aria-label="내 정보">
+      <!-- v46 · 넓은 화면: 왼쪽 = 내 정보·메뉴, 오른쪽 = 읽기 설정(글자 크기·테마) -->
+      <div class="tt46-cols">
+      <div class="tt46-col">
       <div class="mp-top">
         <div class="mp-top-row">
           <div class="mp-text">
@@ -3882,6 +4027,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         </button>
       </div>
 
+      </div><!-- /tt46-col (프로필·메뉴) -->
+      <div class="tt46-col is-sticky">
+
       <!-- v42 · 글자 크기: 40~70대 보호자·선생님이 쓰는 앱이라 화면 글자를 키울 수 있어야 한다.
            설정은 이 기기에 저장되고, 타입 토큰(--fs-scale) 하나로 전 화면이 함께 커진다. -->
       <section class="card mp-text-card" id="mpTextCard" aria-labelledby="mpTextTitle">
@@ -3915,6 +4063,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       </section>
 
       <p class="mp-fine">* 시연용 화면이에요. 결제·예약 정보는 이 브라우저에만 저장돼요.</p>
+      </div><!-- /tt46-col (읽기 설정) -->
+      </div><!-- /tt46-cols -->
     </section>
 
     <!-- ================= 선생님 홈 (선생님) ================= -->
@@ -3924,6 +4074,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <p>방문 요청과 이번 달 정산을 확인하세요.</p>
       </div>
 
+      <!-- v46 · 넓은 화면: 왼쪽 = 오늘 상태·정산·알림, 오른쪽 = 요청·이번 주 일정 -->
+      <div class="tt46-cols">
+      <div class="tt46-col">
       <div class="mt-14" id="tpHero"></div>
       <div class="mt-10" id="tpStatusCard"></div>
       <div class="mt-10" id="tpSettle"></div>
@@ -3941,6 +4094,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <div class="notif-list" id="tpNotifList"></div>
         <p class="fine mt-8">* 앱 안 알림이에요. 문자·카카오 발송은 아직 연결되지 않았어요.</p>
       </section>
+      </div><!-- /tt46-col -->
+      <div class="tt46-col">
 
       <section class="sec mt-20">
         <div class="sec-head mb-8">
@@ -3959,6 +4114,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       </section>
 
       <p class="fine ta-c mb-6">* 수수료 22.2%(보호자 결제액 기준) · 회차 완료 D+3 정산 확정 · 월 2회(15일·말일) 지급 · 예시 데이터예요.</p>
+      </div><!-- /tt46-col -->
+      </div><!-- /tt46-cols -->
     </section>
 
     <!-- ================= 일정·요청 (선생님) ================= -->
@@ -3968,12 +4125,17 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <p>방문 요청을 수락하면 일정에 자동으로 등록돼요.</p>
       </div>
 
+      <!-- v46 · 넓은 화면: 왼쪽 = 대기 요청, 오른쪽 = 확정 방문 -->
+      <div class="tt46-cols">
+      <div class="tt46-col">
       <section class="sec mt-14">
         <div class="sec-head mb-8">
           <h2 class="sec-title">대기 중인 요청</h2>
         </div>
         <div id="tpReqListFull"></div>
       </section>
+      </div><!-- /tt46-col -->
+      <div class="tt46-col">
 
       <section class="sec mt-20">
         <div class="sec-head mb-8">
@@ -3985,6 +4147,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <div class="list" id="tpScheduleList"></div>
       </section>
       <p class="fine">* 체크인 기록은 예약 이력에 남아요. (예시)</p>
+      </div><!-- /tt46-col -->
+      </div><!-- /tt46-cols -->
     </section>
 
     <!-- ================= 일지 작성 (선생님) ================= -->
@@ -3997,6 +4161,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       <div id="tpJournalLocked" hidden></div>
 
       <div id="tpJournalFormWrap">
+        <!-- v46 · 넓은 화면: 왼쪽 = 2분 빠른 일지, 오른쪽 = 평가·메모 일지 -->
+        <div class="tt46-cols">
+        <div class="tt46-col">
         <!-- v20 · 2분 빠른 일지 (통증·컨디션 1~5 · 수행 동작 체크 · 한 줄) -->
         <div class="card mt-14" id="tpQuickCard">
           <div class="card-head mb-4">
@@ -4046,6 +4213,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           <button class="btn btn-teal mt-12" type="button" id="qlSave">일지 저장 · 보호자 공유</button>
           <p class="fine" id="qlHint">필수: 통증 · 컨디션 · 수행 동작 1개</p>
         </div>
+        </div><!-- /tt46-col -->
+        <div class="tt46-col">
 
         <div class="card mt-12">
           <div class="jr-form">
@@ -4077,6 +4246,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           <button class="btn btn-teal mt-12" type="button" id="tpSaveJournal">일지 저장하고 보호자에게 공유</button>
           <p class="fine">* 저장한 기록은 일지 목록과 보호자 화면에 반영돼요. (시연용)</p>
         </div>
+        </div><!-- /tt46-col -->
+        </div><!-- /tt46-cols -->
 
         <section class="sec">
           <div class="sec-head mb-8">
@@ -4104,6 +4275,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <p>자격·서류·정산 정보를 관리하세요.</p>
       </div>
 
+      <!-- v46 · 넓은 화면: 왼쪽 = 프로필·가능 시간·서류, 오른쪽 = 정산·설정 -->
+      <div class="tt46-cols">
+      <div class="tt46-col">
       <div class="mt-14" id="tpProfile"></div>
 
       <!-- v19 · 선생님이 직접 등록하는 가능 시간·활동 지역 (관리자 수기 입력 금지) -->
@@ -4123,6 +4297,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         </div>
         <div class="list" id="tpDocsList"></div>
       </section>
+      </div><!-- /tt46-col -->
+      <div class="tt46-col">
 
       <section class="sec mt-20">
         <div class="sec-head mb-8">
@@ -4161,6 +4337,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         </div>
         <p class="fine">* 시연용 화면이에요. 서류 심사·정산은 실제로 처리되지 않아요.</p>
       </section>
+      </div><!-- /tt46-col -->
+      </div><!-- /tt46-cols -->
     </section>
 
     <!-- ================= 선생님 지원하기 ================= -->
@@ -4391,6 +4569,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <div class="admin-stats" id="adminStats"></div>
       </div>
 
+      <!-- v46 · 넓은 화면: 왼쪽 = 오늘 할 일·예약 큐(내역), 오른쪽 = 운영 지표 요약 -->
+      <div class="tt46-cols">
+      <div class="tt46-col is-sticky">
       <!-- v28 · 운영 지표 대시보드 (로컬 데모 계산) -->
       <section class="sec mt-20" id="adminMetricsSec" aria-label="운영 지표 대시보드">
         <div class="sec-head mb-10">
@@ -4421,6 +4602,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         </div>
         <p class="fine" id="adminMetricsNote" role="status" aria-live="polite" style="margin:10px 0 0">이 기기 데이터로만 계산한 예시 수치예요. 서버·DB·외부 발송과 연결되어 있지 않아요.</p>
       </section>
+      </div><!-- /tt46-col (지표 요약) -->
+      <div class="tt46-col">
 
       <!-- v19 · 매칭 대기열 & 운영 예외 요약 보드 (로컬 데모) -->
       <section class="sec mt-20" id="adminOpsSec" aria-label="오늘 처리할 일">
@@ -4542,6 +4725,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       </section>
 
       <p class="fine mb-6">* 시연용 콘솔이에요. 실제 면허 진위 조회와 범죄경력조회는 하지 않아요.</p>
+      </div><!-- /tt46-col (오늘 할 일·큐) -->
+      </div><!-- /tt46-cols -->
     </section>
   </main>
 
@@ -12039,6 +12224,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
 
   /* ================= 선생님 상세 바텀시트 ================= */
   var sheetTeacherId = null;
+  var lastTeacherHtml = ''; /* v46 · 데스크톱 상세 열의 마지막 본문(전체 프로필 보기용) */
 
   /* v15 · 카드·시트 배지 — 통과한 단계만. 미확인 단계는 문구 자체를 만들지 않는다. */
   function teacherBadgeHtml(t) {
@@ -12137,7 +12323,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       '<p class="sheet-note">' + esc(trust.note) + '</p>' +
     '</div>';
 
-    $('#teacherSheetBody').innerHTML =
+    var sheetHtml =
       '<div class="sheet-head">' +
         '<div class="sheet-av" style="' + avaStyle(t.id) + '" aria-hidden="true">' + avaSvg(t.id) + '</div>' +
         '<div style="flex:1;min-width:0">' +
@@ -12176,8 +12362,44 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         (t.transport ? '<p class="sheet-note">이동 수단 ' + esc(t.transport) + '</p>' : '') +
       '</div>';
 
+    lastTeacherHtml = sheetHtml;
+    /* v46 · 1280px 이상은 오른쪽 상세 열에 열린다(시트 대신) — 모달을 겹쳐 띄우지 않는다. */
+    if (deskWide() && $('#teacherPane')) {
+      var pane = $('#teacherPane');
+      pane.innerHTML = sheetHtml +
+        '<div class="pane-cta">' +
+          '<button class="btn btn-outline btn-sm" type="button" data-pane-close>닫기</button>' +
+          '<button class="btn btn-navy btn-sm" type="button" data-pane-open>전체 프로필 보기</button>' +
+        '</div>';
+      pane.hidden = false;
+      pane.setAttribute('aria-label', t.name + ' 선생님 프로필');
+      selectTeacherCard(id);
+      return;
+    }
+    $('#teacherSheetBody').innerHTML = sheetHtml;
     $('#teacherSheet').classList.add('is-open');
     syncBodyState();
+  }
+
+  /* 넓은 화면인가(선생님 상세 열을 쓸지) */
+  function deskWide() {
+    try { return !!(window.matchMedia && window.matchMedia('(min-width:1280px)').matches); } catch (e) { return false; }
+  }
+  function selectTeacherCard(id) {
+    var list = $('#teacherList');
+    if (!list) return;
+    Array.prototype.forEach.call(list.querySelectorAll('.teacher'), function (el) {
+      el.classList.toggle('is-selected', el.getAttribute('data-teacher') === id);
+      if (el.getAttribute('data-teacher') === id) el.setAttribute('aria-current', 'true');
+      else el.removeAttribute('aria-current');
+    });
+  }
+  function closeTeacherPane() {
+    var pane = $('#teacherPane');
+    if (!pane) return;
+    pane.hidden = true;
+    pane.innerHTML = '';
+    selectTeacherCard('');
   }
 
   function closeTeacherSheet() {
@@ -12344,6 +12566,19 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var card = e.target.closest('[data-teacher]');
     if (card) {
       openTeacherSheet(card.getAttribute('data-teacher'));
+      return;
+    }
+    if (e.target.closest('[data-pane-close]')) {
+      closeTeacherPane();
+      return;
+    }
+    if (e.target.closest('[data-pane-open]')) {
+      if (lastTeacherHtml) {
+        closeTeacherPane();
+        $('#teacherSheetBody').innerHTML = lastTeacherHtml;
+        $('#teacherSheet').classList.add('is-open');
+        syncBodyState();
+      }
       return;
     }
   });
@@ -15848,6 +16083,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       return;
     }
     var s = currentStatement();
+    /* v46 · 넓은 화면에서는 왼쪽 = 월 요약·내보내기, 오른쪽 = 회차별 내역
+       (월 선택 칩은 두 열 위에 걸쳐 둔다) */
     var html = '';
 
     /* ① 월 선택 칩 */
@@ -15857,6 +16094,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       html += '<button class="chip' + (on ? ' is-on' : '') + '" type="button" data-stl-month="' + esc(m) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(TtModel.statementMonthLabel(m)) + '</button>';
     });
     html += '</div>';
+    html += '<div class="tt46-cols"><div class="tt46-col is-sticky">';
 
     /* ② 월 요약 */
     html += '<div class="settle mt-12" id="tpsSummary">' +
@@ -15888,6 +16126,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     '</div>';
 
     /* ④ 회차별 상세 */
+    html += '</div><div class="tt46-col">';
     html += '<section class="sec mt-20" aria-label="회차별 정산 내역">' +
       '<div class="sec-head mb-8"><h2 class="sec-title">회차별 내역 <span class="fs-meta fw-700 c-blue" id="tpsRowCount">' + s.rows.length + '건</span></h2></div>';
     if (s.rows.length) {
@@ -15895,7 +16134,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     } else {
       html += '<div id="tpsRows">' + TtUI.emptyHtml('tp-settle') + '</div>';
     }
-    html += '</section>';
+    html += '</section></div></div>';
     el.innerHTML = html;
   }
 
