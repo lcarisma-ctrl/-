@@ -6962,7 +6962,7 @@ body.is-keyboard #bookTotalBar{display:none}
       function keyOf(r) {
         if (o.groupKey) return String(o.groupKey);
         return String(r.memberId || r.patient || r.memberName || r.patientLabel
-          || ((r.userId || 'usr-demo') + '|' + (r.regionId || r.region || '회원')));
+          || ((r.userId || 'usr-demo') + '|' + (r.regionId || r.region || '방문 대상')));
       }
       list.forEach(function (r) {
         if (!r || typeof r !== 'object') return;
@@ -6973,7 +6973,7 @@ body.is-keyboard #bookTotalBar{display:none}
         if (!g) {
           g = byKey[k] = {
             key: k,
-            label: String(r.patient || r.memberName || r.patientLabel || o.label || '회원'),
+            label: String(r.patient || r.memberName || r.patientLabel || o.label || '방문 대상'),
             region: regionTextOf(r.regionId, r.region) || String(r.region || ''),
             teacherId: r.teacherId || '',
             bookingNo: '', bookingNos: [], records: []
