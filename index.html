@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v35">
+<meta name="app-version" content="v36">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -102,6 +102,13 @@
   --ease:cubic-bezier(.22,.8,.24,1);
   --spring:cubic-bezier(.34,1.56,.64,1);
   --tap:44px;
+  /* v36 · 마이크로 인터랙션은 전부 0.2초 이내 */
+  --dur-tap:110ms;      /* 누름 */
+  --dur-ui:160ms;       /* 색·면·그림자 전환 */
+  --dur-sheet:180ms;    /* 시트·모달 열고 닫힘 */
+  --press:.97;          /* 누른 동안 축소 */
+  --press-soft:.985;    /* 큰 카드 누름 */
+  --press-op:.62;       /* 글자 버튼 누름 */
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -728,12 +735,12 @@ input[type="range"]{width:100%;margin:10px 0 2px;accent-color:var(--teal-ink);he
 
 /* ---------- modal → bottom sheet ---------- */
 .backdrop{position:fixed;inset:0;z-index:var(--z-backdrop);display:none;align-items:flex-end;justify-content:center;background:rgba(8,16,30,.46);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
-.backdrop.is-open{display:flex;animation:fadeIn .2s ease both}
+.backdrop.is-open{display:flex;animation:fadeIn var(--dur-ui) var(--ease) both}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .modal{
   width:100%;max-width:430px;background:#fff;border-radius:28px 28px 0 0;
   padding:12px 20px calc(20px + env(safe-area-inset-bottom));text-align:center;
-  animation:sheetUp .34s var(--ease) both;max-height:88vh;overflow-y:auto;
+  animation:sheetUp var(--dur-sheet) var(--ease) both;max-height:88vh;overflow-y:auto;
 }
 .modal::before{content:"";display:block;width:40px;height:4px;border-radius:var(--r-pill);background:#E2E8F0;margin:0 auto 16px}
 @keyframes sheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
@@ -747,12 +754,12 @@ input[type="range"]{width:100%;margin:10px 0 2px;accent-color:var(--teal-ink);he
 
 /* ---------- bottom sheet (teacher detail) ---------- */
 .sheet-backdrop{position:fixed;inset:0;z-index:var(--z-sheet);display:none;background:rgba(8,16,30,.46);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
-.sheet-backdrop.is-open{display:block;animation:fadeIn .2s ease both}
+.sheet-backdrop.is-open{display:block;animation:fadeIn var(--dur-ui) var(--ease) both}
 .sheet-backdrop.is-front{z-index:var(--z-front)}
 .sheet-backdrop.is-front .sheet{z-index:var(--z-front-sheet)}
 .sheet{
   position:fixed;left:50%;bottom:0;z-index:var(--z-sheet-body);width:100%;max-width:430px;
-  transform:translate(-50%,102%);transition:transform .36s var(--ease);
+  transform:translate(-50%,102%);transition:transform var(--dur-sheet) var(--ease);
   background:var(--surface);border-radius:28px 28px 0 0;max-height:90vh;
   display:flex;flex-direction:column;box-shadow:0 -20px 60px -20px rgba(8,16,30,.5);
   overflow:hidden;
@@ -2187,6 +2194,49 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
 .ta-c{text-align:center!important}
 .ta-l{text-align:left!important}
 .td-n{text-decoration:none!important}
+
+/* =====================================================================
+   v36 · 마이크로 인터랙션 (2026.11.27)
+   ─ 시트·모달은 닫힐 때 display:none으로 즉시 사라지지 않는다. class is-open이 빠지는
+     순간 a11y 계층이 is-closing을 붙이고, 180ms 동안 아래로 내려가며 흐려진 뒤 걷힌다.
+     포커스 복귀·배경 inert 해제는 예전처럼 그 순간 즉시 처리하므로 애니메이션과 얽히지 않는다.
+   ─ 버튼·칩·카드 누름은 transform/opacity만(0.2초 이내). 큰 카드는 더 약하게 누른다.
+   ─ 저장·완료 피드백: 토스트에 체크 표시(.toast.is-ok), 저장 버튼에 체크 배지(.is-saved).
+   ─ prefers-reduced-motion은 v3 블록이 모든 duration을 0.001ms로 덮고, 닫힘 정리도 즉시(0ms).
+   ===================================================================== */
+
+/* ── 1. 시트·모달 닫힘 전환 ─────────────────────────────────────── */
+.sheet-backdrop.is-closing{display:block;visibility:visible;pointer-events:none;animation:ttFadeOut var(--dur-sheet) var(--ease) both}
+.sheet-backdrop.is-closing .sheet{transform:translate(-50%,102%);transition:transform var(--dur-sheet) var(--ease)}
+.backdrop.is-closing{display:flex;visibility:visible;pointer-events:none;animation:ttFadeOut var(--dur-sheet) var(--ease) both}
+.backdrop.is-closing .modal{animation:ttSheetDown var(--dur-sheet) var(--ease) both}
+.gate.is-closing{display:block;visibility:visible;pointer-events:none;animation:ttFadeOut var(--dur-sheet) var(--ease) both}
+@keyframes ttFadeOut{from{opacity:1}to{opacity:0}}
+@keyframes ttSheetDown{from{transform:translateY(0)}to{transform:translateY(100%)}}
+
+/* ── 2. 누름(press) 피드백 ─────────────────────────────────────── */
+button:not([disabled]):active,[role="button"]:active,.btn:active,.chip:active,.pick:active,.tabbtn:active,
+.teacher:active,.list-item:active,.date-chip:active,.slot:active,.week-chip:active,.pass:active,.pay:active,
+.tile:active,.quick-tile:active,.sym-tile:active,.faq-q:active,.notif:active,.admin-card:active,
+.segmented button:active,.mp-row:active,.m-row:active,.role-card:active,label.check:active,label.consent:active{
+  transform:scale(var(--press));
+}
+.card:active,.home-link-card:active,.h-mini-card:active,.report-cta:active{transform:scale(var(--press-soft))}
+.sec-link:active,.back-link:active,.gate-link:active,.admin-docs-all:active,.sheet-beta-link:active{opacity:var(--press-op)}
+.faq-q,.notif,.admin-card,.mp-row,.m-row,.home-link-card,.h-mini-card,.report-cta{transition:transform var(--dur-tap) var(--ease),background var(--dur-ui) var(--ease),border-color var(--dur-ui) var(--ease)}
+
+/* ── 3. 저장·완료 피드백 (체크) ─────────────────────────────────── */
+.toast.is-ok{display:flex;align-items:center;justify-content:center;gap:8px}
+.toast.is-ok::before{content:"";flex:0 0 15px;width:15px;height:15px;background:var(--teal-50);border-radius:var(--r-full);
+  background-color:#5EEAD4;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/12px 12px no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/12px 12px no-repeat;
+  animation:ttCheckIn var(--dur-ui) var(--ease) both}
+.btn.is-saved{position:relative}
+.btn.is-saved::after{content:"";position:absolute;right:14px;top:50%;width:17px;height:17px;margin-top:-8.5px;background:currentColor;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat;
+  animation:ttCheckIn var(--dur-ui) var(--ease) both}
+@keyframes ttCheckIn{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -9895,6 +9945,19 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       }, true);
     }
 
+    /* v36 · 저장 버튼 체크 배지 — 저장이 끝난 버튼에 1초 동안 체크를 보여 준다.
+       레이아웃을 건드리지 않는 ::after(mask)라 문구·크기·터치 영역은 그대로다. */
+    function saved(el, opts) {
+      if (!el || !el.classList) return false;
+      el.classList.add('is-saved');
+      if (el.__v36SavedTimer) clearTimeout(el.__v36SavedTimer);
+      el.__v36SavedTimer = setTimeout(function () {
+        el.classList.remove('is-saved');
+        el.__v36SavedTimer = null;
+      }, (opts && opts.ms) || 1000);
+      return true;
+    }
+
     return {
       version: VERSION,
       presets: PRESETS,
@@ -9925,6 +9988,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       readDraft: readDraft,
       clearDraft: clearDraft,
       draftPrefix: DRAFT_PREFIX,
+      saved: saved,
       audit: audit
     };
   })();
@@ -10049,12 +10113,14 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
   /* ================= 토스트 ================= */
   var toastEl = $('#toast');
   var toastTimer = null;
-  function toast(msg) {
+  /* v36 · opts.ok면 앞에 체크 표시(.is-ok)를 붙인다 — 문구는 그대로라 읽는 순서·테스트에 영향 없음. */
+  function toast(msg, opts) {
     if (!toastEl) return;
     toastEl.textContent = msg;
+    toastEl.classList.toggle('is-ok', !!(opts && opts.ok));
     toastEl.classList.add('is-on');
     if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { toastEl.classList.remove('is-on'); }, 2600);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('is-on'); toastEl.classList.remove('is-ok'); }, 2600);
   }
 
   /* 시트가 열려 있는 동안 body 상태(스크롤 잠금·토스트 위치)를 한 곳에서 관리 */
@@ -12497,7 +12563,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       checkinBtn.style.color = '#0B7A6B';
       checkStatus.textContent = '방문 중';
       checkStatus.classList.add('is-on');
-      toast('체크인 완료! 보호자에게 도착 알림을 보냈어요.');
+      toast('체크인 완료! 보호자에게 도착 알림을 보냈어요.', { ok: true });
     } else {
       checkinBtn.textContent = '도착 체크인';
       checkinBtn.style.background = '';
@@ -13388,7 +13454,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     resetQuickDraft();
     toast(res.hasPhoto
       ? '2분 일지와 사진 1장을 저장하고 보호자에게 공유했어요.'
-      : (res.photoWarning ? res.photoWarning + ' (일지는 사진 없이 저장했어요)' : '2분 일지를 저장하고 보호자에게 공유했어요.'));
+      : (res.photoWarning ? res.photoWarning + ' (일지는 사진 없이 저장했어요)' : '2분 일지를 저장하고 보호자에게 공유했어요.'), { ok: !res.photoWarning });
     try {
       window.__ttokttokQuickLog = {
         ok: true, journalId: res.journal.id, patient: patient, pain: res.journal.pain5,
@@ -13869,7 +13935,8 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
         regions: ov ? ov.regions : '', regionDetail: ov ? ov.regionDetail : '', saved: true
       };
     } catch (e) {}
-    toast('가능 시간·활동 지역을 저장했어요. 매칭 후보에 바로 반영됩니다.');
+    toast('가능 시간·활동 지역을 저장했어요. 매칭 후보에 바로 반영됩니다.', { ok: true });
+    try { TtUI.saved($('#tpAvailSave')); } catch (e) {}
     return { ok: true };
   }
 
@@ -14881,7 +14948,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     saveAdmin();
     renderPartner();
     renderAdmin();
-    toast('심사가 승인되어 파트너 활동을 시작합니다. (데모)');
+    toast('심사가 승인되어 파트너 활동을 시작합니다. (데모)', { ok: true });
     setRole('therapist', 'tp-home');
   }
 
@@ -16513,6 +16580,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     var open = el.classList.contains('is-open');
     if (open) {
       if (el.__a11yFrom) { a11ySyncBackground(); return; } /* 이미 열려 있음 */
+      ttMicroOpen(el);
       el.__a11yFrom = (a11yLastTrigger && a11yResolveTrigger(a11yLastTrigger)) ? a11yLastTrigger : { el: document.activeElement, sel: '' };
       if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
       var target = a11yFirstFocusable(el) || el;
@@ -16522,12 +16590,49 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
     } else if (el.__a11yFrom) {
       var from = el.__a11yFrom;
       el.__a11yFrom = null;
+      /* v36 · 닫힘 전환: is-open이 빠진 순간 is-closing을 붙여 180ms 동안 내려가며 사라진다.
+         포커스·inert는 아래에서 그 즉시 처리되므로 애니메이션과 얽히지 않는다. */
+      ttMicroClose(el);
       /* 배경 잠금을 먼저 풀어야 원래 버튼으로 초점이 돌아간다. */
       a11ySyncBackground();
       a11yRestoreFocus(from);
     } else {
       a11ySyncBackground();
     }
+  }
+
+  /* ================= v36 · 마이크로 인터랙션 =================
+     시트·모달 닫힘은 class만으로 처리한다(호출부를 고치지 않아 모든 닫힘 경로가 같게 동작).
+     열림 상태(is-open)는 즉시 빠지므로 포커스 복귀·배경 inert 해제·E2E 판정은 그대로이고,
+     화면에는 is-closing 레이어만 180ms 더 남아 자연스럽게 내려간다. */
+  var TT_CLOSE_MS = 180;
+  function ttMotionReduced() {
+    try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; }
+  }
+  function ttFinishClose(el) {
+    if (!el || !el.classList) return;
+    if (el.__ttCloseTimer) { clearTimeout(el.__ttCloseTimer); el.__ttCloseTimer = null; }
+    el.classList.remove('is-closing');
+  }
+  function ttMicroClose(el) {
+    if (!el || !el.classList) return false;
+    ttFinishClose(el);
+    el.classList.add('is-closing');
+    /* 전환이 끝난 뒤(180ms + 여유) 스스로 걷는다. 동작 줄이기가 켜져 있으면 즉시. */
+    var ms = ttMotionReduced() ? 0 : TT_CLOSE_MS + 60;
+    el.__ttCloseTimer = setTimeout(function () {
+      el.__ttCloseTimer = null;
+      el.classList.remove('is-closing');
+    }, ms);
+    return true;
+  }
+  function ttMicroOpen(el) {
+    /* 새 레이어가 열리면 아직 내려가던 레이어는 바로 걷어 겹침을 만들지 않는다. */
+    var closing = document.querySelectorAll('.is-closing');
+    for (var i = 0; i < closing.length; i++) {
+      if (closing[i] !== el) ttFinishClose(closing[i]);
+    }
+    if (el) ttFinishClose(el);
   }
 
   /* ================= v34 · 배경 inert·aria-hidden + Tab 순환 트랩 =================
@@ -16872,6 +16977,32 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       selectors: TOUCH_SEL.split(', '), pillSelectors: TOUCH_PILL_SEL.split(', '),
       apply: function (root) { toucApplyAll(root || document); },
       violations: touchViolations, gapViolations: touchGapViolations
+    };
+  })();
+
+  /* v36 · 마이크로 인터랙션 검증 훅 — 화면에는 영향 없음 */
+  (function initMotionHook() {
+    window.__ttokttokMotion = {
+      version: 'v36',
+      closeMs: TT_CLOSE_MS,
+      durations: { tap: 110, ui: 160, sheet: 180 },
+      reduced: ttMotionReduced,
+      closing: function () {
+        return [].slice.call(document.querySelectorAll('.is-closing')).map(function (el) { return el.id || el.className; });
+      },
+      openDialogs: function () {
+        return [].slice.call(document.querySelectorAll('.sheet-backdrop.is-open, .backdrop.is-open, .gate.is-open')).map(function (el) { return el.id || el.className; });
+      },
+      finishClosing: function () {
+        var list = [].slice.call(document.querySelectorAll('.is-closing'));
+        list.forEach(ttFinishClose);
+        return list.length;
+      },
+      saved: function (sel) { return TtUI.saved(typeof sel === 'string' ? $(sel) : sel); },
+      toastOk: function (msg) { toast(msg || '저장했어요.', { ok: true }); return !!(toastEl && toastEl.classList.contains('is-ok')); },
+      pressScale: function () {
+        try { return getComputedStyle(document.documentElement).getPropertyValue('--press').trim(); } catch (e) { return ''; }
+      }
     };
   })();
 
@@ -17261,7 +17392,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       TtUI.busy(qlBtn, '저장 중…');
       try {
         var qlRes = saveQuickJournal();
-        if (qlRes && qlRes.ok) TtUI.clear($('#qlError'));
+        if (qlRes && qlRes.ok) { TtUI.clear($('#qlError')); TtUI.saved($('#qlSave')); }
         else showQuickLogError(qlRes);
       } catch (qlErr) {
         showQuickLogError({ message: String(qlErr && qlErr.message || qlErr) });
@@ -17916,7 +18047,7 @@ body{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1}
       var ts = $('#teacherSheet');
       if (ts && ts.classList.contains('is-open')) openTeacherSheet(teacherId);
     }
-    toast('후기 등록 완료 · ' + (t ? t.name + ' 선생님 ' + t.rating.toFixed(1) + '점' : '감사합니다'));
+    toast('후기 등록 완료 · ' + (t ? t.name + ' 선생님 ' + t.rating.toFixed(1) + '점' : '감사합니다'), { ok: true });
     return { ok: true, code: 'ok', reviewId: reviewId, teacherId: teacherId, bookingNo: bookingNo || null };
   }
 
