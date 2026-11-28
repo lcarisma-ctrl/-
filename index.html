@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v50">
+<meta name="app-version" content="v51">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3475,6 +3475,24 @@ body #homeSummaryRebook .btn-outline.btn-sm{background:var(--surface);border:1px
 }
 /* 한 낱말 덩이는 줄 끝에서 쪼개지 않는다 — 화면 미리보기·종이 공히 */
 .nw{white-space:nowrap}
+
+/* ============================================================
+   19. v51 · 인쇄/PDF — 화면 모션이 남긴 '시작 프레임'이 종이를 덮지 않게
+   ─ 원인: 카드·시트에 animation-fill-mode(both/backwards)가 남아 있으면
+     Chromium의 PDF 생성이 문서를 다시 그리면서 애니메이션을 0ms부터 재생한다.
+     그 순간 opacity:0·translateY(102%) 프레임이 종이에 그려져 **본문이 통째로 가려진다**
+     (PDF 텍스트층에는 글자가 남아 있어 '빈 쪽'으로도 잡히지 않는다 — v50까지의 실제 증상).
+   ─ 그래서 인쇄에서는 모션·그림자·블러·마스크·섞기 모드를 전부 끄고 불투명도 1로 고정한다.
+     화면(@media screen)은 손대지 않는다.
+   ============================================================ */
+@media print{
+  body *,body *::before,body *::after{
+    animation:none!important;transition:none!important;
+    opacity:1!important;filter:none!important;mix-blend-mode:normal!important;
+    transform:none!important;box-shadow:none!important;text-shadow:none!important;
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+    -webkit-mask-image:none!important;mask-image:none!important}
+}
 </style>
 <body>
 <!-- v49 · 인쇄 머리·꼬리 — 종이에만 보이고, 페이지마다 반복된다(beforeprint에서 문구를 채운다) -->
@@ -4353,7 +4371,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           <button type="button" role="radio" data-textsize="lg" aria-checked="false">크게</button>
           <button type="button" role="radio" data-textsize="xl" aria-checked="false">아주 크게</button>
         </div>
-        <p class="mp-text-preview" id="mpTextPreview" aria-hidden="true">가나다 ABC 123 · 다음 방문 11.29</p>
+        <p class="mp-text-preview" id="mpTextPreview" aria-hidden="true">가나다 ABC 123 · 방문 일지 2분 작성</p>
         <p class="fine" id="mpTextNote">휴대폰 설정의 글자 크기와 함께 적용돼요. 화면이 좁으면 카드가 세로로 늘어나요.</p>
       </section>
 
@@ -4369,7 +4387,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           <button type="button" role="radio" data-theme-opt="light" aria-checked="false">라이트</button>
           <button type="button" role="radio" data-theme-opt="dark" aria-checked="false">다크</button>
         </div>
-        <p class="mp-text-preview" id="mpThemePreview" aria-hidden="true">가나다 ABC 123 · 다음 방문 11.29</p>
+        <p class="mp-text-preview" id="mpThemePreview" aria-hidden="true">가나다 ABC 123 · 방문 일지 2분 작성</p>
         <p class="fine" id="mpThemeNote">기기가 다크 모드면 '시스템'에서 자동으로 어두운 화면이 돼요. 이 기기에만 저장돼요.</p>
       </section>
 
@@ -7099,10 +7117,10 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       }
       return '';
     }
-    /* '2026-11-30' → '2026.11.30' (화면 표기용) */
+    /* '2026-11-30' → '2026.11.30 (화)' (화면·종이 표기용) */
     function payoutDueLabel(visitIso) {
       var iso = nextPayoutDue(visitIso);
-      return iso ? iso.replace(/-/g, '.') : '-';
+      return iso ? TtFmt.dateFull(iso) : '-';
     }
     function settlementRuleText() { return SETTLEMENT_RULE.label; }
 
@@ -8149,10 +8167,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       var d = dateObjOf(iso);
       return d ? (d.getUTCMonth() + 1) + '.' + pad(d.getUTCDate()) : '';
     }
-    /* '2026-11-25' → '11/25' (선생님 일정 스트립용) */
+    /* '2026-11-25' → '11.25' (선생님 일정 스트립·날짜 칩용 — v51부터 슬래시 대신 점) */
     function mdSlashOf(iso) {
-      var d = dateObjOf(iso);
-      return d ? (d.getUTCMonth() + 1) + '/' + pad(d.getUTCDate()) : '';
+      return dateLabelOf(iso);
     }
     /* ISO 시각 → 'HH:MM' (한국 시간) */
     function clockOfIso(iso) {
@@ -8160,6 +8177,73 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       var p = kstParts(iso);
       return pad(p.hh) + ':' + pad(p.mi);
     }
+
+    /* ===================================================================
+       v51 · 표기 한 곳 (DESIGN-v51.md §2)
+       ─ 날짜·시간·금액·전화·비율의 모양을 화면·시트·인쇄가 같이 쓴다.
+         날짜  MM.DD (요일) / YYYY.MM.DD (요일)  · 기간은 11.24~11.30
+         시간  HH:MM · 범위는 09:30~10:30
+         금액  90,000원 · 음수 -32,340원
+         비율  22.2%
+         전화  010-9218-8577
+       ─ 괄호 속 '근거일'(요율 확정일 등)만 요일을 뺀다(fullNoWeekday).
+       ─ 순수 함수다. DOM·저장소를 건드리지 않는다.
+       =================================================================== */
+    var TtFmt = {
+      version: 'v51',
+      /* 11.28 (토) */
+      dateShort: function (iso) {
+        var d = dateObjOf(iso);
+        if (!d) return '';
+        var wd = WEEKDAY_LABELS[d.getUTCDay()] || '';
+        return (d.getUTCMonth() + 1) + '.' + pad(d.getUTCDate()) + (wd ? ' (' + wd + ')' : '');
+      },
+      /* 2026.11.28 (토) */
+      dateFull: function (iso) {
+        var d = dateObjOf(iso);
+        if (!d) return '';
+        var wd = WEEKDAY_LABELS[d.getUTCDay()] || '';
+        return d.getUTCFullYear() + '.' + pad(d.getUTCMonth() + 1) + '.' + pad(d.getUTCDate()) + (wd ? ' (' + wd + ')' : '');
+      },
+      /* 11.28 — 기간의 양 끝·차트 축처럼 요일을 빼는 자리 */
+      md: function (iso) { return dateLabelOf(iso); },
+      /* 2026.11.28 — 괄호 속 근거일(요율 확정일 등) */
+      fullNoWeekday: function (iso) {
+        var d = dateObjOf(iso);
+        return d ? d.getUTCFullYear() + '.' + pad(d.getUTCMonth() + 1) + '.' + pad(d.getUTCDate()) : '';
+      },
+      /* 11.24~11.30 */
+      range: function (fromIso, toIso) {
+        var a = dateLabelOf(fromIso), b = dateLabelOf(toIso);
+        return a && b ? a + '~' + b : (a || b || '');
+      },
+      /* '9:30' → '09:30' (이미 두 자리면 그대로) */
+      time: function (value) {
+        var m = /^(\d{1,2}):(\d{2})$/.exec(String(value == null ? '' : value).trim());
+        return m ? pad(Number(m[1])) + ':' + m[2] : String(value == null ? '' : value).trim();
+      },
+      /* 09:30~10:30 */
+      timeRange: function (from, to) { return TtFmt.time(from) + '~' + TtFmt.time(to); },
+      /* 90,000원 · -32,340원 */
+      money: function (n) {
+        var v = Math.round(num(n, 0));
+        return (v < 0 ? '-' : '') + Math.abs(v).toLocaleString('ko-KR') + '원';
+      },
+      /* 22.2% — 소수 한 자리까지, 뒤 0은 남긴다(수수료율 표기 고정) */
+      rate: function (value) {
+        var v = num(value, 0);
+        return (Math.round(v * 10) / 10).toFixed(1) + '%';
+      },
+      /* 010-9218-8577 */
+      phone: function (value) { return formatPhoneKR(value); },
+      /* ISO('2026-11-22')·저장 라벨('2026.11.22'/'11.22')을 '2026.11.22 (일)'로.
+         날짜가 아니면 받은 글자를 그대로 돌려준다('12분 전' 같은 상대 표기 보호). */
+      anyFull: function (value) {
+        var raw = String(value == null ? '' : value).trim();
+        var iso = isIso(raw) ? raw.slice(0, 10) : dateLabelToIso(raw);
+        return iso ? TtFmt.dateFull(iso) : raw;
+      }
+    };
     /* 두 ISO 시각 사이 분. 순서가 뒤집히면 null. */
     function visitMinutes(startIso, endIso) {
       var a = Date.parse(startIso), b = Date.parse(endIso);
@@ -8235,7 +8319,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         teacherId: String(s.teacherId || c.teacherId || ''),
         reservationId: s.reservationId || c.reservationId || null,
         patient: String(s.patient || c.patient || ''),
-        date: s.date || dateLabelOf(visitDate),
+        date: s.date || TtFmt.dateShort(visitDate),
         visitDate: visitDate,
         pain5: l.pain,
         condition5: l.condition,
@@ -8334,7 +8418,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       list.forEach(function (j) { var iso = journalIsoOf(j); if (iso) dates[iso] = 1; });
       var report = {
         from: from, to: to,
-        weekLabel: dateLabelOf(from) + ' ~ ' + dateLabelOf(to),
+        weekLabel: TtFmt.range(from, to),
         rounds: list.length,
         visitedDays: Object.keys(dates).length,
         visitDates: Object.keys(dates).sort(),
@@ -8351,7 +8435,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         entries: list.map(function (j) {
           var iso = journalIsoOf(j);
           return {
-            id: j.id || '', date: iso, dateLabel: dateLabelOf(iso), patient: j.patient || '',
+            id: j.id || '', date: iso, dateLabel: TtFmt.dateShort(iso), patient: j.patient || '',
             line: quickJournalLine(j), note: j.note || '', nextFocus: j.nextFocus || '',
             photo: photoOf(j), hasPhoto: !!photoOf(j)
           };
@@ -8471,7 +8555,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           firstVisitIso: st.anchorIso, dueIso: st.dueIso, cycle: st.cycle,
           daysLeft: st.daysLeft, overdueDays: st.overdueDays, status: st.status,
           badge: reevalBadgeOf(st),
-          text: g.label + ' · 첫 방문 ' + dateLabelOf(st.anchorIso) + ' → ' +
+          text: g.label + ' · 첫 방문 ' + TtFmt.dateShort(st.anchorIso) + ' → ' +
             (st.status === 'due' ? '4주 재평가 ' + (st.overdueDays ? st.overdueDays + '일 지남' : '도래') : '4주 재평가 ' + st.daysLeft + '일 전')
         });
       });
@@ -8565,7 +8649,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       });
       var passSummary = {
         total: passTotal, count: passItems.length,
-        nearestExpire: nearestExpire, nearestName: nearestName,
+        nearestExpire: TtFmt.dateFull(dateLabelToIso(nearestExpire)) || nearestExpire, nearestName: nearestName,
         items: passItems.slice(0, 3), guide: GUARDIAN_PASS_GUIDE.slice()
       };
 
@@ -8614,7 +8698,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         activities: Object.keys(acts).map(function (k) { return { code: k, label: quickActivityLabel(k), count: acts[k] }; })
           .sort(function (x, y) { return y.count - x.count; }),
         lastDateIso: lastEntry ? journalIsoOf(lastEntry) : '',
-        lastDateLabel: lastEntry ? dateLabelOf(journalIsoOf(lastEntry)) : '',
+        lastDateLabel: lastEntry ? TtFmt.dateShort(journalIsoOf(lastEntry)) : '',
         lastLine: lastEntry ? quickJournalLine(lastEntry) : '',
         nextFocus: nextFocus, reeval: reeval, hasJournal: inRange.length > 0
       };
@@ -8897,9 +8981,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
             type: type,
             typeLabel: STATEMENT_TYPE_LABEL[type] || '정규 방문',
             confirmDate: dates.confirmDate,
-            confirmDateLabel: dates.confirmDate ? dates.confirmDate.replace(/-/g, '.') : '-',
+            confirmDateLabel: dates.confirmDate ? TtFmt.dateFull(dates.confirmDate) : '-',
             payoutDueDate: r.payoutDueDate || dates.payoutDueDate,
-            payoutDueDateLabel: (r.payoutDueDate || dates.payoutDueDate || '').replace(/-/g, '.') || '-',
+            payoutDueDateLabel: TtFmt.dateFull(r.payoutDueDate || dates.payoutDueDate) || '-',
             status: st,
             statusLabel: STATEMENT_STATUS_LABEL[st] || '정산대기',
             excluded: st === 'excluded',
@@ -9660,7 +9744,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           title: no + ' 방문 D-1 안내',
           summary: '내일 ' + (b.time || '') + ' · ' + String(b.teacher || '담당 선생님') + ' · ' + regionTextOf(b.regionId, b.region),
           badge: 'D-1', dueIso: iso,
-          dueLabel: dateLabelOf(iso) + (weekdayOf(iso) ? ' (' + weekdayOf(iso) + ')' : ''),
+          dueLabel: TtFmt.dateShort(iso),
           bookingNo: no, bookingId: String(b.id || ''), teacherId: String(b.teacherId || ''),
           prep: ONBOARDING_PREP.map(function (p) { return p.label; }),
           target: { screen: 'account', sheet: '#accountSheet' },
@@ -9671,7 +9755,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       /* ② 4주(28일) 재평가 — 도래·임박 건은 보호자·선생님 모두에게 */
       var alerts = buildReevalAlerts(bookings, { todayIso: today });
       (alerts.items || []).forEach(function (it) {
-        var firstLabel = dateLabelOf(it.firstVisitIso) || it.firstVisitIso;
+        var firstLabel = TtFmt.dateShort(it.firstVisitIso) || it.firstVisitIso;
         var whenText = it.status === 'due'
           ? (it.overdueDays ? it.overdueDays + '일 지났어요' : '오늘 도래했어요')
           : it.daysLeft + '일 남았어요';
@@ -9680,7 +9764,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           kind: 'reeval', category: 'report', audiences: ['customer', 'teacher'],
           title: it.label + ' 4주 재평가',
           summary: '첫 방문 ' + firstLabel + ' · ' + it.badge,
-          badge: it.badge, dueIso: it.dueIso, dueLabel: dateLabelOf(it.dueIso) || it.dueIso,
+          badge: it.badge, dueIso: it.dueIso, dueLabel: TtFmt.dateShort(it.dueIso) || it.dueIso,
           bookingNo: it.bookingNo || '', memberLabel: it.label,
           target: { screen: 'journal' },
           customer: {
@@ -9722,9 +9806,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
             id: 'rq-ev-' + no + '-' + key + '-' + String(h.at || i),
             kind: kind, category: 'visit', audiences: ['customer', 'teacher'],
             title: no + ' ' + eventLabel[kind],
-            summary: (b.date || dateLabelOf(iso) || iso) + (b.time ? ' ' + b.time : '') +
+            summary: (TtFmt.dateShort(iso) || b.date || iso) + (b.time ? ' ' + b.time : '') +
               (h.reason ? ' · ' + String(h.reason) : ''),
-            badge: eventBadge[kind], dueIso: iso, dueLabel: dateLabelOf(iso), bookingNo: no, changedAt: at,
+            badge: eventBadge[kind], dueIso: iso, dueLabel: TtFmt.dateShort(iso), bookingNo: no, changedAt: at,
             target: { screen: 'account', sheet: '#accountSheet' },
             customer: n.customer, teacher: n.teacher
           });
@@ -9767,7 +9851,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         var cIso = earliestOf(confirmSoon, 'confirm');
         var cGap = gapOf(cIso);
         var cAmount = sumOf(confirmSoon, 'payout');
-        var cLabel = dateLabelOf(cIso) || cIso;
+        var cLabel = TtFmt.dateShort(cIso) || cIso;
         add({
           id: 'rq-settle-confirm-' + cIso,
           kind: 'settle_confirm', category: 'ops', audiences: ['teacher'],
@@ -9790,7 +9874,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         var dIso = earliestOf(dueSoon, 'due');
         var dGap = gapOf(dIso);
         var dAmount = sumOf(dueSoon, 'payout');
-        var dLabel = dateLabelOf(dIso) || dIso;
+        var dLabel = TtFmt.dateShort(dIso) || dIso;
         add({
           id: 'rq-settle-payout-' + dIso,
           kind: 'settle_payout', category: 'ops', audiences: ['teacher'],
@@ -10190,7 +10274,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
               no: String(b.no || b.id || ''), region: regionTextOf(b.regionId, b.region) || String(b.region || ''),
               status: st, statusLabel: '배정 대기', hours: hours,
               badge: hours >= 48 ? '48시간 초과' : '24시간 초과',
-              visitLabel: dateLabelOf(metricsVisitIso(b)) || metricsVisitIso(b) || ''
+              visitLabel: TtFmt.dateShort(metricsVisitIso(b)) || metricsVisitIso(b) || ''
             });
           }
         }
@@ -10217,8 +10301,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         fromIso: fromIso,
         periods: metricsPeriods(),
         basis: {
-          funnel: fromIso ? '예약 접수일 ' + fromIso + ' ~ ' + today : '예약 접수일 전체',
-          revenue: fromIso ? '방문일 ' + fromIso + ' ~ ' + today + ' + 확정 회차' : '방문일 전체 + 확정 회차',
+          funnel: fromIso ? '예약 접수일 ' + TtFmt.md(fromIso) + '~' + TtFmt.md(today) : '예약 접수일 전체',
+          revenue: fromIso ? '방문일 ' + TtFmt.md(fromIso) + '~' + TtFmt.md(today) + ' + 확정 회차' : '방문일 전체 + 확정 회차',
           sla: '지금 대기 중인 예약(기간 무관)'
         },
         funnel: funnel,
@@ -10985,6 +11069,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       clockOfIso: clockOfIso,
       dateLabelOf: dateLabelOf,
       mdSlashOf: mdSlashOf,
+      /* v51 · 표기 한 곳 — 화면·시트·인쇄가 같은 모양을 쓴다 */
+      fmt: TtFmt,
       safetyContacts: SAFETY_CONTACTS.map(function (c) { return { code: c.code, label: c.label, tel: c.tel, display: c.display, note: c.note }; }),
       safetySteps: SAFETY_STEPS.map(function (s) { return { n: s.n, title: s.title, desc: s.desc }; }),
       safetyForbidden: SAFETY_FORBIDDEN.slice(),
@@ -11072,6 +11158,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       copyToneOf: copyToneOf
     };
   })();
+
+  /* v51 · 표기 한 곳을 화면 코드에서도 같은 이름으로 쓴다(모델 안팎이 같은 객체). */
+  var TtFmt = TtModel.fmt;
 
   /* ===================================================================
      v23 · 저장소 어댑터(StorageAdapter)
@@ -12865,7 +12954,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       : '';
     var reviews = (d.reviews || []).map(function (r) {
       return '<div class="review-card">' +
-        '<div class="review-head"><b>' + esc(r.who) + '</b>' + starsHtml(r.stars) + '<span class="when">' + esc(r.when) + '</span></div>' +
+        '<div class="review-head"><b>' + esc(r.who) + '</b>' + starsHtml(r.stars) + '<span class="when">' + esc(TtModel.fmt.anyFull(r.when)) + '</span></div>' +
         '<p>' + esc(r.text) + '</p>' +
       '</div>';
     }).join('');
@@ -12874,7 +12963,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var availExtra = [];
     if (t.availableSummary) availExtra.push(t.availableSummary);
     if (t.maxWeeklyVisits) availExtra.push('주 ' + t.maxWeeklyVisits + '회까지 방문');
-    if (t.firstAvailable) availExtra.push(t.firstAvailable.replace(/-/g, '.') + '부터 방문 가능');
+    if (t.firstAvailable) availExtra.push(TtFmt.dateFull(t.firstAvailable) + '부터 방문 가능');
     var regionText = TtModel.publicRegionText(t) || t.regions;
     /* v29 · 신뢰 배지 — 별점·후기 수·완료 방문·재방문·대표 태그·검증을 한 블록에 모은다. */
     var trust = teacherTrustOf(id);
@@ -13303,7 +13392,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       var dd = d.getDate();
       dateOptions.push({
         iso: d.getFullYear() + '-' + (mm < 10 ? '0' + mm : mm) + '-' + (dd < 10 ? '0' + dd : dd),
-        label: mm + '/' + dd,
+        label: mm + '.' + pad2(dd),
         day: days[d.getDay()],
         idx: dateOptions.length
       });
@@ -14345,11 +14434,11 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         var used = p.total - p.remaining;
         var pct = Math.round((p.remaining / p.total) * 100);
         return '<div class="wallet-card">' +
-          '<div class="wallet-top"><span>' + esc(p.name) + '</span><span>~' + esc(p.expire) + '</span></div>' +
+          '<div class="wallet-top"><span>' + esc(p.name) + '</span><span>' + esc(TtModel.fmt.dateFull(TtModel.dateLabelToIso(p.expire)) || p.expire) + '까지</span></div>' +
           '<div class="wallet-name">잔여 회차</div>' +
           '<div class="wallet-count">' + p.remaining + '<small>회 / ' + p.total + '회</small></div>' +
           '<div class="wallet-bar"><span style="width:' + pct + '%"></span></div>' +
-          '<div class="wallet-meta">' + esc(p.purchased) + ' 결제 · ' + used + '회 사용</div>' +
+          '<div class="wallet-meta">' + esc(TtModel.fmt.anyFull(p.purchased)) + ' 결제 · ' + used + '회 사용</div>' +
         '</div>';
       }).join('');
     }
@@ -14397,7 +14486,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       rl.innerHTML = account.receipts.map(function (r) {
         return '<button class="list-item" type="button" data-receipt="' + esc(r.no) + '">' +
           '<span class="li-ico is-gray" aria-hidden="true">' + icon('receipt') + '</span>' +
-          '<span class="li-main"><b>' + esc(r.item) + '</b><span>' + esc(r.date) + ' · ' + esc(r.method) + '</span></span>' +
+          '<span class="li-main"><b>' + esc(r.item) + '</b><span>' + esc(TtModel.fmt.anyFull(r.date)) + ' · ' + esc(r.method) + '</span></span>' +
           '<span class="li-right"><b>' + won(r.amount) + '</b><span>' + esc(TtModel.paymentLabel(r.status)) + '</span></span>' +
         '</button>';
       }).join('');
@@ -14529,7 +14618,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     renderHomeStage(plan);
     var s = plan.summary;
     var dateEl = $('#homeSummaryDate');
-    if (dateEl) dateEl.textContent = TtModel.dateLabelOf(s.todayIso) + ' 기준';
+    if (dateEl) dateEl.textContent = TtModel.fmt.dateShort(s.todayIso) + ' 기준';
 
     var nx = $('#homeSummaryNext');
     if (nx) {
@@ -14606,7 +14695,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         if (rbCard) { rbCard.hidden = plan.stage === 'pre_first'; rbCard.setAttribute('data-empty', '0'); }
         var lt = teacherById(last.teacherId);
         var lchk = TtModel.canReviewReservation(reviewCtxOf(), last);
-        rb.innerHTML = '<div class="sum-row"><span>최근 방문</span><b>' + esc((last.date || TtModel.dateLabelOf(last.dateIso)) + (lt ? ' · ' + lt.name + ' 선생님' : '')) + '</b></div>' +
+        rb.innerHTML = '<div class="sum-row"><span>최근 방문</span><b>' + esc((TtModel.fmt.dateShort(last.dateIso) || last.date) + (lt ? ' · ' + lt.name + ' 선생님' : '')) + '</b></div>' +
           '<div class="mt-10" style="display:flex;gap:6px;flex-wrap:wrap">' +
             '<button class="btn btn-navy btn-sm" type="button" data-rebook="' + esc(last.no) + '">같은 선생님으로 다시 예약</button>' +
             (lchk.ok ? '<button class="btn btn-outline btn-sm" type="button" data-review-booking="' + esc(last.no) + '">후기 남기기</button>' : '') +
@@ -14725,7 +14814,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         '<div class="tl-main"><div class="tl-top">' +
           '<b>' + esc(b.teacher || '추천 배정') + '</b>' +
           '<span class="tl-badge is-next">' + ddayLabel(nv.d) + '</span>' +
-          '<span class="tl-when">' + esc((b.date || '') + ' ' + (b.time || '')) + '</span>' +
+          '<span class="tl-when">' + esc((TtModel.fmt.dateShort(b.dateIso) || b.date || '') + (b.time ? ' ' + b.time : '')) + '</span>' +
         '</div><p class="tl-note">' + esc((b.region || '') + ' · 방문 60분 예정') + '</p></div>' +
       '</div>');
     }
@@ -14736,7 +14825,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         '<div class="tl-main"><div class="tl-top">' +
           '<b>' + esc(s.round || '방문') + ' · ' + esc(t ? t.name + ' 선생님' : '선생님') + '</b>' +
           '<span class="tl-badge is-done">완료</span>' +
-          '<span class="tl-when">' + esc(s.date || '') + '</span>' +
+          '<span class="tl-when">' + esc(TtModel.fmt.anyFull(s.date)) + '</span>' +
         '</div><p class="tl-note">' + esc((s.pass || '회차권') + ' · ' + (s.reviewed ? '후기 등록' : '후기 남기기 가능')) + '</p></div>' +
       '</div>');
     });
@@ -15092,7 +15181,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     card.innerHTML =
       '<div class="rc-head">' +
         '<span class="rc-brand"><span class="rc-mark" aria-hidden="true">' + icon('heart-pulse') + '</span>똑똑쌤<i>회복 리포트</i></span>' +
-        '<span class="rc-date">' + todayLabel() + ' 기준</span>' +
+        '<span class="rc-date">' + TtModel.fmt.dateFull(TtModel.todayIsoKst()) + ' 기준</span>' +
       '</div>' +
       '<div class="rc-who">' +
         '<p class="rc-name">' + esc(REPORT_PATIENT.name) + '</p>' +
@@ -15847,7 +15936,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     el.setAttribute('data-reeval-state', it.status);
     el.innerHTML =
       '<div class="nrs-head"><h2>4주 재평가 시점</h2><span class="status is-on">' + esc(it.badge) + '</span></div>' +
-      '<p class="fine mt-6">' + esc('첫 방문 ' + (TtModel.dateLabelOf(it.firstVisitIso) || it.firstVisitIso) + ' 기준 4주가 ' +
+      '<p class="fine mt-6">' + esc('첫 방문 ' + (TtModel.fmt.dateShort(it.firstVisitIso) || it.firstVisitIso) + ' 기준 4주가 ' +
         (it.overdueDays ? it.overdueDays + '일 지났어요' : '도래했어요') +
         '. 지금 상태를 다시 재고 다음 4주 목표를 정할 때예요.') + '</p>' +
       '<button class="btn btn-outline mt-8" type="button" data-go="booking">재평가 예약으로 이동</button>';
@@ -15864,7 +15953,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           notifStore.unshift(TtModel.normalizeNotification({
             id: tId, audience: 'teacher', userId: 'tch-' + (partner.teacherId || 'me'), kind: 'remind',
             title: '4주 재평가 시점이에요',
-            body: it.label + ' · 첫 방문 ' + (TtModel.dateLabelOf(it.firstVisitIso) || it.firstVisitIso) + ' · ' + it.badge + '. 다음 방문 때 재평가를 진행해 주세요.',
+            body: it.label + ' · 첫 방문 ' + (TtModel.fmt.dateShort(it.firstVisitIso) || it.firstVisitIso) + ' · ' + it.badge + '. 다음 방문 때 재평가를 진행해 주세요.',
             linkTarget: 'partner', status: 'unread', when: '오늘', sentAt: TtModel.nowIso()
           }));
           changed = true;
@@ -15913,7 +16002,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     card.hidden = false;
     var iso = TtModel.journalIsoOf(j);
     var dateEl = $('#journalLatestDate');
-    if (dateEl) dateEl.textContent = [TtModel.dateLabelOf(iso), (j.quick || j.source === 'quick') ? '2분 일지' : ''].filter(Boolean).join(' · ');
+    if (dateEl) dateEl.textContent = [TtModel.fmt.dateShort(iso), (j.quick || j.source === 'quick') ? '2분 일지' : ''].filter(Boolean).join(' · ');
     var body = $('#journalLatestBody');
     if (!body) return;
     var photo = TtModel.photoOf(j);
@@ -15921,7 +16010,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     body.innerHTML =
       (photo ? '<img src="' + esc(photo) + '" data-journal-photo="' + esc(j.id || '') + '" alt="선생님이 올린 방문 사진" loading="lazy" decoding="async" style="width:100%;max-height:240px;object-fit:cover;border-radius:14px;display:block">' : '') +
       (photo ? '<p class="fine" style="margin:6px 0 0">' + esc('담당 선생님이 올린 방문 사진 1장' + (meta && meta.width ? ' · ' + meta.width + '×' + meta.height : '') + ' · 가족에게만 공유해 주세요') + '</p>' : '') +
-      '<div class="jr-item mt-8"><b>' + esc(j.patient || DEMO_PATIENT) + '</b><span class="jr-date">' + esc(j.date || '') + '</span>' +
+      '<div class="jr-item mt-8"><b>' + esc(j.patient || DEMO_PATIENT) + '</b><span class="jr-date">' + esc(TtModel.fmt.anyFull(j.date)) + '</span>' +
         '<div class="jr-vals"><span>' + esc(TtModel.quickJournalLine(j) || '기록') + '</span>' +
           (j.nextFocus ? '<span>다음 · ' + esc(j.nextFocus) + '</span>' : '') + '</div>' +
         (j.note || j.memo ? '<p>' + esc(j.note || j.memo) + '</p>' : '') +
@@ -15939,11 +16028,11 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var b = nv.b;
     var iso = String(b.dateIso || '').slice(0, 10);
     var wd = TtModel.weekdayOf(iso) || b.day || '';
-    var label = TtModel.dateLabelOf(iso) || b.date || '';
+    var label = TtModel.fmt.dateShort(iso) || b.date || '';
     var chip = $('#todayChip');
     if (chip) {
       var dayText = /^\d{4}-\d{2}-\d{2}$/.test(iso)
-        ? parseInt(iso.slice(5, 7), 10) + '월 ' + parseInt(iso.slice(8, 10), 10) + '일' + (wd ? ' (' + wd + ')' : '')
+        ? TtModel.fmt.dateShort(iso)
         : (label + (wd ? ' (' + wd + ')' : ''));
       chip.textContent = (nv.d === 0 ? '오늘' : '다음 방문') + ' · ' + dayText;
     }
@@ -15976,7 +16065,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     } else if (win.state === 'in_progress') {
       el.textContent = '방문 중 · ' + win.startClock + ' 시작' + (b.teacher ? ' · ' + b.teacher : '');
     } else {
-      el.textContent = '방문 ' + (b.date || '') + ' ' + (b.time || '') + ' · 선생님이 방문 시작을 누르면 시각이 기록돼요.';
+      el.textContent = '방문 ' + (TtModel.fmt.dateShort(b.dateIso) || b.date || '') + ' ' + (b.time || '') + ' · 선생님이 방문 시작을 누르면 시각이 기록돼요.';
     }
   }
 
@@ -16402,13 +16491,13 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         '</div>' +
         settleChartHtml() +
         '<button class="btn btn-outline btn-sm mt-10" type="button" data-tab="tp-settle" style="width:100%">정산 명세서 보기</button>' +
-        '<p class="settle-note">' + icon('info') + '수수료 ' + s.fee.toLocaleString('ko-KR') + '원 차감 · ' + esc(s.due) + ' 지급 예정<br>' + esc(TtModel.settlementRuleText()) + '</p>' +
+        '<p class="settle-note">' + icon('info') + '수수료 ' + s.fee.toLocaleString('ko-KR') + '원 차감 · ' + esc(TtModel.fmt.anyFull(s.due)) + ' 지급 예정<br>' + esc(TtModel.settlementRuleText()) + '</p>' +
       '</div>';
   }
 
   function settleChartHtml() {
     var vals = [128000, 176000, 96000, 214000, 152000, 188000];
-    var labels = ['10/14', '10/21', '10/28', '11/04', '11/11', '11/18'];
+    var labels = ['10.14', '10.21', '10.28', '11.04', '11.11', '11.18'];
     var W = 320, H = 92, base = 78, max = Math.max.apply(null, vals);
     var gap = 8, bw = (W - gap * (vals.length - 1)) / vals.length;
     var bars = vals.map(function (v, i) {
@@ -16483,10 +16572,12 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var iso = String(s.date || '').trim() === '오늘' ? todayIsoLocal() : isoOfShortLabel(s.date);
     return TtModel.weekdayOf(iso) || s.day || '';
   }
+  /* 저장된 옛 날짜 라벨(`11/29 (일)`·`11/29`·`11.9 (일)`)을 v51 표기(`11.29 (일)`)로 맞춘다. */
   function fixShortDateWeekday(text) {
-    return String(text == null ? '' : text).replace(/(\d{1,2})\/(\d{1,2})\s*\((일|월|화|수|목|금|토)\)/g, function (all, m, d) {
+    return String(text == null ? '' : text).replace(/(\d{1,2})[/.](\d{1,2})\s*\((일|월|화|수|목|금|토)\)/g, function (all, m, d) {
       var wd = TtModel.weekdayOf(isoOfShortLabel(m + '/' + d));
-      return wd ? (m + '/' + d + ' (' + wd + ')') : all;
+      var label = (+m) + '.' + pad2(+d);
+      return wd ? (label + ' (' + wd + ')') : label;
     });
   }
 
@@ -16556,7 +16647,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       var d = new Date(monday.getTime() + i * 86400000);
       out.push({
         day: names[d.getDay()],
-        label: (d.getMonth() + 1) + '/' + d.getDate(),
+        label: (d.getMonth() + 1) + '.' + pad2(d.getDate()),
         isToday: d.toDateString() === base.toDateString()
       });
     }
@@ -16600,7 +16691,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         var memo = j.note || j.memo || '';
         var photo = TtModel.photoOf(j);
         return '<div class="jr-item"' + (quick ? ' data-quick-journal="' + esc(j.id) + '"' : '') + '>' +
-          '<b>' + esc(j.patient) + '</b><span class="jr-date">' + esc(j.date) + '</span>' +
+          '<b>' + esc(j.patient) + '</b><span class="jr-date">' + esc(TtModel.fmt.anyFull(j.date)) + '</span>' +
           '<div class="jr-vals">' + vals + '</div>' +
           (memo ? '<p>' + esc(memo) + '</p>' : '') +
           (photo ? '<img class="mt-8" src="' + esc(photo) + '" data-journal-photo="' + esc(j.id) + '" alt="방문 사진" loading="lazy" decoding="async" style="width:100%;max-height:160px;object-fit:cover;border-radius:12px;display:block">' : '') +
@@ -16657,7 +16748,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var s = partner.settlement || { visits: 0, gross: 0, fee: 0, net: 0, due: '-' };
     if (!isApproved()) {
       el.innerHTML =
-        '<div class="row"><span>플랫폼 수수료율</span><b>22.2% (2026-11-26 확정)</b></div>' +
+        '<div class="row"><span>플랫폼 수수료율</span><b>22.2% <span class="fine">(2026.11.26 확정)</span></b></div>' +
         '<div class="row"><span>선생님 지급 단가</span><b>회당 70,000원 (보호자 90,000원의 78%)</b></div>' +
         '<div class="row"><span>정산 일정</span><b>' + esc(TtModel.settlementRuleText()) + '</b></div>' +
         '<div class="row"><span>정산 상태</span><b style="color:var(--ink-amber)">심사 승인 후 집계</b></div>' +
@@ -16665,7 +16756,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       return;
     }
     el.innerHTML =
-      '<div class="row"><span>플랫폼 수수료율</span><b>22.2% (2026-11-26 확정)</b></div>' +
+      '<div class="row"><span>플랫폼 수수료율</span><b>22.2% <span class="fine">(2026.11.26 확정)</span></b></div>' +
       '<div class="row"><span>선생님 지급 단가</span><b>회당 70,000원 (보호자 90,000원의 78%)</b></div>' +
       '<div class="row"><span>이번 달 환자 결제</span><b>' + s.gross.toLocaleString('ko-KR') + '원</b></div>' +
       '<div class="row"><span>플랫폼 수수료</span><b>-' + s.fee.toLocaleString('ko-KR') + '원</b></div>' +
@@ -16822,7 +16913,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var head = '<div class="admin-card" data-print-keep style="padding:15px">' +
       '<p class="fs-meta fw-800 c-teal" style="letter-spacing:.02em">똑똑쌤 정산 명세서</p>' +
       '<p class="fs-lead fw-800" style="letter-spacing:-.03em;margin:3px 0 0">' + esc(s.monthLabel) + ' · ' + esc(s.teacherName || '선생님') + ' 선생님</p>' +
-      '<p class="fine" style="margin:5px 0 0">' + settleClause('발급 ' + String(s.todayIso || '').replace(/-/g, '.')) + ' · ' + settleClause('수수료 22.2%') + '</p>' +
+      '<p class="fine" style="margin:5px 0 0">' + settleClause('발급 ' + TtFmt.dateFull(s.todayIso)) + ' · ' + settleClause('수수료 22.2%') + '</p>' +
       '<p class="fine" style="margin:1px 0 0">' + String(s.rule.label || '').split(' · ').map(settleClause).join(' · ') + '</p>' +
     '</div>';
     var summary = '<div class="admin-card mt-8" data-print-keep style="padding:8px 15px">' +
@@ -16855,7 +16946,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var body = $('#settlementPrintBody');
     if (body) body.innerHTML = statementPrintHtml(s);
     var note = $('#stlPrintNote');
-    if (note) note.textContent = '인쇄 창이 열리지 않으면 브라우저 인쇄(⌘/Ctrl+P)를 이용해 주세요. · 발급 ' + String(s.todayIso || '').replace(/-/g, '.');
+    if (note) note.textContent = '인쇄 창이 열리지 않으면 브라우저 인쇄(⌘/Ctrl+P)를 이용해 주세요. · 발급 ' + TtFmt.dateFull(s.todayIso);
     openSheetEl('#settlementPrintSheet');
     return s;
   }
@@ -16919,7 +17010,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       '.tot{font-weight:700}.sum{border:1px solid #E5E7EB;border-radius:8px;padding:10px;margin-top:12px;font-size:11px}' +
       '.sum b{float:right}.note{color:var(--ink-caption-2);font-size:10px;margin-top:12px}clear{display:block;clear:both}</style></head><body>' +
       '<h1>똑똑쌤 정산 명세서</h1>' +
-      '<p class="sub">' + esc(s.teacherName || '선생님') + ' 선생님 · ' + esc(s.monthLabel) + ' · 발급 ' + esc(String(s.todayIso || '').replace(/-/g, '.')) + '</p>' +
+      '<p class="sub">' + esc(s.teacherName || '선생님') + ' 선생님 · ' + esc(s.monthLabel) + ' · 발급 ' + esc(TtFmt.dateFull(s.todayIso)) + '</p>' +
       '<p class="sub">' + esc(s.rule.label) + ' · 플랫폼 수수료 22.2%</p>' +
       '<div class="sum">완료 <b>' + s.counts.completed + '회</b><clear></clear>' +
         '지급완료 (' + s.byStatus.paid.count + '건) <b>' + settleWon(s.byStatus.paid.amount) + '</b><clear></clear>' +
@@ -17390,7 +17481,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           '<p class="admin-name">' + esc(app.name) + ' <span class="status-badge ' + (app.status === 'needs_update' ? 'is-warn' : 'is-wait') + '">' + (app.status === 'needs_update' ? '보완 중' : '심사 대기') + (app.mine ? ' · 내 지원' : '') + '</span></p>' +
           '<p class="admin-meta">' + esc(app.license) + ' · 경력 ' + esc(app.years) + ' · ' + esc(app.province) + ' ' + esc((app.districts || []).slice(0, 2).join('·')) + '</p>' +
         '</div>' +
-        '<span class="admin-when">' + esc(app.submittedAt) + ' ' + icon('chev-r') + '</span>' +
+        '<span class="admin-when">' + esc(TtModel.fmt.anyFull(app.submittedAt)) + ' ' + icon('chev-r') + '</span>' +
       '</div>' +
       '<div class="admin-facts">' +
         '<span class="admin-fact">면허 ' + esc(app.licenseNo || '-') + '</span>' +
@@ -17676,7 +17767,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         var ok = d.action === 'approved';
         return '<div class="admin-log' + (ok ? '' : ' is-warn') + '">' + icon(ok ? 'check-circle' : 'alert') +
           '<div><b>' + esc(d.name) + '</b> 선생님 · ' + (ok ? '승인 완료' : '보완 요청') + '</div>' +
-          '<span class="when">' + esc(d.at) + '</span></div>';
+          '<span class="when">' + esc(TtModel.fmt.anyFull(d.at)) + '</span></div>';
       }).join('') : TtUI.emptyHtml('admin-recent', { style: 'box-shadow:none' });
     }
   }
@@ -17866,7 +17957,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var facts = '<span class="admin-fact">배정 ' + esc(teacherName) + '</span>' +
       '<span class="admin-fact">지역 ' + esc(region || '-') + '</span>' +
       '<span class="admin-fact">' + esc(amount > 0 ? won(amount) : '금액 미기재') + '</span>' +
-      '<span class="admin-fact">접수 ' + esc(b.dateIso ? String(b.dateIso).slice(0, 10) : (b.createdAt ? String(b.createdAt).slice(0, 10) : '-')) + '</span>';
+      '<span class="admin-fact">접수 ' + esc(b.dateIso ? TtFmt.dateFull(b.dateIso) : (b.createdAt ? TtFmt.dateFull(String(b.createdAt).slice(0, 10)) : '-')) + '</span>';
 
     /* 배정 전에는 후보 선생님을 고른다(받은 상태에서 배정·확정 모두 해당). */
     var picker = '';
@@ -18074,7 +18165,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         '<div class="admin-av" aria-hidden="true" style="background:var(--amber-50);color:var(--ink-amber)">4주</div>' +
         '<div style="min-width:0">' +
           '<p class="admin-name">' + esc(it.label) + ' <span class="status-badge ' + (it.status === 'due' ? 'is-warn' : 'is-on') + '">' + esc(it.badge) + '</span></p>' +
-          '<p class="admin-meta">' + esc(it.region || '지역 미기재') + ' · 첫 방문 ' + esc(TtModel.dateLabelOf(it.firstVisitIso) || it.firstVisitIso) + ' · ' + it.cycle + '주기</p>' +
+          '<p class="admin-meta">' + esc(it.region || '지역 미기재') + ' · 첫 방문 ' + esc(TtModel.fmt.dateShort(it.firstVisitIso) || it.firstVisitIso) + ' · ' + it.cycle + '주기</p>' +
           '<p class="admin-meta mt-5" style="color:var(--ink-3)">' + esc(it.text) + '</p>' +
         '</div>' +
       '</div>' +
@@ -18090,7 +18181,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var it = (re.items || []).filter(function (x) { return x.key === key; })[0];
     if (!it) { toast('재평가 대상을 찾을 수 없어요.'); return false; }
     var text = '[똑똑쌤 4주 재평가 안내]\n' + it.label + ' · 첫 방문 ' +
-      (TtModel.dateLabelOf(it.firstVisitIso) || it.firstVisitIso) + '\n' +
+      (TtModel.fmt.dateShort(it.firstVisitIso) || it.firstVisitIso) + '\n' +
       '첫 방문 기준 4주가 ' + (it.overdueDays ? it.overdueDays + '일 지났어요' : '도래했어요') + '.\n' +
       '지금 상태를 다시 재고 다음 4주 목표를 정하는 재평가를 진행해요.\n' +
       '가능한 시간대를 알려 주시면 선생님 일정을 맞춰 드립니다.';
@@ -18570,10 +18661,9 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     }
     return null;
   }
-  document.addEventListener('keydown', function (e) {
-    if (e.key !== 'Escape') return;
-    var id = topOpenDialog();
-    if (!id) return;
+  /* v51 · 닫기 한 문 — Escape·바깥 탭·뒤로가기가 모두 이 함수를 지난다(닫는 방식이 하나). */
+  function closeDialogById(id) {
+    if (!id) return false;
     if (id === '#receiptModal') closeReceipt();
     else if (id === '#chatSheet') closeChat();
     else if (id === '#rejectSheet') closeRejectSheet();
@@ -18584,8 +18674,74 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     else if (id === '#regionSheet') closeRegionSheet();
     else if (id === '#gateSheet') closeGateSheet();
     else closeSheetEl(id);
+    return true;
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    var id = topOpenDialog();
+    if (!id) return;
+    closeDialogById(id);
     e.preventDefault();
   });
+
+  /* ===================================================================
+     v51 · 시트 제스처 마감
+       ① 바깥(어두운 배경) 탭 → 맨 위 시트만 닫는다(with 제스처로 연 시트는 닫지 않는다).
+       ② 모바일 브라우저 뒤로가기 → 페이지를 떠나지 않고 시트만 닫는다(popstate).
+       ③ 그사이 배경 스크롤은 syncBodyState가 잡는다(body overflow hidden + 복귀 위치 기억).
+     ─ 시작 화면 시트(.is-gate)는 앱의 입구라 뒤로가기·바깥 탭으로 닫지 않는다.
+     =================================================================== */
+  var sheetHist = { pushed: 0, expect: 0, fromPop: false, timer: null };
+  function anySheetOpenNow() { return !!document.querySelector('.sheet-backdrop.is-open, .backdrop.is-open'); }
+  function sheetCountsForHistory(el) {
+    /* 시작 화면(.gate)은 앱의 입구라 기록을 만들지 않는다. 그 위에 열린 시트는 만든다. */
+    return !!el && !el.classList.contains('gate');
+  }
+  /* 열린 시트가 있으면 기록을 '하나만' 남긴다. 시트가 겹쳐도 기록은 하나라 되돌리기가 꼬이지 않는다. */
+  function pushSheetHistory() {
+    if (sheetHist.pushed > 0) return;
+    if (!window.history || !history.pushState) return;
+    try { history.pushState({ ttSheet: 1 }, ''); sheetHist.pushed = 1; } catch (e) {}
+  }
+  /* 시트가 모두 닫히면 남겨 둔 기록을 지운다. 같은 틱에 다른 시트가 열리면(선생님 시트→문의 시트)
+     되돌리기를 아끼고 그대로 이어 쓴다 — back()과 pushState가 엇갈려 기록이 어긋나던 문제를 막는다. */
+  function syncSheetHistory() {
+    if (sheetHist.timer) { clearTimeout(sheetHist.timer); sheetHist.timer = null; }
+    sheetHist.timer = setTimeout(function () {
+      sheetHist.timer = null;
+      if (anySheetOpenNow()) { pushSheetHistory(); return; }
+      if (sheetHist.pushed <= 0) return;
+      sheetHist.pushed = 0;
+      sheetHist.expect += 1;
+      try { history.back(); } catch (e) { sheetHist.expect = Math.max(0, sheetHist.expect - 1); }
+    }, 0);
+  }
+  window.addEventListener('popstate', function () {
+    if (sheetHist.expect > 0) { sheetHist.expect -= 1; return; }
+    var id = topOpenDialog();
+    if (!id) { sheetHist.pushed = 0; return; }
+    /* 뒤로가기 한 번 = 시트 하나만 닫는다. 페이지는 그대로(이미 이전 항목으로 돌아온 상태). */
+    sheetHist.fromPop = true;
+    try { closeDialogById(id); } finally { sheetHist.fromPop = false; }
+    sheetHist.pushed = 0;
+    if (anySheetOpenNow()) setTimeout(pushSheetHistory, 0);   /* 남은 시트를 위해 기록을 다시 건다 */
+  });
+  try {
+    window.__ttokttokSheets51 = {
+      version: 'v51',
+      top: topOpenDialog,
+      close: closeDialogById,
+      history: function () { return { pushed: sheetHist.pushed, expect: sheetHist.expect }; },
+      outsideClose: function (id) {
+        var el = document.getElementById(String(id).replace('#', ''));
+        if (!el) return false;
+        var opened = el.classList.contains('is-open');
+        if (!opened) return false;
+        closeDialogById('#' + el.id);
+        return true;
+      }
+    };
+  } catch (e) {}
 
   /* ================= 로그인 게이트 ================= */
   var PHONE_KEY = 'ttokttok_phone_v1';
@@ -19056,6 +19212,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       try { target.focus({ preventScroll: true }); } catch (e) {}
       /* 초점을 옮긴 뒤에 배경을 잠근다(먼저 잠그면 배경에 있던 초점이 사라진다). */
       a11ySyncBackground();
+      /* v51 · 시트가 열리면 되돌리기 기록을 하나 건다(겹쳐 열려도 하나). */
+      if (sheetCountsForHistory(el)) { try { pushSheetHistory(); } catch (e) {} }
     } else if (el.__a11yFrom) {
       var from = el.__a11yFrom;
       el.__a11yFrom = null;
@@ -19065,6 +19223,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       /* 배경 잠금을 먼저 풀어야 원래 버튼으로 초점이 돌아간다. */
       a11ySyncBackground();
       a11yRestoreFocus(from);
+      /* v51 · 닫힌 뒤 시트가 없으면 기록을 지운다(뒤로가기로 닫힌 경우는 이미 지워졌다). */
+      if (!sheetHist.fromPop) { try { syncSheetHistory(); } catch (e) {} }
     } else {
       a11ySyncBackground();
     }
@@ -20361,7 +20521,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       var chk = TtModel.canReviewReservation(reviewCtxOf(), b);
       var t = teacherById(b.teacherId);
       var name = (t ? t.name : b.teacher || '선생님');
-      var line = [b.date || TtModel.dateLabelOf(b.dateIso), b.time, '방문 완료', b.region].filter(Boolean).join(' · ');
+      var line = [TtModel.fmt.dateShort(b.dateIso) || b.date, b.time, '방문 완료', b.region].filter(Boolean).join(' · ');
       rows.push('<div class="review-session" data-session="' + esc(b.no || b.id) + '">' +
         reviewAvatarHtml(b.teacherId) +
         '<span class="rs-main"><b>' + esc(name.indexOf('선생님') === -1 ? name + ' 선생님' : name) + '</b><span>' + esc(line) + '</span></span>' +
@@ -20379,7 +20539,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         : '<button class="btn btn-outline" type="button" data-review="' + esc(s.id) + '">후기</button>';
       rows.push('<div class="review-session" data-session="' + esc(s.id) + '">' +
         reviewAvatarHtml(s.teacherId) +
-        '<span class="rs-main"><b>' + esc(name) + '</b><span>' + esc(s.date) + ' · ' + esc(s.round) + ' · ' + esc(s.pass) + '</span></span>' +
+        '<span class="rs-main"><b>' + esc(name) + '</b><span>' + esc(TtModel.fmt.anyFull(s.date)) + ' · ' + esc(s.round) + ' · ' + esc(s.pass) + '</span></span>' +
         right +
       '</div>');
     });
@@ -20408,7 +20568,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     if (!s || s.reviewed) { toast('이미 후기를 남긴 방문이에요.'); return; }
     reviewCtx = { sessionId: sessionId, reservationNo: null, teacherId: s.teacherId, stars: 0, tags: [] };
     var t = teacherById(s.teacherId);
-    openReviewSheet((t ? '<b>' + esc(t.name) + ' 선생님</b> ' : '') + esc(s.date) + ' · ' + esc(s.round) + ' 방문은 어떠셨나요?');
+    openReviewSheet((t ? '<b>' + esc(t.name) + ' 선생님</b> ' : '') + esc(TtModel.fmt.anyFull(s.date)) + ' · ' + esc(s.round) + ' 방문은 어떠셨나요?');
   }
 
   /* v29 · 방문 완료 예약에 대한 후기 — 1방문 1후기 규칙을 먼저 확인한다. */
@@ -21399,7 +21559,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       }).join('');
     }
     var cap = $('#adminMetricsKpiCaption');
-    if (cap) cap.textContent = m.periodLabel + ' · ' + String(m.todayIso || '');
+    if (cap) cap.textContent = m.periodLabel + ' · ' + TtFmt.dateFull(m.todayIso);
     var fBasis = $('#adminMetricsFunnelBasis');
     if (fBasis) fBasis.textContent = (m.basis && m.basis.funnel) || '접수일 기준';
     var fRows = $('#adminMetricsFunnelRows');
@@ -21527,7 +21687,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         return '<article class="coupon-card' + (c.used ? ' is-used' : '') + '">' +
           '<span class="coupon-stub ' + (isFree ? 'is-teal' : 'is-amber') + '" aria-hidden="true">' + icon(isFree ? 'gift' : 'tag') + '</span>' +
           '<div class="coupon-main"><b>' + esc(c.title) + '</b><p>' + esc(c.sub) + '</p>' +
-            '<span class="coupon-exp">' + (c.used ? (c.usedAt ? esc(c.usedAt) + ' 사용' : '사용 완료') : '~' + esc(c.expire) + '까지' + (c.code ? ' · 코드 ' + esc(c.code) : '')) + '</span></div>' +
+            '<span class="coupon-exp">' + (c.used ? (c.usedAt ? esc(c.usedAt) + ' 사용' : '사용 완료') : esc(TtModel.fmt.dateFull(c.expireAt || c.expire) || c.expire) + '까지' + (c.code ? ' · 코드 ' + esc(c.code) : '')) + '</span></div>' +
           '<span class="coupon-state">' + (c.used ? '사용됨' : (isFree ? '무료' : '-' + c.amount.toLocaleString('ko-KR') + '원')) + '</span>' +
         '</article>';
       }).join('');
@@ -22548,6 +22708,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       dateLabelOf: function (iso) { return TtModel.dateLabelOf(iso); },
       weekdayOf: function (iso) { return TtModel.weekdayOf(iso); },
       mdSlashOf: function (iso) { return TtModel.mdSlashOf(iso); },
+      /* v51 · 표기 한 곳 */
+      fmt: TtModel.fmt,
       slots: function (teacherId, dateIso) { return TtModel.slotRows(teacherId, dateIso, times, account.bookings || []); },
       export: function () {
         return TtModel.exportBundle({
