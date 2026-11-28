@@ -119,7 +119,7 @@ async function run() {
   const A = makeDom();
   await sleep(460);
   const d = A.doc, W = A.window, M = W.__ttokttokModel, MO = W.__ttokttokMotion;
-  ok('BA22 meta·훅 버전 v36(접근성 세대 표기는 v34 그대로)', (d.querySelector('meta[name=app-version]') || {}).content === 'v49' && MO && MO.version === 'v36' &&
+  ok('BA22 meta·훅 버전 v36(접근성 세대 표기는 v34 그대로)', (d.querySelector('meta[name=app-version]') || {}).content === 'v50' && MO && MO.version === 'v36' &&
     M.qaVersion === 'v34' && M.a11y.version === 'v34');
   ok('BA23 훅이 닫힘 시간(180ms)·토큰을 노출', MO.closeMs === 180 && MO.durations.sheet === 180 && MO.pressScale() === '.97');
   ok('BA24 JS 오류 없음(부트)', A.errors.length === 0, A.errors.slice(0, 3).join(' | '));

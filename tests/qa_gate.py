@@ -15,7 +15,7 @@ v46에서 만든 이유
 
 단계:
   build     템플릿 → index.html (python3 build.py) + 버전 표기 확인
-  jsdom     app.test.js(APP_PART=1·2) + app.v32~v46 (node)
+  jsdom     app.test.js(APP_PART=1·2) + app.v32~v50 (node)
   e2e       Chromium E2E 흐름 (E2E_ONLY 묶음)
   qa        qa_v24.py 전수 QA (QA_PART=1~7 — 6은 v46 태블릿 768, 7은 v47 1024·1280 다크)
   contrast  contrast_v45.py 라이트·다크 × 375·768·1024·1280
@@ -35,7 +35,8 @@ JSDOM_SUITES = ["app.v32.test.js", "app.v33.test.js", "app.v34.test.js", "app.v3
                 "app.v36.test.js", "app.v37.test.js", "app.v38.test.js", "app.v39.test.js",
                 "app.v40.test.js", "app.v42.test.js", "app.v43.test.js", "app.v44.test.js",
                 "app.v45.test.js", "app.v46.test.js", "app.v47.test.js", "app.v48.test.js",
-                "app.v49.test.js"]
+                "app.v49.test.js",
+                "app.v50.test.js"]
 
 E2E_CHUNKS = [
     "base,v17,v18",
@@ -47,7 +48,7 @@ E2E_CHUNKS = [
     "v35,v36,v37",
     "v38,v39,v40",
     "v42,v43,v45",
-    "v46,v47,v48,v49",
+    "v46,v47,v48,v49,v50",
 ]
 
 QA_PARTS = ["1", "2", "3", "4", "5", "6", "7", "8"]

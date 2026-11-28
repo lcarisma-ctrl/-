@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v49">
+<meta name="app-version" content="v50">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -147,6 +147,9 @@
   --sp-4:16px; --sp-5:20px; --sp-6:28px; --sp-7:32px;
   --pad-x:20px;        /* 화면·시트 공통 좌우 */
   --pad-card:20px;     /* 카드 안쪽 */
+  /* v50 · 종이 한 벌의 여백 — 인쇄에서 화면·시트·카드의 제각각 패딩을 이 두 값으로 맞춘다 */
+  --pad-print:18px; /* 종이 왼·오른 여백선(카드 테두리) */
+  --pad-print-text:16px;  /* 그 안에서 글자가 시작하는 선(테두리 1 + 카드 안쪽 15) */
   --gap-card:12px;     /* 카드 사이 */
   --gap-block:20px;    /* 블록 사이 */
   --gap-section:28px;  /* 섹션 사이 */
@@ -3450,6 +3453,28 @@ body #homeSummaryRebook .btn-outline.btn-sm{background:var(--surface);border:1px
   body{padding-top:11mm!important;padding-bottom:9mm!important}
 }
 #printRunner,#printFoot{display:none}
+
+/* ============================================================
+   18. v50 · 종이 한 벌의 세로 정렬선 — 머리말·카드·회차·꼬리말이 같은 선
+   ─ 화면의 제각각 여백(시트 18·화면 18·넓은 화면 32, 카드 13~20)과 종이 가장자리에 붙던
+     머리·꼬리를 인쇄에서 --pad-print(선) / --pad-print-text(글자) 한 벌로 맞춘다.
+   ============================================================ */
+@media print{
+  /* 머리·꼬리: 선은 카드 폭, 글자는 카드 속 글자와 같은 세로선 */
+  #printRunner{left:var(--pad-print)!important;right:var(--pad-print)!important;padding:0 var(--pad-print-text) 2mm!important}
+  #printFoot{left:var(--pad-print)!important;right:var(--pad-print)!important;padding:2mm var(--pad-print-text) 0!important}
+  /* 화면·시트마다 다른 좌우 패딩을 종이에서는 한 값으로 */
+  #screen-journal,#screen-admin,#screen-tp-settle,
+  .sheet-backdrop.is-print .sheet-scroll{padding-left:var(--pad-print)!important;padding-right:var(--pad-print)!important}
+  /* 화면 제목도 카드 속 글자와 같은 선에서 시작 */
+  .page-head{padding-left:var(--pad-print-text)!important;padding-right:var(--pad-print-text)!important}
+  /* 카드 안쪽 여백은 폭과 상관없이 한 값 — 글자선 = 테두리 1 + 15 */
+  #screen-journal :is(.card,.admin-card),#screen-admin :is(.card,.admin-card),
+  #screen-tp-settle :is(.card,.admin-card),#settlementPrintBody :is(.card,.admin-card),
+  #weeklySheet .rc-card{padding:15px!important}
+}
+/* 한 낱말 덩이는 줄 끝에서 쪼개지 않는다 — 화면 미리보기·종이 공히 */
+.nw{white-space:nowrap}
 </style>
 <body>
 <!-- v49 · 인쇄 머리·꼬리 — 종이에만 보이고, 페이지마다 반복된다(beforeprint에서 문구를 채운다) -->
@@ -16789,12 +16814,16 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     el.innerHTML = html;
   }
 
+  /* v50 · 한 낱말 덩이는 줄 끝에서 쪼개지 않게 — '(15일·말일) 지급'만 다음 줄로 떨어지던 것 */
+  function settleClause(t) { return '<span class="nw">' + esc(t) + '</span>'; }
+
   /* 인쇄·미리보기 시트 본문 */
   function statementPrintHtml(s) {
     var head = '<div class="admin-card" data-print-keep style="padding:15px">' +
       '<p class="fs-meta fw-800 c-teal" style="letter-spacing:.02em">똑똑쌤 정산 명세서</p>' +
       '<p class="fs-lead fw-800" style="letter-spacing:-.03em;margin:3px 0 0">' + esc(s.monthLabel) + ' · ' + esc(s.teacherName || '선생님') + ' 선생님</p>' +
-      '<p class="fine" style="margin:5px 0 0">발급 ' + esc(String(s.todayIso || '').replace(/-/g, '.')) + ' · 수수료 22.2% · ' + esc(s.rule.label) + '</p>' +
+      '<p class="fine" style="margin:5px 0 0">' + settleClause('발급 ' + String(s.todayIso || '').replace(/-/g, '.')) + ' · ' + settleClause('수수료 22.2%') + '</p>' +
+      '<p class="fine" style="margin:1px 0 0">' + String(s.rule.label || '').split(' · ').map(settleClause).join(' · ') + '</p>' +
     '</div>';
     var summary = '<div class="admin-card mt-8" data-print-keep style="padding:8px 15px">' +
       '<div class="sum-row"><span>완료 회차</span><b>' + s.counts.completed + '회</b></div>' +
@@ -16806,7 +16835,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       '<div class="sum-row"><span>실수령 예상</span><b class="c-teal">' + settleWon(s.totals.netExpected) + '</b></div>' +
     '</div>';
     var body = s.rows.map(function (r) {
-      return '<div class="stl-row" data-print-row style="border-top:1px solid var(--line-tint-slate);padding:7px 0">' +
+      return '<div class="stl-row" data-print-row style="border-top:1px solid var(--line-tint-slate);padding:7px var(--pad-print-text,16px)">' +
         '<div style="display:flex;justify-content:space-between;gap:8px">' +
           '<b class="fs-meta">' + esc(r.visitDateLabel) + (r.visitTime ? ' ' + esc(r.visitTime) : '') + '</b>' +
           '<b style="font-size:11px;color:' + (r.excluded ? 'var(--text-muted)' : 'var(--ink-teal)') + '">' + settleWon(r.netExpected) + '</b>' +
@@ -16815,7 +16844,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           (r.excluded ? '' : ' · 지급일 ' + esc(r.payoutDueDateLabel)) + '</p>' +
       '</div>';
     }).join('');
-    if (!s.rows.length) body = '<p class="fine" style="padding:10px 0">이 달에는 정산 내역이 없어요.</p>';
+    if (!s.rows.length) body = '<p class="fine" style="padding:10px var(--pad-print-text,16px)">이 달에는 정산 내역이 없어요.</p>';
     var foot = '<p class="sheet-note">* ' + esc(s.note) + '</p>' +
       '<p class="sheet-note">* 상호 똑똑쌤 · 대표 임현수 · 문의 031-919-8577 · 시연용 예시 데이터예요.</p>';
     return head + summary + '<div class="mt-12">' + body + '</div>' + foot;
@@ -24128,6 +24157,35 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     try { W.__ttokttokPrintRunner = { title: v.title, note: v.note, at: Date.now() }; } catch (e) {}
     return v;
   }
+  /* v50 · 종이 한 벌의 세로 정렬선 — 머리·카드·회차·꼬리말이 같은 x에서 시작/끝나는지 잰다.
+     (인쇄 미리보기·라이브 검사가 이 값으로 '선이 맞았는지'를 확인한다) */
+  function printFrame() {
+    var content = D.querySelector('.sheet-backdrop.is-print .sheet-scroll') || D.querySelector('.screen.is-active');
+    if (!content) return null;
+    function edge(el) {
+      if (!el) return null;
+      var r = el.getBoundingClientRect(), cs = W.getComputedStyle(el);
+      return {
+        l: Math.round(r.left + (parseFloat(cs.borderLeftWidth) || 0) + (parseFloat(cs.paddingLeft) || 0)),
+        r: Math.round(r.right - (parseFloat(cs.borderRightWidth) || 0) - (parseFloat(cs.paddingRight) || 0)),
+        boxL: Math.round(r.left), boxR: Math.round(r.right)
+      };
+    }
+    var rt = D.getElementById('printRunnerTitle'), rn = D.getElementById('printRunnerNote'), rf = D.getElementById('printFoot');
+    var card = content.querySelector('.admin-card') || content.querySelector('.card') || content.querySelector('.rc-card') || content;
+    var row = content.querySelector('[data-print-row]');
+    var rowCard = row ? (row.querySelector('b') || row) : null;
+    return {
+      card: edge(card),
+      row: row ? edge(row) : null,
+      rowText: rowCard ? Math.round(rowCard.getBoundingClientRect().left) : null,
+      runner: edge(rt),
+      note: rn ? Math.round(rn.getBoundingClientRect().right) : null,
+      foot: edge(rf),
+      lines: content.querySelectorAll('.fine').length,
+      version: 'v50'
+    };
+  }
   function markPrintTarget() {
     var opened = Array.prototype.slice.call(D.querySelectorAll('.sheet-backdrop.is-open'));
     Array.prototype.forEach.call(D.querySelectorAll('.sheet-backdrop.is-print'), function (el) {
@@ -24174,7 +24232,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     },
     apply: applyRoving
   };
-  W.__ttokttokPrint = { version: 'v49', mark: markPrintTarget, runner: paintRunner, target: function () { var e = D.querySelector('.sheet-backdrop.is-print'); return e ? e.id : ''; } };
+  W.__ttokttokPrint = { version: 'v50', mark: markPrintTarget, runner: paintRunner, frame: printFrame, target: function () { var e = D.querySelector('.sheet-backdrop.is-print'); return e ? e.id : ''; } };
 })();
 </script>
 </body>

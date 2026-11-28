@@ -108,11 +108,11 @@ async function run() {
   const w = A.window, doc = A.doc;
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
-  ok('A1 meta v48', ($('meta[name="app-version"]') || {}).content === 'v49', ($('meta[name="app-version"]') || {}).content);
+  ok('A1 meta v48', ($('meta[name="app-version"]') || {}).content === 'v50', ($('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 v47 스켈레톤 훅 유지', !!w.__ttokttokSkeleton && w.__ttokttokSkeleton.version === 'v47');
   ok('A4 v48 로빙 훅 노출', !!w.__ttokttokRoving && /^v4[89]$/.test(w.__ttokttokRoving.version), w.__ttokttokRoving);
-  ok('A5 v48 인쇄 훅 노출', !!w.__ttokttokPrint && /^v4[89]$/.test(w.__ttokttokPrint.version) && typeof w.__ttokttokPrint.mark === 'function');
+  ok('A5 v48 인쇄 훅 노출', !!w.__ttokttokPrint && /^v(49|50)$/.test(w.__ttokttokPrint.version) && typeof w.__ttokttokPrint.mark === 'function');
   ok('A6 v45 테마 훅 유지', !!w.__ttokttokTheme && w.__ttokttokTheme.version === 'v45');
 
   /* ── 2) 경계 대비 토큰 (WCAG 1.4.11 — 비텍스트 3:1) ──────────── */

@@ -70,7 +70,7 @@ async function run() {
      1) 표준이 코드에 있다 — 버전·용어·금지어·검사기
      ============================================================ */
   ok('DA0 v38 부트 JS 오류 0', errors.length === 0, errors.slice(0, 3).join(' | '));
-  ok('DA1 meta v38 · copyVersion v38', doc.querySelector('meta[name="app-version"]').content === 'v49' &&
+  ok('DA1 meta v38 · copyVersion v38', doc.querySelector('meta[name="app-version"]').content === 'v50' &&
     M.copyVersion === 'v38' && C && C.version === 'v38');
   ok('DA2 검사 훅 노출(audit·visibleText·toneOf)', typeof C.audit === 'function' &&
     typeof C.visibleText === 'function' && typeof C.toneOf === 'function');
@@ -210,7 +210,7 @@ async function run() {
     M.pricing.platformFeeRate === 0.2222 && M.settlementRule.confirmDays === 3 &&
     JSON.stringify(M.settlementRule.payDays) === '[15,"end"]');
   ok('DH2 시드 예약 TT-261021-7302 그대로', /TT-261021-7302/.test(bodyText));
-  ok('DH3 CSS 길이 상한(v48 경계·가로모드·인쇄 절 추가: 23.8만, 24.2만 이하)', STYLE.length >= 159697 && STYLE.length <= 242000, String(STYLE.length));
+  ok('DH3 CSS 길이 상한(v48 경계·가로모드·인쇄 절 추가: 23.8만, 24.3만 이하)', STYLE.length >= 159697 && STYLE.length <= 243000, String(STYLE.length));
   ok('DH4 접근성 이름·대화상자 규칙 유지', (function () {
     const a = M.a11y.auditAll();
     return a.blank.length === 0 && M.a11y.labelledDialogs() === M.a11y.dialogCount() && M.a11y.dialogCount() >= 22;

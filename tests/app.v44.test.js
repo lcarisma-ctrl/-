@@ -54,7 +54,7 @@ async function run() {
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
 
-  ok('A1 meta v44', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v49',
+  ok('A1 meta v44', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v50',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
 
@@ -95,7 +95,7 @@ async function run() {
     M.pricing.platformFeeRate === 0.2222 && M.settlementRule.confirmDays === 3 &&
     String(M.settlementRule.payDays) === '15,end' &&
     (M.reservations() || []).some((r) => r.no === 'TT-261021-7302'));
-  ok('E6 CSS·HTML 예산', STYLE.length <= 242000 && Buffer.byteLength(HTML, 'utf8') <= 1450 * 1024,
+  ok('E6 CSS·HTML 예산', STYLE.length <= 243000 && Buffer.byteLength(HTML, 'utf8') <= 1450 * 1024,
     STYLE.length + ' / ' + Buffer.byteLength(HTML, 'utf8'));
 
   console.log('\nV44 RESULT: ' + pass + ' passed, ' + fails.length + ' failed');
