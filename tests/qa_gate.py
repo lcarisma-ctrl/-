@@ -34,7 +34,8 @@ ROOT = os.path.dirname(HERE)
 JSDOM_SUITES = ["app.v32.test.js", "app.v33.test.js", "app.v34.test.js", "app.v35.test.js",
                 "app.v36.test.js", "app.v37.test.js", "app.v38.test.js", "app.v39.test.js",
                 "app.v40.test.js", "app.v42.test.js", "app.v43.test.js", "app.v44.test.js",
-                "app.v45.test.js", "app.v46.test.js", "app.v47.test.js", "app.v48.test.js"]
+                "app.v45.test.js", "app.v46.test.js", "app.v47.test.js", "app.v48.test.js",
+                "app.v49.test.js"]
 
 E2E_CHUNKS = [
     "base,v17,v18",
@@ -46,7 +47,7 @@ E2E_CHUNKS = [
     "v35,v36,v37",
     "v38,v39,v40",
     "v42,v43,v45",
-    "v46,v47,v48",
+    "v46,v47,v48,v49",
 ]
 
 QA_PARTS = ["1", "2", "3", "4", "5", "6", "7", "8"]

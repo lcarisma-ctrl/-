@@ -11,7 +11,7 @@ v47에서 이 파일을 `.github/workflows/qa.yml`로 **저장소에 등록했�
 | 경로 | `.github/workflows/qa.yml` (이 폴더의 `qa.yml`과 **같은 내용**, sha `202bdac8`) |
 | 상태 | `active` · 워크플로 id `433349940` |
 | 도는 때 | `main` 푸시 · PR · 수동 실행(`workflow_dispatch`) |
-| 최근 실행 | [#46110103344](https://github.com/lcarisma-ctrl/-/actions/runs/46110103344) — **success**(2026-11-28 14:09 KST, 9분 24초, v48 `80492bc`) |
+| 최근 실행 | [#46120044279](https://github.com/lcarisma-ctrl/-/actions/runs/46120044279) — v49 `ba2c5c3`(2026-11-28 16:11 KST) |
 | 단계 | 체크아웃 → Node 20 → Python 3.12 → jsdom 의존성 → Chromium → **빌드** → **jsdom** → **대비** → 결과 요약 |
 | 실패할 때 | 빨간 X로 멈춥니다. 대비가 0건이 아니면 다음 빌드에서 바로 드러납니다 |
 
@@ -21,7 +21,7 @@ v47에서 이 파일을 `.github/workflows/qa.yml`로 **저장소에 등록했�
 
 ```bash
 python3 tests/qa_gate.py --only build      # 템플릿 → index.html + app-version 일치
-python3 tests/qa_gate.py --only jsdom      # app.test.js(part 1·2) + v32~v48
+python3 tests/qa_gate.py --only jsdom      # app.test.js(part 1·2) + v32~v49
 python3 tests/qa_gate.py --only contrast   # 라이트·다크 × 375·768·1024·1280
 ```
 
@@ -40,7 +40,8 @@ python3 tests/qa_gate.py --only contrast   # 라이트·다크 × 375·768·1024
 3. 또는 GitHub → Settings → Applications → Pickle → Permissions 에서 `Workflows: Read and write`를 켜면
    다음부터는 `git push`로 함께 올릴 수 있다.
 
-## v48에서 달라진 것
+## v49에서 달라진 것
 
-- jsdom 단계에 **`app.v48.test.js`(73검증)** 가 들어갔습니다 — 경계 토큰 3:1, 로빙 탭인덱스, 가로모드·인쇄 CSS.
-- 대비 단계는 그대로 라이트·다크 × 375·768·1024·1280이며, v48에서 **본문 0건 · UI 경계 0건**입니다.
+- jsdom 단계에 **`app.v49.test.js`(66검증)** 가 들어갔습니다 — 카드 열기/찜 버튼 분리(중첩 인터랙티브 0), 정지점 2개, `.btn-sm` 경계, 인쇄 쪽나눔·머리/꼬리, 긴 글 마감.
+- E2E 묶음 마지막이 `v46,v47,v48,v49`가 됐습니다(로컬 전용, Actions에서는 돌지 않음).
+- 대비 단계는 그대로 라이트·다크 × 375·768·1024·1280이며, v49에서 **본문 0건 · UI 경계 0건**입니다.
