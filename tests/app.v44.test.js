@@ -54,7 +54,7 @@ async function run() {
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
 
-  ok('A1 meta v44', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v48',
+  ok('A1 meta v44', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v49',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
 

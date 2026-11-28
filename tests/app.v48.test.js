@@ -108,11 +108,11 @@ async function run() {
   const w = A.window, doc = A.doc;
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
-  ok('A1 meta v48', ($('meta[name="app-version"]') || {}).content === 'v48', ($('meta[name="app-version"]') || {}).content);
+  ok('A1 meta v48', ($('meta[name="app-version"]') || {}).content === 'v49', ($('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 v47 스켈레톤 훅 유지', !!w.__ttokttokSkeleton && w.__ttokttokSkeleton.version === 'v47');
-  ok('A4 v48 로빙 훅 노출', !!w.__ttokttokRoving && w.__ttokttokRoving.version === 'v48', w.__ttokttokRoving);
-  ok('A5 v48 인쇄 훅 노출', !!w.__ttokttokPrint && w.__ttokttokPrint.version === 'v48' && typeof w.__ttokttokPrint.mark === 'function');
+  ok('A4 v48 로빙 훅 노출', !!w.__ttokttokRoving && /^v4[89]$/.test(w.__ttokttokRoving.version), w.__ttokttokRoving);
+  ok('A5 v48 인쇄 훅 노출', !!w.__ttokttokPrint && /^v4[89]$/.test(w.__ttokttokPrint.version) && typeof w.__ttokttokPrint.mark === 'function');
   ok('A6 v45 테마 훅 유지', !!w.__ttokttokTheme && w.__ttokttokTheme.version === 'v45');
 
   /* ── 2) 경계 대비 토큰 (WCAG 1.4.11 — 비텍스트 3:1) ──────────── */
@@ -196,27 +196,29 @@ async function run() {
   click($('.tabbar[data-mode="customer"] .tabbtn[data-tab="teachers"]'));
   await sleep(300);
   const cards = () => $$('#teacherList .teacher');
-  const tabStops = () => cards().filter((c) => c.getAttribute('tabindex') === '0');
+  /* v49 · 정지점은 카드가 아니라 카드 전체를 덮는 열기 버튼(.t-open)에 있다 */
+  const openers = () => $$('#teacherList .teacher .t-open');
+  const tabStops = () => openers().filter((c) => c.getAttribute('tabindex') === '0');
   ok('E3 카드 8명', cards().length === 8, cards().length);
   ok('E4 Tab 정지점은 목록 전체 1개', tabStops().length === 1, tabStops().length);
-  ok('E5 첫 카드가 정지점', cards()[0].getAttribute('tabindex') === '0');
-  ok('E6 나머지 카드는 -1', cards().slice(1).every((c) => c.getAttribute('tabindex') === '-1'));
+  ok('E5 첫 열기 버튼이 정지점', openers()[0].getAttribute('tabindex') === '0');
+  ok('E6 나머지 열기 버튼은 -1', openers().slice(1).every((c) => c.getAttribute('tabindex') === '-1'));
   ok('E7 훅도 1개로 센다', w.__ttokttokRoving.tabStops() === 1 && w.__ttokttokRoving.count() === 8,
     [w.__ttokttokRoving.tabStops(), w.__ttokttokRoving.count()]);
 
   /* 방향키로 옮기면 정지점도 따라온다 */
-  cards()[0].focus();
-  ok('E8 첫 카드에 초점', doc.activeElement === cards()[0]);
-  key(cards()[0], 'ArrowDown');
-  ok('E9 ↓로 다음 카드', doc.activeElement === cards()[1], doc.activeElement && doc.activeElement.getAttribute('data-teacher'));
-  ok('E10 정지점이 옮겨간다', cards()[1].getAttribute('tabindex') === '0' && cards()[0].getAttribute('tabindex') === '-1');
+  openers()[0].focus();
+  ok('E8 첫 열기 버튼에 초점', doc.activeElement === openers()[0]);
+  key(openers()[0], 'ArrowDown');
+  ok('E9 ↓로 다음 카드', doc.activeElement === openers()[1], doc.activeElement && doc.activeElement.getAttribute('aria-label'));
+  ok('E10 정지점이 옮겨간다', openers()[1].getAttribute('tabindex') === '0' && openers()[0].getAttribute('tabindex') === '-1');
   ok('E11 여전히 정지점은 1개', tabStops().length === 1);
   ok('E12 훅이 고른 카드를 기억한다', w.__ttokttokRoving.activeId() === cards()[1].getAttribute('data-teacher'),
     w.__ttokttokRoving.activeId());
-  key(cards()[1], 'End');
-  ok('E13 End는 마지막 카드', doc.activeElement === cards()[7] && cards()[7].getAttribute('tabindex') === '0');
-  key(cards()[7], 'Home');
-  ok('E14 Home은 첫 카드', doc.activeElement === cards()[0]);
+  key(openers()[1], 'End');
+  ok('E13 End는 마지막 카드', doc.activeElement === openers()[7] && openers()[7].getAttribute('tabindex') === '0');
+  key(openers()[7], 'Home');
+  ok('E14 Home은 첫 카드', doc.activeElement === openers()[0]);
 
   /* 필터로 목록이 다시 그려져도 정지점은 1개 */
   click($('#teacherFilters [data-cat="stroke"]'));

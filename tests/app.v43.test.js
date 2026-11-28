@@ -65,7 +65,7 @@ async function run() {
   const M = w.__ttokttokModel;
 
   /* ── 0) 버전·부팅 ───────────────────────────────────────────── */
-  ok('A1 meta v43', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v48',
+  ok('A1 meta v43', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v49',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 이전 세대 훅 유지(손짓 v42·글자 크기 v42)', w.__ttokttokGesture.version === 'v42' &&

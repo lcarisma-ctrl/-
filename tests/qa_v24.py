@@ -270,6 +270,8 @@ AUDIT_JS = r"""
   out.clip = []; out.ell = [];
   document.querySelectorAll('body *').forEach((el) => {
     if (!vis(el)) return;
+    /* 화면 낭독 전용(.sr-only)은 일부러 1px 상자에 가둔 글자다 — 잘림이 아니다 */
+    if (el.classList && el.classList.contains('sr-only')) return;
     const st = getComputedStyle(el);
     const own = Array.from(el.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim());
     if (!own) return;
@@ -442,7 +444,7 @@ def run_viewport(p, label, w, h, mobile=True, storage_blocked=False, textsize=No
     page.keyboard.press("Escape")
     page.wait_for_timeout(220)
     ok(tag + "Escape로 선생님 시트 닫힘 후 초점이 원래 버튼으로", page.evaluate(
-        "() => document.activeElement && document.activeElement.classList.contains('teacher')"))
+        "() => !!(document.activeElement && document.activeElement.closest('#teacherList .teacher'))"))
     page.eval_on_selector('#teacherViewTabs [data-view="near"]', "el => el.click()")
     page.wait_for_timeout(350)
     audit(page, "teachers/near", tag, buckets)

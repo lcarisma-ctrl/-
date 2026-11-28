@@ -1013,7 +1013,7 @@ def run_v18_flow(p, storage_blocked=False):
     tag = "storage-blocked: " if storage_blocked else ""
 
     # ── 모델·지역 마스터
-    ok(tag + "현재 앱 버전 메타(v19 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "현재 앱 버전 메타(v19 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v18 매칭 엔진 노출", page.evaluate("() => window.__ttokttokModel.scalingVersion") == "v18")
     counts = page.evaluate("() => window.__ttokttokModel.regionMasterCounts()")
     ok(tag + "v18 지역 마스터 3단계(17/53/42)",
@@ -1145,7 +1145,7 @@ def run_v19_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v19 앱 버전 메타(v19 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v19 앱 버전 메타(v19 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v19 운영 도구 노출(opsVersion)", page.evaluate("() => window.__ttokttokModel.opsVersion") == "v19")
 
     # ── 관리자: 오늘 처리할 일 보드
@@ -1314,7 +1314,7 @@ def run_v20_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v20 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v20 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v20 모델 노출(visitLogVersion)", page.evaluate("() => window.__ttokttokModel.visitLogVersion") == 20)
 
     # ── 보호자: 주간 리포트 + 4주 재평가
@@ -1450,7 +1450,7 @@ def run_v21_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v21 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v21 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v21 정산 규칙 노출(D+3·15일·말일)",
        all(x in page.evaluate("() => window.__ttokttokModel.settlementRuleText") for x in ["D+3", "15일", "말일"]),
        page.evaluate("() => window.__ttokttokModel.settlementRuleText"))
@@ -1523,7 +1523,7 @@ def run_v22_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v22 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v22 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v22 모델 노출(내 주변·사진)",
        page.evaluate("() => window.__ttokttokModel.nearVersion") == "v22" and
        page.evaluate("() => window.__ttokttokModel.photoVersion") == "v22")
@@ -1662,7 +1662,7 @@ def run_v23_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v23 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v23 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v23 모델 노출(백업 스키마·어댑터)",
        page.evaluate("() => window.__ttokttokModel.backupVersion") == "v23" and
        page.evaluate("() => window.__ttokttokModel.snapshotSchema") == "ttokttok.v23" and
@@ -1798,9 +1798,9 @@ def run_v24_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v25 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
-    ok(tag + "v25 QA 훅 노출", page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48") and
-       page.evaluate("() => window.__ttokttokModel.a11y.version") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v25 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
+    ok(tag + "v25 QA 훅 노출", page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49") and
+       page.evaluate("() => window.__ttokttokModel.a11y.version") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v24 뷰포트 320px", page.evaluate("() => document.documentElement.clientWidth") == 320)
 
     def overflow(state):
@@ -1856,7 +1856,7 @@ def run_v24_flow(p, storage_blocked=False):
     page.keyboard.press("Escape")
     page.wait_for_timeout(350)
     ok(tag + "v24 Escape로 선생님 시트 닫힘", page.eval_on_selector("#teacherSheet", "el => !el.classList.contains('is-open')"))
-    ok(tag + "v24 닫으면 초점이 누른 카드로 복귀", page.evaluate("() => document.activeElement && document.activeElement.classList.contains('teacher')"))
+    ok(tag + "v24 닫으면 초점이 누른 카드로 복귀", page.evaluate("() => !!(document.activeElement && document.activeElement.closest('#teacherList .teacher'))"))
 
     # ── 예약 4단계 320px
     page.eval_on_selector('.tabbar[data-mode="customer"] [data-tab="booking"]', "el => el.click()")
@@ -2011,7 +2011,7 @@ def run_v25_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v25 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v25 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v25 요약 모델 노출(guardianVersion·기간 28일)",
        page.evaluate("() => window.__ttokttokModel.guardianVersion") == "v25" and
        page.evaluate("() => window.__ttokttokModel.guardianReportDays") == 28)
@@ -2172,7 +2172,7 @@ def run_v26_flow(p, storage_blocked=False):
         m = page.evaluate("""() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth})""")
         return m["sw"] <= m["cw"] + 1, "%s: %d/%d" % (state, m["sw"], m["cw"])
 
-    ok(tag + "v26 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v26 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v26 명세서 모델 노출(statementVersion·3.3%)",
        page.evaluate("() => window.__ttokttokModel.statementVersion") == "v26" and
        abs(page.evaluate("() => window.__ttokttokModel.withholdingRate") - 0.033) < 1e-9)
@@ -2367,7 +2367,7 @@ def run_v27_flow(p, storage_blocked=False):
         m = page.evaluate("""() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth})""")
         return m["sw"] <= m["cw"] + 1, "%s: %d/%d" % (state, m["sw"], m["cw"])
 
-    ok(tag + "v27 앱 버전 메타(v28 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v27 앱 버전 메타(v28 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v27 리마인드 큐 모델 노출(카테고리 4·kind 7)",
        page.evaluate("() => window.__ttokttokModel.reminderQueueVersion") == "v27" and
        page.evaluate("() => window.__ttokttokModel.reminderCategories.length") == 4 and
@@ -2573,11 +2573,11 @@ def run_v28_flow(p, storage_blocked=False):
         m = page.evaluate("""() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth})""")
         return m["sw"] <= m["cw"] + 1, "%s: %d/%d" % (state, m["sw"], m["cw"])
 
-    ok(tag + "v28 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v28 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v28 지표 모델 노출(기간 3·버전)",
        page.evaluate("() => window.__ttokttokModel.adminMetricsVersion") == "v28" and
        page.evaluate("() => window.__ttokttokModel.metricsPeriods().length") == 3 and
-       page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+       page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
 
     # ── 계산 계층: 퍼널·매출·지역 갭·SLA를 실브라우저 엔진으로
     calc = page.evaluate("""() => {
@@ -2749,11 +2749,11 @@ def run_v29_flow(p, storage_blocked=False):
         m = page.evaluate("""() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth})""")
         return m["sw"] <= m["cw"] + 1, "%s: %d/%d" % (state, m["sw"], m["cw"])
 
-    ok(tag + "v29 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v29 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v29 신뢰 모델 노출(태그 5·버전)",
        page.evaluate("() => window.__ttokttokModel.trustVersion") == "v29" and
        page.evaluate("() => window.__ttokttokModel.reviewTagMaster.length") == 5 and
-       page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+       page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
 
     page.eval_on_selector('[data-login="customer"]', "el => el.click()")
     page.wait_for_timeout(400)
@@ -2936,7 +2936,7 @@ def run_v31_flow(p, storage_blocked=False):
 
     # ── 320px 고객 흐름
     ctx, page, errors = make(320, 568)
-    ok(tag + "v31 320 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+    ok(tag + "v31 320 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
     ok(tag + "v31 터치 훅 노출(최소 44·간격 8)", page.evaluate("() => !!window.__ttokttokTouch") and
        page.evaluate("() => window.__ttokttokTouch.min") == 44 and
        page.evaluate("() => window.__ttokttokTouch.gapMin") == 8)
@@ -3156,7 +3156,7 @@ def run_v32_flow(p, storage_blocked=False):
         ctx, page, errors = make(w, h, mob)
         vp = str(w)
         ok(tag + "v32 %s 앱 버전 메타" % vp,
-           page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+           page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
         ok(tag + "v32 %s 공통 UI 훅" % vp,
            page.evaluate("() => !!window.__ttokttokV32 && window.__ttokttokV32.version") == "v32")
         ok(tag + "v32 %s 부팅 뒤 빈 상태 감사 위반 0" % vp, audit32(page) == [], audit32(page))
@@ -3365,7 +3365,7 @@ def run_v33_flow(p, storage_blocked=False):
             boot(page)
             vp = str(w)
             ok(tag + "v33 %s 앱 버전 메타" % vp,
-               page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+               page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
             ok(tag + "v33 %s 홈 분기 모델 노출" % vp,
                page.evaluate("() => window.__ttokttokModel.guardianHomeVersion") == "v33" and
                page.evaluate("() => window.__ttokttokModel.guardianHome().stage") == "pre_first")
@@ -3556,7 +3556,7 @@ def run_v34_flow(p, storage_blocked=False):
         boot(page)
         vp = str(w)
         ok(tag + "v34 %s meta v34" % vp,
-           page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48"))
+           page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49"))
         ok(tag + "v34 %s 시작 화면이 최상위 대화상자" % vp, A(page, "topDialog()") == "#entryGate", A(page, "topDialog()"))
         ok(tag + "v34 %s 게이트 열림 → 배경 inert·aria-hidden" % vp,
            page.evaluate("() => { const a = document.getElementById('appRoot'); return a.hasAttribute('inert') && a.getAttribute('aria-hidden') === 'true'; }") and
@@ -3626,7 +3626,7 @@ def run_v34_flow(p, storage_blocked=False):
     page.screenshot(path=os.path.join(SHOT, "live_v34_teacher_sheet.png"))
     page.keyboard.press("Escape")
     page.wait_for_timeout(300)
-    ok(tag + "v34 Escape 뒤 초점이 선생님 카드로", page.evaluate("() => !!document.activeElement && document.activeElement.classList.contains('teacher')"),
+    ok(tag + "v34 Escape 뒤 초점이 선생님 카드로", page.evaluate("() => !!(document.activeElement && document.activeElement.closest('#teacherList .teacher'))"),
        page.evaluate("() => document.activeElement && (document.activeElement.id || document.activeElement.className)"))
     ok(tag + "v34 시트 흐름 JS 오류 없음", not errors, errors[:2])
     ctx.close()
@@ -3769,7 +3769,7 @@ def run_v35_flow(p, storage_blocked=False):
     page.goto(URL)
     page.wait_for_function("window.__ttokttokBooted === true", timeout=15000)
     page.wait_for_timeout(360)
-    ok(tag + "v35 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v48", "v46")
+    ok(tag + "v35 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v49", "v46")
     ok(tag + "v35 :root 한 곳에 모임", page.evaluate("() => { const m = document.documentElement.innerHTML.match(/<style>([\\s\\S]*?)<\\/style>/); return m ? (m[1].match(/:root\\{/g) || []).length : -1; }") == 1)
     for name, want in [("--text-muted", "#58617A"), ("--text-caption", "#626B7A"), ("--sp-4", "16px"), ("--sp-2h", "10px"),
                        ("--fs-11h", "11.5px"), ("--fs-page", "23px"), ("--r-pill", "999px"), ("--z-sheet", "130"),
@@ -3939,7 +3939,7 @@ def run_v36_flow(p, storage_blocked=False):
     ctx, page, errors = new_page(375, 812, True)
     boot(page)
     hook = page.evaluate("() => window.__ttokttokMotion ? window.__ttokttokMotion.version : ''")
-    ok(tag + "v36 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v48", "v46")
+    ok(tag + "v36 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v49", "v46")
     ok(tag + "v36 마이크로 인터랙션 훅 노출", hook == "v36", hook)
     tok = lambda name: page.evaluate("() => getComputedStyle(document.documentElement).getPropertyValue('%s').trim()" % name)
     ok(tag + "v36 동작 토큰(시트 180ms·누름 110ms·UI 160ms)", (tok("--dur-sheet"), tok("--dur-tap"), tok("--dur-ui")) == ("180ms", "110ms", "160ms"),
@@ -4155,7 +4155,7 @@ def run_v37_flow(p, storage_blocked=False):
     # ── 1) 정적 계약: 입력란 속성·훅 ─────────────────────────────
     ctx, page, errors = new_page(375, 812, True)
     boot(page)
-    ok(tag + "v37 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v48", "v46")
+    ok(tag + "v37 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v49", "v46")
     st = page.evaluate("() => window.__ttokttokModel.inputState()")
     ok(tag + "v37 입력 배선 훅(v37)·규칙 입력란 11개", st and st["version"] == "v37" and st["fields"] == 11 and st["bound"] == 11,
        _json.dumps(st, ensure_ascii=False))
@@ -4385,7 +4385,7 @@ def run_v38_flow(p, storage_blocked=False):
 
     # ── 1) 표준이 브라우저에서 살아 있다
     ok(tag + "v38 부트 JS 오류 0", not errors, errors[:3])
-    ok(tag + "v38 meta v41·copy 훅 v38", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v48" and
+    ok(tag + "v38 meta v41·copy 훅 v38", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v49" and
        page.evaluate("() => (window.__ttokttokCopy || {}).version") == "v38")
     ok(tag + "v38 역할 표시 '보호자 모드'", page.inner_text("#rolePill").strip() == "보호자 모드", page.inner_text("#rolePill"))
     ok(tag + "v38 홈 보이는 문구 금지어 0", visible_audit(page) == [], str(visible_audit(page))[:160])
@@ -4544,7 +4544,7 @@ def run_v39_flow(p, storage_blocked=False):
     s1 = stat(page)
     page.wait_for_timeout(260)
 
-    ok(tag + "v39 meta v41 · perf 훅 v39(기능 세대 표기 유지)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v48" and
+    ok(tag + "v39 meta v41 · perf 훅 v39(기능 세대 표기 유지)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v49" and
        page.evaluate("() => (window.__ttokttokPerf || {}).version") == "v39")
     ok(tag + "v39 브라우저는 유휴 청크 모드", s1["mode"] == "idle-chunked", s1["mode"])
     ok(tag + "v39 DCL 600ms 이내(첫 로드 · 공용 CPU 편차 허용)", s1["dcl"] is not None and s1["dcl"] <= 600, str(s1["dcl"]))
@@ -4708,7 +4708,7 @@ def run_v40_flow(p, storage_blocked=False):
     page.wait_for_timeout(400)
 
     ok(tag + "v40 부팅 JS 오류 0", not errors, errors[:3])
-    ok(tag + "v40 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v48", "v46")
+    ok(tag + "v40 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v49", "v46")
 
     # ── 1) 다음 방문 = 오늘+2일, 라벨·요일·D-day 일치
     nxt = (today + datetime.timedelta(days=2))
@@ -5631,11 +5631,11 @@ def run_v47_flow(p, storage_blocked=False):
     ok(tag + "v47 목록은 한 칸(438px 안팎)", 380 <= (geo(page, "#teacherList") or {"w": 0})["w"] <= 470, geo(page, "#teacherList"))
 
     names = page.evaluate("() => [...document.querySelectorAll('#teacherList .teacher')].map(e => e.getAttribute('data-teacher'))")
-    page.eval_on_selector("#teacherList .teacher", "el => el.focus()")
+    page.eval_on_selector("#teacherList .teacher .t-open", "el => el.focus()")
     page.keyboard.press("ArrowDown")
     page.wait_for_timeout(320)
     st = page.evaluate("""() => { const a = document.activeElement;
-      return {focused: a && a.getAttribute('data-teacher'), paneHidden: document.getElementById('teacherPane').hidden,
+      return {focused: a && a.closest('.teacher') && a.closest('.teacher').getAttribute('data-teacher'), paneHidden: document.getElementById('teacherPane').hidden,
         paneText: document.getElementById('teacherPane').innerText, live: document.getElementById('teacherNavLive').textContent,
         hasPane: document.getElementById('teacherMainCol').classList.contains('has-pane'),
         emptyShown: getComputedStyle(document.getElementById('teacherPaneEmpty')).display !== 'none',
@@ -5651,14 +5651,14 @@ def run_v47_flow(p, storage_blocked=False):
     page.keyboard.press("ArrowDown")
     page.wait_for_timeout(300)
     ok(tag + "v47 ↓↓ 3번째 카드·열 갱신", page.evaluate(
-        "() => (document.activeElement.getAttribute('data-teacher'))") == names[2] and
+        "() => ((document.activeElement.closest('.teacher')||{getAttribute:function(){return null}}).getAttribute('data-teacher'))") == names[2] and
         "정민아" in page.inner_text("#teacherPane"))
     page.keyboard.press("End")
     page.wait_for_timeout(300)
-    ok(tag + "v47 End는 마지막 카드", page.evaluate("() => document.activeElement.getAttribute('data-teacher')") == names[-1])
+    ok(tag + "v47 End는 마지막 카드", page.evaluate("() => (document.activeElement.closest('.teacher')||{getAttribute:function(){return null}}).getAttribute('data-teacher')") == names[-1])
     page.keyboard.press("Home")
     page.wait_for_timeout(300)
-    ok(tag + "v47 Home은 첫 카드", page.evaluate("() => document.activeElement.getAttribute('data-teacher')") == names[0])
+    ok(tag + "v47 Home은 첫 카드", page.evaluate("() => (document.activeElement.closest('.teacher')||{getAttribute:function(){return null}}).getAttribute('data-teacher')") == names[0])
     page.keyboard.press("ArrowDown")
     page.wait_for_timeout(250)
     page.keyboard.press("Enter")
@@ -5672,7 +5672,7 @@ def run_v47_flow(p, storage_blocked=False):
     page.wait_for_timeout(300)
     ok(tag + "v47 Esc는 열을 닫고 카드로 돌아온다",
        page.evaluate("() => document.getElementById('teacherPane').hidden") and
-       page.evaluate("() => document.activeElement.getAttribute('data-teacher')") == names[1])
+       page.evaluate("() => (document.activeElement.closest('.teacher')||{getAttribute:function(){return null}}).getAttribute('data-teacher')") == names[1])
     ok(tag + "v47 닫으면 빈 자리 안내가 돌아온다",
        page.evaluate("() => getComputedStyle(document.getElementById('teacherPaneEmpty')).display") == "flex")
     ok(tag + "v47 초점 링은 키보드일 때만(is-kb)", page.evaluate("() => document.body.classList.contains('is-kb')"))
@@ -5761,11 +5761,11 @@ def run_v47_flow(p, storage_blocked=False):
       return {icY: Math.round(ic.getBoundingClientRect().y), spY: Math.round(sp.getBoundingClientRect().y),
         lines: Math.round(sp.getBoundingClientRect().height / 20)}; }""")
     ok(tag + "v47 1024 지역 아이콘이 글자와 같은 줄", abs(reg["icY"] - reg["spY"]) <= 4, reg)
-    page.eval_on_selector("#teacherList .teacher", "el => el.focus()")
+    page.eval_on_selector("#teacherList .teacher .t-open", "el => el.focus()")
     page.keyboard.press("ArrowDown")
     page.wait_for_timeout(200)
     ok(tag + "v47 1024에서도 ↓로 초점 이동", page.evaluate(
-        "() => document.activeElement === document.querySelectorAll('#teacherList .teacher')[1]"))
+        "() => document.activeElement === document.querySelectorAll('#teacherList .teacher .t-open')[1]"))
     ok(tag + "v47 1024에서는 열을 열지 않는다", page.evaluate("() => document.getElementById('teacherMainCol').classList.contains('has-pane')") is False)
     ok(tag + "v47 1024 오류 0", not errs, errs[:2])
     ctx.close()
@@ -5776,7 +5776,7 @@ def run_v47_flow(p, storage_blocked=False):
     enter(page, "customer", "teachers")
     ok(tag + "v47 375에서 키보드 안내는 숨김", page.evaluate(
         "() => getComputedStyle(document.getElementById('teacherKbdHint')).display") == "none")
-    page.eval_on_selector("#teacherList .teacher", "el => el.focus()")
+    page.eval_on_selector("#teacherList .teacher .t-open", "el => el.focus()")
     page.keyboard.press("Enter")
     page.wait_for_timeout(400)
     ok(tag + "v47 375 Enter로 상세 시트", page.evaluate(
@@ -5840,13 +5840,13 @@ def run_v48_flow(p, storage_blocked=False):
 
     def active(page):
         return page.evaluate("""() => { const a = document.activeElement;
-          return {tag: a && a.tagName, teacher: a && a.getAttribute && a.getAttribute('data-teacher'),
+          return {tag: a && a.tagName, teacher: a && a.closest && a.closest('.teacher') && a.closest('.teacher').getAttribute('data-teacher'),
                   inList: !!(a && a.closest && a.closest('#teacherList')),
                   inPane: !!(a && a.closest && a.closest('#teacherPane')),
                   cls: (a && a.className || '').toString().slice(0, 30)}; }""")
 
     def stops(page):
-        return page.evaluate("""() => { const cs = [...document.querySelectorAll('#teacherList .teacher')];
+        return page.evaluate("""() => { const cs = [...document.querySelectorAll('#teacherList .teacher .t-open')];
           return {n: cs.length, stops: cs.filter((c) => c.getAttribute('tabindex') === '0').length,
                   pattern: cs.map((c) => c.getAttribute('tabindex')).join(',')}; }""")
 
@@ -5856,7 +5856,7 @@ def run_v48_flow(p, storage_blocked=False):
     enter(page, "customer", "teachers")
     st = stops(page)
     ok(tag + "v48 1280 목록 Tab 정지점 1개(카드 8장)", st["n"] == 8 and st["stops"] == 1 and st["pattern"] == "0,-1,-1,-1,-1,-1,-1,-1", st)
-    ok(tag + "v48 로빙 훅 노출", page.evaluate("() => !!window.__ttokttokRoving && window.__ttokttokRoving.version === 'v48'"))
+    ok(tag + "v48 로빙 훅 노출", page.evaluate("() => !!window.__ttokttokRoving && /^v4[89]$/.test(window.__ttokttokRoving.version)"))
     # 마지막 필터 칩 → Tab 한 번에 목록으로 들어온다
     page.evaluate("() => { const c = [...document.querySelectorAll('#regionFilters .chip')]; c[c.length - 1].focus(); }")
     page.keyboard.press("Tab")
@@ -5876,7 +5876,7 @@ def run_v48_flow(p, storage_blocked=False):
     page.keyboard.press("Escape")
     page.wait_for_timeout(200)
     # 초점을 되돌려 Enter로 프로필 열기
-    page.evaluate("() => document.querySelector('#teacherList .teacher[tabindex=\"0\"]').focus()")
+    page.evaluate("() => document.querySelector('#teacherList .teacher .t-open[tabindex=\"0\"]').focus()")
     page.keyboard.press("Enter")
     page.wait_for_timeout(350)
     ok(tag + "v48 Enter는 프로필 열 안으로 초점", page.evaluate(
@@ -6000,6 +6000,278 @@ def run_v48_flow(p, storage_blocked=False):
     browser.close()
 
 
+
+def run_v49_flow(p, storage_blocked=False):
+    """v49 · 카드 열기/찜 분리(중첩 버튼 0) · .btn-sm 경계 · 인쇄 쪽나눔 · 시트 스크롤 복원 · 긴 글."""
+    browser = p.chromium.launch(args=["--no-sandbox", "--allow-file-access-from-files", "--font-render-hinting=none"])
+    tag = "[v49 blocked] " if storage_blocked else "[v49] "
+
+    def make(w, h, mob):
+        ctx = browser.new_context(viewport={"width": w, "height": h}, device_scale_factor=1,
+                                  is_mobile=mob, has_touch=mob, locale="ko-KR")
+        if storage_blocked:
+            ctx.add_init_script("""
+              Object.defineProperty(window, 'localStorage', {
+                configurable: true,
+                get() { throw new DOMException('SecurityError', 'SecurityError'); }
+              });
+            """)
+        page = ctx.new_page()
+        errs = []
+        page.on("pageerror", lambda e: errs.append(str(e)))
+        page.on("console", lambda m: errs.append("console:" + m.text) if m.type == "error" else None)
+        return ctx, page, errs
+
+    def enter(page, role, tab=None, mode=None):
+        page.wait_for_function("window.__ttokttokBooted === true", timeout=15000)
+        page.wait_for_timeout(200)
+        page.eval_on_selector('[data-login="%s"]' % role, "el => el.click()")
+        page.wait_for_timeout(600)
+        if tab:
+            page.eval_on_selector('.tabbar[data-mode="%s"] .tabbtn[data-tab="%s"]' % (mode or "customer", tab), "el => el.click()")
+            page.wait_for_timeout(450)
+
+    def active(page):
+        return page.evaluate("""() => { const a = document.activeElement;
+          return {cls: (a && a.className || '').toString().slice(0, 30), id: a && a.id,
+                  card: a && a.closest && a.closest('.teacher') && a.closest('.teacher').getAttribute('data-teacher'),
+                  inList: !!(a && a.closest && a.closest('#teacherList')),
+                  inPane: !!(a && a.closest && a.closest('#teacherPane'))}; }""")
+
+    # ── 1) 375 — 카드 구조·Tab 순서·하트·스크롤 복원 ────────────────
+    ctx, page, errs = make(375, 812, True)
+    page.goto(URL + "?intro=0")
+    enter(page, "customer", "teachers")
+    st = page.evaluate("""() => { const cards = [...document.querySelectorAll('#teacherList .teacher')];
+      return {n: cards.length,
+        role: cards.filter((c) => c.hasAttribute('role')).length,
+        tab: cards.filter((c) => c.hasAttribute('tabindex')).length,
+        openers: document.querySelectorAll('#teacherList .teacher .t-open').length,
+        nested: window.__ttokttokRoving.nestedButtons(),
+        stops: window.__ttokttokRoving.tabStops(),
+        heartsOn: [...document.querySelectorAll('#teacherList .t-fav')].filter((b) => b.getAttribute('tabindex') === '0').length,
+        label: (document.querySelector('#teacherList .t-open') || {}).getAttribute
+          ? document.querySelector('#teacherList .t-open').getAttribute('aria-label') : '',
+        cover: (() => { const c = document.querySelector('#teacherList .teacher').getBoundingClientRect();
+          const b = document.querySelector('#teacherList .t-open').getBoundingClientRect();
+          return [Math.round(c.width), Math.round(b.width), Math.round(c.height), Math.round(b.height)]; })()}; }""")
+    ok(tag + "v49 카드 8장·role=button 0·카드 tabindex 0", st["n"] == 8 and st["role"] == 0 and st["tab"] == 0, st)
+    ok(tag + "v49 카드마다 열기 버튼 1개(총 8)", st["openers"] == 8, st["openers"])
+    ok(tag + "v49 중첩 인터랙티브 0", st["nested"] == 0, st["nested"])
+    ok(tag + "v49 정지점은 열기 버튼 1개 + 고른 카드 하트 1개", st["stops"] == 1 and st["heartsOn"] == 1, [st["stops"], st["heartsOn"]])
+    ok(tag + "v49 열기 버튼이 카드를 덮는다", abs(st["cover"][0] - st["cover"][1]) <= 2 and abs(st["cover"][2] - st["cover"][3]) <= 2, st["cover"])
+    ok(tag + "v49 열기 버튼 이름", st["label"] == "박서준 선생님 상세 프로필 보기", st["label"])
+    # 하트 자리를 실제로 누르면 하트가 잡힌다(열기 버튼이 덮지 않는다)
+    hit = page.evaluate("""() => { const b = document.querySelector('#teacherList .t-fav'); const r = b.getBoundingClientRect();
+      const el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+      return {fav: !!(el && el.closest && el.closest('.t-fav')), open: !!(el && el.closest && el.closest('.t-open'))}; }""")
+    ok(tag + "v49 하트 중심의 클릭 대상은 하트", hit["fav"] and not hit["open"], hit)
+    # Tab: 필터 → 열기 버튼 → 하트 → 목록 밖
+    page.evaluate("() => { const c = [...document.querySelectorAll('#regionFilters .chip')]; c[c.length - 1].focus(); }")
+    page.keyboard.press("Tab")
+    page.wait_for_timeout(200)
+    a1 = active(page)
+    ok(tag + "v49 375 Tab 한 번에 카드 열기 버튼", a1["inList"] and a1["cls"] == "t-open" and a1["card"], a1)
+    page.keyboard.press("Tab")
+    page.wait_for_timeout(200)
+    a2 = active(page)
+    ok(tag + "v49 그다음 Tab은 그 카드의 하트", a2["cls"].startswith("t-fav"), a2)
+    page.keyboard.press("Tab")
+    page.wait_for_timeout(200)
+    ok(tag + "v49 하트 다음 Tab은 목록 밖", not active(page)["inList"], active(page))
+    # 하트: 클릭은 찜만, Space/Enter는 프로필을 열지 않는다
+    page.evaluate("() => document.querySelector('#teacherList .teacher .t-fav').click()")
+    page.wait_for_timeout(220)
+    h1 = page.evaluate("""() => ({fav: document.querySelector('#teacherList .teacher .t-fav').getAttribute('aria-pressed'),
+      sheet: document.getElementById('teacherSheet').classList.contains('is-open')})""")
+    ok(tag + "v49 하트 클릭은 찜만(시트 안 열림)", h1["fav"] == "true" and h1["sheet"] is False, h1)
+    page.evaluate("() => document.querySelector('#teacherList .teacher .t-fav').focus()")
+    page.keyboard.press("Space")
+    page.wait_for_timeout(250)
+    h2 = page.evaluate("""() => ({fav: document.querySelector('#teacherList .teacher .t-fav').getAttribute('aria-pressed'),
+      sheet: document.getElementById('teacherSheet').classList.contains('is-open')})""")
+    ok(tag + "v49 하트 Space는 찜만 바꾼다(프로필 X)", h2["fav"] == "false" and h2["sheet"] is False, h2)
+    page.keyboard.press("ArrowDown")
+    page.wait_for_timeout(220)
+    ok(tag + "v49 하트에서 ↓는 다음 카드로", active(page)["card"] == "lee" and active(page)["cls"] == "t-open", active(page))
+    # 열기 버튼 Enter → 시트, Esc → 열기 버튼으로 복귀
+    page.keyboard.press("Enter")
+    page.wait_for_timeout(350)
+    ok(tag + "v49 Enter는 프로필 시트", page.evaluate("() => document.getElementById('teacherSheet').classList.contains('is-open')"))
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(320)
+    back = active(page)
+    ok(tag + "v49 Esc 뒤 초점은 그 카드의 열기 버튼", back["cls"] == "t-open" and back["card"] == "lee", back)
+    # 스크롤 복원: 열고 → 문서가 0으로 튀고 → 닫으면 보던 자리로
+    page.evaluate("() => window.scrollTo(0, 900)")
+    page.wait_for_timeout(250)
+    y0 = page.evaluate("() => window.scrollY")
+    page.evaluate("() => document.querySelectorAll('#teacherList .t-open')[3].click()")
+    page.wait_for_timeout(400)
+    page.evaluate("() => window.scrollTo(0, 0)")
+    page.wait_for_timeout(150)
+    page.evaluate("() => document.querySelector('#teacherSheet .sheet-close').click()")
+    page.wait_for_timeout(400)
+    y1 = page.evaluate("() => window.scrollY")
+    ok(tag + "v49 시트를 닫으면 보던 스크롤 자리로", y0 > 100 and abs(y1 - y0) <= 2, [y0, y1])
+    ok(tag + "v49 375 오류 0", not errs, errs[:2])
+    page.screenshot(path=os.path.join(SHOT, "v49_375_teachers.png"))
+    ctx.close()
+
+    # ── 2) 320 — 긴 이름·지역·요청 메모가 카드를 밀어내지 않는다 ──────
+    ctx, page, errs = make(320, 568, True)
+    page.goto(URL + "?intro=0")
+    enter(page, "customer", "teachers")
+    long_name = "김하늘보람찬들빛가운데햇살노을아침저녁선생님"
+    long_region = "경기도고양시일산동구백석1동파주시운정동서울특별시강남구대치동인천광역시연수구송도동"
+    page.evaluate("""(v) => { const card = document.querySelector('#teacherList .teacher');
+      card.querySelector('.t-name').firstChild.textContent = v.name;
+      const sp = card.querySelector('.t-region span'); if (sp) sp.textContent = v.region + ' 방문';
+      const m = card.querySelector('.t-meta'); if (m) m.textContent = v.name + ' · 재활 20년'; }""", {"name": long_name, "region": long_region})
+    page.wait_for_timeout(150)
+    ov = page.evaluate("""() => { const el = document.querySelector('#teacherList .teacher'); const box = el.getBoundingClientRect();
+      const out = [];
+      el.querySelectorAll('*').forEach((n) => { const b = n.getBoundingClientRect();
+        if (b.width && (b.right > box.right + 0.5 || b.left < box.left - 0.5)) out.push((n.className || '').toString().slice(0, 20)); });
+      return {over: out.slice(0, 4), sw: el.scrollWidth, cw: el.clientWidth,
+              doc: document.documentElement.scrollWidth, win: innerWidth,
+              lines: Math.round(document.querySelector('#teacherList .t-name').getBoundingClientRect().height)}; }""")
+    ok(tag + "v49 320 긴 이름·지역도 카드 밖으로 넘치지 않는다", not ov["over"] and ov["sw"] <= ov["cw"] + 1 and ov["doc"] <= ov["win"] + 1, ov)
+    ok(tag + "v49 긴 이름은 줄바꿈으로 감싼다(카드가 커진다)", ov["lines"] > 24, ov["lines"])
+    page.screenshot(path=os.path.join(SHOT, "v49_320_long_name.png"))
+    enter(page, "therapist", "tp-home", "therapist")
+    n = page.evaluate("""(v) => { const el = document.querySelector('#tpReqList .req'); if (!el) return 0;
+      el.querySelector('.req-top b').textContent = v.name;
+      const m = el.querySelector('.req-meta'); if (m) m.innerHTML = v.symptom + ' · 10회권<br>' + v.region + ' · 12/01 (월) 10:00'; return 1; }""",
+      {"name": long_name, "symptom": "뇌졸중편마비보행재활균형훈련어깨통증무릎관절가동범위훈련일상생활동작훈련", "region": long_region})
+    if n:
+        ov2 = page.evaluate("""() => { const el = document.querySelector('#tpReqList .req'); const box = el.getBoundingClientRect();
+          const out = [];
+          el.querySelectorAll('*').forEach((n) => { const b = n.getBoundingClientRect();
+            if (b.width && (b.right > box.right + 0.5 || b.left < box.left - 0.5)) out.push((n.className || '').toString().slice(0, 20)); });
+          return {over: out.slice(0, 4), sw: el.scrollWidth, cw: el.clientWidth,
+                  doc: document.documentElement.scrollWidth, win: innerWidth}; }""")
+        ok(tag + "v49 320 긴 요청 이름·증상·지역도 넘치지 않는다", not ov2["over"] and ov2["sw"] <= ov2["cw"] + 1 and ov2["doc"] <= ov2["win"] + 1, ov2)
+        page.screenshot(path=os.path.join(SHOT, "v49_320_long_request.png"))
+    ok(tag + "v49 320 오류 0", not errs, errs[:2])
+    ctx.close()
+
+    # ── 3) 1280 — 방향키로 카드·프로필 열, Tab 순서 ────────────────
+    ctx, page, errs = make(1280, 900, False)
+    page.goto(URL + "?intro=0")
+    enter(page, "customer", "teachers")
+    page.evaluate("() => { const c = [...document.querySelectorAll('#regionFilters .chip')]; c[c.length - 1].focus(); }")
+    page.keyboard.press("Tab")
+    page.wait_for_timeout(200)
+    ok(tag + "v49 1280 Tab 한 번에 목록", active(page)["inList"] and active(page)["cls"] == "t-open", active(page))
+    page.keyboard.press("ArrowDown")
+    page.wait_for_timeout(320)
+    a = active(page)
+    ok(tag + "v49 1280 ↓ 다음 카드 + 오른쪽 프로필 열", a["card"] == "lee" and page.evaluate(
+        "() => !document.getElementById('teacherPane').hidden && /이하늘/.test(document.getElementById('teacherPane').textContent)"), a)
+    page.keyboard.press("Enter")
+    page.wait_for_timeout(350)
+    ok(tag + "v49 1280 Enter는 프로필 열 안으로", page.evaluate("() => document.getElementById('teacherPane').contains(document.activeElement)"))
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(300)
+    ok(tag + "v49 1280 Esc는 고른 카드의 열기 버튼으로", active(page)["card"] == "lee" and active(page)["cls"] == "t-open", active(page))
+    ok(tag + "v49 1280 오류 0", not errs, errs[:2])
+    page.screenshot(path=os.path.join(SHOT, "v49_1280_kbd.png"))
+    ctx.close()
+
+    # ── 4) 인쇄 — 정산서: 회차 통째로·머리글 반복·모션 끝난 상태 ────
+    for w, h, mob, nm in [(390, 844, True, "375"), (1280, 900, False, "1280")]:
+        ctx, page, errs = make(w, h, mob)
+        page.goto(URL + "?intro=0")
+        enter(page, "therapist", "tp-settle", "therapist")
+        page.evaluate("() => { const b = document.querySelector('[data-stl-preview]'); if (b) b.click(); }")
+        page.wait_for_timeout(500)
+        page.emulate_media(media="print")
+        page.evaluate("() => window.dispatchEvent(new Event('beforeprint'))")
+        page.wait_for_timeout(350)
+        pr = page.evaluate("""() => {
+          const rows = [...document.querySelectorAll('#settlementPrintBody [data-print-row]')];
+          const cs = rows.length ? getComputedStyle(rows[0]) : null;
+          const keep = [...document.querySelectorAll('#settlementPrintBody [data-print-keep]')];
+          const reveal = [...document.querySelectorAll('.screen.is-active .tt-reveal')];
+          return {rows: rows.length,
+            breakRow: cs ? cs.breakInside : 'none',
+            keep: keep.length,
+            keepBreak: keep.length ? getComputedStyle(keep[0]).breakInside : 'none',
+            revealHidden: reveal.filter((el) => parseFloat(getComputedStyle(el).opacity) < 0.99).length,
+            runner: document.getElementById('printRunnerTitle').textContent,
+            runnerNote: document.getElementById('printRunnerNote').textContent,
+            runnerDisp: getComputedStyle(document.getElementById('printRunner')).display,
+            footDisp: getComputedStyle(document.getElementById('printFoot')).display,
+            sheetTitle: getComputedStyle(document.querySelector('#settlementPrintSheet .sheet-title')).display}; }""")
+        ok(tag + "v49 %s 정산서 회차는 쪽나눔에서 쪼개지지 않는다" % nm, pr["rows"] > 0 and pr["breakRow"] == "avoid", pr)
+        ok(tag + "v49 %s 요약·머리는 통째로(2장)" % nm, pr["keep"] == 2 and pr["keepBreak"] == "avoid", pr)
+        ok(tag + "v49 %s 화면 등장 모션은 인쇄에서 모두 보인다" % nm, pr["revealHidden"] == 0, pr["revealHidden"])
+        ok(tag + "v49 %s 종이 머리글(%s)" % (nm, pr["runner"]),
+           "정산 명세서" in pr["runner"] and "2026년 11월" in pr["runner"] and pr["runnerDisp"] == "flex", pr)
+        ok(tag + "v49 %s 종이 발급일·시연용·상호" % nm, "발급" in pr["runnerNote"] and "시연용" in pr["runnerNote"] and pr["footDisp"] == "block", pr)
+        ok(tag + "v49 %s 종이에는 '미리보기' 제목을 빼고 문서 머리만" % nm, pr["sheetTitle"] == "none", pr["sheetTitle"])
+        page.screenshot(path=os.path.join(SHOT, "v49_settle_print_%s.png" % nm))
+        try:
+            page.pdf(path=os.path.join(SHOT, "v49_settle_%s.pdf" % nm), format="A4", print_background=True)
+        except Exception as e:
+            ok(tag + "v49 %s 정산서 PDF 만들기" % nm, False, str(e)[:60])
+        page.emulate_media(media="screen")
+        page.evaluate("() => window.dispatchEvent(new Event('afterprint'))")
+        ctx.close()
+
+    # ── 5) 인쇄 — 관리자 콘솔: 아래쪽 섹션이 빈 쪽으로 나오지 않는다 ──
+    ctx, page, errs = make(1280, 900, False)
+    page.goto(URL + "?intro=0")
+    page.wait_for_function("window.__ttokttokBooted === true", timeout=15000)
+    page.eval_on_selector('[data-login="admin"]', "el => el.click()")
+    page.wait_for_timeout(700)
+    page.emulate_media(media="print")
+    page.evaluate("() => window.dispatchEvent(new Event('beforeprint'))")
+    page.wait_for_timeout(350)
+    adm = page.evaluate("""() => { const scr = document.getElementById('screen-admin');
+      const reveals = [...scr.querySelectorAll('.tt-reveal')];
+      const cols = scr.querySelector('.tt46-cols');
+      const secs = ['adminMetricsSec', 'adminOpsSec', 'adminReminderSec', 'adminResvSec', 'adminBackupSec', 'adminSkelSec', 'adminHomeStageSec'];
+      return {revealHidden: reveals.filter((el) => parseFloat(getComputedStyle(el).opacity) < 0.99).length,
+        colsDisp: cols ? getComputedStyle(cols).display : 'missing',
+        hiddenSecs: secs.filter((id) => { const el = document.getElementById(id); return el && getComputedStyle(el).opacity === '0'; }),
+        runner: document.getElementById('printRunnerTitle').textContent,
+        activeScreen: document.querySelector('.screen.is-active').id}; }""")
+    ok(tag + "v49 관리자 콘솔 인쇄에서 숨은 섹션 0", adm["revealHidden"] == 0 and not adm["hiddenSecs"], adm)
+    ok(tag + "v49 관리자 콘솔은 종이에서 한 줄로 펼친다", adm["colsDisp"] == "block", adm["colsDisp"])
+    ok(tag + "v49 관리자 콘솔 종이 머리글", "심사 콘솔" in adm["runner"], adm["runner"])
+    page.screenshot(path=os.path.join(SHOT, "v49_admin_print.png"))
+    try:
+        page.pdf(path=os.path.join(SHOT, "v49_admin.pdf"), format="A4", print_background=True)
+    except Exception as e:
+        ok(tag + "v49 관리자 콘솔 PDF 만들기", False, str(e)[:60])
+    page.emulate_media(media="screen")
+    page.evaluate("() => window.dispatchEvent(new Event('afterprint'))")
+    ctx.close()
+
+    # ── 6) 요약 카드 보조 버튼 = 3:1 경계 ────────────────────────
+    ctx, page, errs = make(375, 812, True)
+    page.goto(URL + "?intro=0")
+    enter(page, "customer")
+    bd = page.evaluate("""() => {
+      const el = document.querySelector('#homeSummaryRebook .btn-outline.btn-sm'); if (!el) return null;
+      const cs = getComputedStyle(el); const r = el.getBoundingClientRect();
+      const parse = (c) => { const m = String(c).match(/rgba?\(([^)]+)\)/); if (!m) return null;
+        const p = m[1].split(/[\s,\/]+/).map(Number); return {r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1}; };
+      const lin = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const lum = (c) => 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+      const ratio = (a, b) => { const l1 = lum(a), l2 = lum(b); const hi = Math.max(l1, l2), lo = Math.min(l1, l2); return (hi + 0.05) / (lo + 0.05); };
+      return {bw: parseFloat(cs.borderTopWidth) || 0, color: cs.borderTopColor,
+        cr: Math.round(ratio(parse(cs.borderTopColor), parse('rgb(255,255,255)')) * 100) / 100,
+        h: Math.round(r.height), text: el.textContent.trim().slice(0, 12)}; }""")
+    ok(tag + "v49 요약 카드 보조 버튼에 1px 경계", bd and bd["bw"] >= 1, bd)
+    ok(tag + "v49 그 경계는 3:1 이상", bd and bd["cr"] >= 3, bd)
+    ok(tag + "v49 그 버튼 높이 44px 이상", bd and bd["h"] >= 44, bd)
+    ok(tag + "v49 홈 오류 0", not errs, errs[:2])
+    ctx.close()
+    browser.close()
+
 def main():
     """E2E 전 흐름. E2E_ONLY=v29,v31 처럼 쉼표로 골라 실행할 수 있다(개발·부분 재실행용)."""
     only = [x.strip() for x in os.environ.get("E2E_ONLY", "").split(",") if x.strip()]
@@ -6013,7 +6285,7 @@ def main():
         ("v33", run_v33_flow), ("v34", run_v34_flow), ("v35", run_v35_flow),
         ("v36", run_v36_flow), ("v37", run_v37_flow), ("v38", run_v38_flow), ("v39", run_v39_flow),
         ("v40", run_v40_flow), ("v42", run_v42_flow), ("v43", run_v43_flow), ("v45", run_v45_flow),
-        ("v46", run_v46_flow), ("v47", run_v47_flow), ("v48", run_v48_flow),
+        ("v46", run_v46_flow), ("v47", run_v47_flow), ("v48", run_v48_flow), ("v49", run_v49_flow),
     ]
     with sync_playwright() as p:
         for name, fn in flows:

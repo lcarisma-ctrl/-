@@ -86,7 +86,7 @@ async function run() {
   const pos = (a, b) => !!(a && b) && (a.compareDocumentPosition(b) & 4) !== 0; // a가 b보다 앞
 
   /* ── 1) 버전·기본 상태 ─────────────────────────────────────── */
-  ok('A1 meta v46', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v48',
+  ok('A1 meta v46', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v49',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 v45 테마 훅 유지', !!w.__ttokttokTheme && w.__ttokttokTheme.version === 'v45');

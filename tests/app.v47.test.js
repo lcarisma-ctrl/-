@@ -92,7 +92,7 @@ async function run() {
   const w = A.window, doc = A.doc;
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
-  ok('A1 meta v47', ($('meta[name="app-version"]') || {}).content === 'v48', ($('meta[name="app-version"]') || {}).content);
+  ok('A1 meta v47', ($('meta[name="app-version"]') || {}).content === 'v49', ($('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 v45 테마 훅 유지', !!w.__ttokttokTheme && w.__ttokttokTheme.version === 'v45');
   ok('A4 v44 탭 스크롤 훅 유지', !!w.__ttokttokTabScroll && w.__ttokttokTabScroll.version === 'v44');
@@ -189,23 +189,25 @@ async function run() {
 
   /* ── 5) 키보드 이동 — 좁은 화면(시트) ────────────────────────── */
   const cards = $$('#teacherList .teacher');
-  cards[0].focus();
-  ok('E1 첫 카드에 초점', doc.activeElement === cards[0]);
-  key(cards[0], 'ArrowDown');
-  ok('E2 ↓로 다음 카드', doc.activeElement === cards[1], doc.activeElement && doc.activeElement.getAttribute('data-teacher'));
+  /* v49 · 카드의 초점 정지점은 카드 전체를 덮는 열기 버튼(.t-open) */
+  const op = (i) => cards[i].querySelector('.t-open');
+  op(0).focus();
+  ok('E1 첫 카드에 초점', doc.activeElement === op(0));
+  key(op(0), 'ArrowDown');
+  ok('E2 ↓로 다음 카드', doc.activeElement === op(1), doc.activeElement && doc.activeElement.getAttribute('aria-label'));
   await sleep(80);
   ok('E3 이동을 낭독(2/8)', /2\/8/.test($('#teacherNavLive').textContent), $('#teacherNavLive').textContent);
-  key(cards[1], 'ArrowUp');
-  ok('E4 ↑로 앞 카드', doc.activeElement === cards[0]);
-  key(cards[0], 'ArrowUp');
-  ok('E5 첫 카드에서 ↑는 그대로', doc.activeElement === cards[0]);
-  key(cards[0], 'End');
-  ok('E6 End는 마지막 카드', doc.activeElement === cards[cards.length - 1]);
-  key(cards[cards.length - 1], 'ArrowDown');
-  ok('E7 마지막에서 ↓는 그대로', doc.activeElement === cards[cards.length - 1]);
-  key(cards[cards.length - 1], 'Home');
-  ok('E8 Home은 첫 카드', doc.activeElement === cards[0]);
-  key(cards[0], 'Enter');
+  key(op(1), 'ArrowUp');
+  ok('E4 ↑로 앞 카드', doc.activeElement === op(0));
+  key(op(0), 'ArrowUp');
+  ok('E5 첫 카드에서 ↑는 그대로', doc.activeElement === op(0));
+  key(op(0), 'End');
+  ok('E6 End는 마지막 카드', doc.activeElement === op(cards.length - 1));
+  key(op(cards.length - 1), 'ArrowDown');
+  ok('E7 마지막에서 ↓는 그대로', doc.activeElement === op(cards.length - 1));
+  key(op(cards.length - 1), 'Home');
+  ok('E8 Home은 첫 카드', doc.activeElement === op(0));
+  key(op(0), 'Enter');
   await sleep(120);
   ok('E9 Enter로 상세 시트가 열린다(좁은 화면)', $('#teacherSheet').classList.contains('is-open'));
   ok('E10 시트에 그 선생님', /박서준/.test($('#teacherSheetBody').textContent));
@@ -234,21 +236,22 @@ async function run() {
   click(b$('.tabbar[data-mode="customer"] .tabbtn[data-tab="teachers"]'));
   await sleep(250);
   const bc = b$$('#teacherList .teacher');
+  const bop = (i) => bc[i].querySelector('.t-open');
   ok('F2 카드 8명', bc.length === 8, bc.length);
   ok('F3 처음에는 상세 열이 닫혀 있다', b$('#teacherPane').hidden === true);
-  bc[0].focus();
-  key(bc[0], 'ArrowDown');
+  bop(0).focus();
+  key(bop(0), 'ArrowDown');
   await sleep(80);
-  ok('F4 ↓로 다음 카드에 초점', bd.activeElement === bc[1]);
+  ok('F4 ↓로 다음 카드에 초점', bd.activeElement === bop(1));
   ok('F5 오른쪽 프로필 열이 열린다', b$('#teacherPane').hidden === false);
   ok('F6 열에 그 선생님 프로필', /이하늘/.test(b$('#teacherPane').textContent));
   ok('F7 고른 카드에 aria-current', bc[1].getAttribute('aria-current') === 'true' && !bc[0].hasAttribute('aria-current'));
   ok('F8 빈 자리 안내는 숨는다', b$('#teacherMainCol').classList.contains('has-pane'));
   key(bd.activeElement, 'ArrowDown');
   await sleep(80);
-  ok('F9 ↓↓로 3번째 카드·열 갱신', /정민아/.test(b$('#teacherPane').textContent) && bd.activeElement === bc[2]);
+  ok('F9 ↓↓로 3번째 카드·열 갱신', /정민아/.test(b$('#teacherPane').textContent) && bd.activeElement === bop(2));
   ok('F10 열은 스크롤 위에서 시작', b$('#teacherPane').scrollTop === 0);
-  key(bc[2], 'Enter');
+  key(bop(2), 'Enter');
   await sleep(120);
   ok('F11 Enter는 프로필 열 안으로 초점을 옮긴다', b$('#teacherPane').contains(bd.activeElement) &&
     bd.activeElement.getAttribute('data-pane-open') !== null);
@@ -256,7 +259,7 @@ async function run() {
   key(bd.activeElement, 'Escape');
   await sleep(120);
   ok('F13 Esc는 열을 닫는다', b$('#teacherPane').hidden === true);
-  ok('F14 Esc는 고른 카드로 초점을 돌린다', bd.activeElement === bc[2]);
+  ok('F14 Esc는 고른 카드로 초점을 돌린다', bd.activeElement === bop(2));
   ok('F15 닫으면 빈 자리 안내가 돌아온다', !b$('#teacherMainCol').classList.contains('has-pane'));
   /* 시트가 열려 있으면 Esc는 시트부터 닫는다(열은 그대로) */
   bc[0].focus();

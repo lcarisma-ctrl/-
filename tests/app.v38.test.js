@@ -70,7 +70,7 @@ async function run() {
      1) 표준이 코드에 있다 — 버전·용어·금지어·검사기
      ============================================================ */
   ok('DA0 v38 부트 JS 오류 0', errors.length === 0, errors.slice(0, 3).join(' | '));
-  ok('DA1 meta v38 · copyVersion v38', doc.querySelector('meta[name="app-version"]').content === 'v48' &&
+  ok('DA1 meta v38 · copyVersion v38', doc.querySelector('meta[name="app-version"]').content === 'v49' &&
     M.copyVersion === 'v38' && C && C.version === 'v38');
   ok('DA2 검사 훅 노출(audit·visibleText·toneOf)', typeof C.audit === 'function' &&
     typeof C.visibleText === 'function' && typeof C.toneOf === 'function');

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v48">
+<meta name="app-version" content="v49">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3402,8 +3402,59 @@ body .teacher.is-skel,body .teacher.is-skel:hover{border-color:transparent!impor
   a{color:inherit!important;text-decoration:none!important}
   .fine,.caption,.sheet-note{color:var(--paper-muted)!important}
 }
+
+/* ============================================================
+   17. v49 · 카드 열기/찜 버튼 분리 · .btn-sm 경계 · 종이 쪽나눔 · 긴 글 마감
+   ─ 카드 안에 버튼(하트)을 넣는 대신, 카드 전체를 덮는 열기 버튼과 하트를 형제로 둔다.
+     정지점(tabindex)은 카드가 아니라 열기 버튼에 있다.
+   ─ 요약 카드 안의 텍스트형 아웃라인 버튼도 --edge-ctl 3:1 경계를 갖는다.
+   ─ 인쇄: 회차·카드 한 건은 페이지 경계에서 쪼개지지 않고, 표 머리는 매 쪽 반복한다.
+   ============================================================ */
+.teacher{position:relative}
+.t-open{position:absolute;inset:0;z-index:1;display:block;padding:0;margin:0;border:0;border-radius:inherit;
+  background:transparent;color:transparent;font-size:0;line-height:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.t-open:focus{outline:none}
+.t-open:focus-visible{outline:2.5px solid var(--line-blue-2);outline-offset:2px;z-index:3}
+body.is-kb .teacher .t-open:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+/* 요약 카드 안 보조 버튼: 텍스트 링크가 아니라 '버튼'으로 읽히게 */
+body #homeSummaryRebook .btn-outline.btn-sm{background:var(--surface);border:1px solid var(--edge-ctl);color:var(--ink-title);
+  box-shadow:none;border-radius:var(--r-pill);font-weight:700;padding:0 14px;min-height:44px}
+/* 긴 이름·지역·요청 메모 — 줄은 바꾸되 카드를 밀어내지 않는다 */
+.t-name,.h-name,.admin-name,.req-top b,.sheet-title,.li-main b{min-width:0;overflow-wrap:anywhere;word-break:keep-all}
+.t-meta,.t-region,.req-meta,.req-pay,.admin-meta,.fine{overflow-wrap:anywhere;word-break:keep-all}
+.req-top{flex-wrap:wrap}
+.req-top b{flex:1 1 auto}
+.req-top .req-new,.req-time{flex:0 0 auto}
+/* 종이 쪽나눔 — 한 건은 한 덩어리로, 표 머리는 매 쪽 반복 */
+@media print{
+  [data-print-row],[data-print-keep],.admin-card,.sum-row,.req,.pass,.booking-row,.date-chip{break-inside:avoid;page-break-inside:avoid}
+  /* v49 · 넓은 화면의 2단(grid·sticky)은 종이에서 빈 쪽을 만든다 — 한 줄로 펼친다(선생님 찾기는 v48 규칙 유지) */
+  .tt46-cols{display:block!important}
+  .tt46-col{display:block!important;position:static!important;width:auto!important;max-width:none!important}
+  .tt46-col.is-sticky{position:static!important}
+  .tt46-col > *{margin-top:12px!important}
+  /* v49 · 화면 등장 모션(tt-reveal·tt-rise)은 종이에서 끝까지 드러난 상태로 — 스크롤 안 한 아래쪽이 빈 쪽으로 나오지 않게 */
+  .tt-reveal{opacity:1!important;transform:none!important}
+  .tt-rise,.tt-loaded,.tt-pulse,.tt-skel::after{animation:none!important}
+  p,li{orphans:2;widows:2}
+  table{break-inside:auto}
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  tr,th,td{break-inside:avoid;page-break-inside:avoid}
+  #settlementPrintSheet .sheet-title{display:none!important}
+  #printRunner{display:flex!important;position:fixed;top:0;left:0;right:0;justify-content:space-between;gap:8px;
+    padding:0 0 2mm;border-bottom:1px solid var(--line-tint-slate);font-size:9pt;font-weight:700;color:var(--paper-ink)}
+  #printRunner small{font-weight:600;color:var(--paper-muted)}
+  #printFoot{display:block!important;position:fixed;bottom:0;left:0;right:0;padding-top:2mm;border-top:1px solid var(--line-tint-slate);
+    font-size:8pt;color:var(--paper-muted)}
+  body{padding-top:11mm!important;padding-bottom:9mm!important}
+}
+#printRunner,#printFoot{display:none}
 </style>
 <body>
+<!-- v49 · 인쇄 머리·꼬리 — 종이에만 보이고, 페이지마다 반복된다(beforeprint에서 문구를 채운다) -->
+<div id="printRunner" aria-hidden="true"><span id="printRunnerTitle">똑똑쌤</span><small id="printRunnerNote">시연용 예시 데이터</small></div>
+<div id="printFoot" aria-hidden="true">상호 똑똑쌤 · 대표 임현수 · 문의 031-919-8577 · 서버·정산 시스템과 연결되지 않은 시연용 예시입니다.</div>
 <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.6 12 4l8 6.6V20a1 1 0 0 1-1 1h-4.6v-6.2H9.6V21H5a1 1 0 0 1-1-1z"/></symbol>
   <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.4 20c.4-3.4 2.7-5.4 5.6-5.4s5.2 2 5.6 5.4"/><path d="M15.9 5.3a3.2 3.2 0 0 1 0 5.4"/><path d="M17.4 14.9c2 .6 3.2 2.4 3.5 5.1"/></symbol>
@@ -11847,10 +11898,25 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
   }
 
   /* 시트가 열려 있는 동안 body 상태(스크롤 잠금·토스트 위치)를 한 곳에서 관리 */
+  /* v49 · 시트를 닫고 돌아왔을 때 보던 자리로 —
+     iOS Safari처럼 overflow:hidden 중에 문서 스크롤이 0으로 돌아가는 기기에서 목록이 맨 위로 튀지 않는다. */
+  var sheetScrollY = null;
   function syncBodyState() {
     var any = !!document.querySelector('.sheet-backdrop.is-open, .backdrop.is-open');
+    if (any && sheetScrollY === null) {
+      sheetScrollY = (typeof window.scrollY === 'number') ? window.scrollY : 0;
+    }
     document.body.classList.toggle('sheet-open', any);
     document.body.style.overflow = any ? 'hidden' : '';
+    if (!any && sheetScrollY !== null) {
+      var backTo = sheetScrollY;
+      sheetScrollY = null;
+      var now = (typeof window.scrollY === 'number') ? window.scrollY : 0;
+      if (Math.abs(now - backTo) > 1) {
+        try { window.scrollTo(0, backTo); } catch (e) {}
+      }
+    }
+    try { window.__ttokttokSheetScroll = { version: 'v49', open: sheetScrollY, y: (typeof window.scrollY === 'number') ? window.scrollY : 0 }; } catch (e) {}
   }
 
   /* ================= 선생님 목록 (전국) =================
@@ -12424,9 +12490,11 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var trust = teacherTrustOf(t.id);
     var tagList = trust.topTags.map(function (x) { return x.label; });
     t.tags.forEach(function (x) { if (tagList.indexOf(x) === -1) tagList.push(x); });
+    /* v49 · 카드 열기와 찜(하트)은 '형제' 버튼 — role=button 안에 버튼을 넣지 않는다.
+       열기 버튼(.t-open)이 카드 전체를 덮고, 하트는 그 위(z-index)에 따로 선다. */
     return '' +
-      '<article class="teacher' + (isFav(t.id) ? ' is-fav' : '') + '" data-teacher="' + t.id + '" role="button" tabindex="-1" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
-        heartHtml(t.id) +
+      '<article class="teacher' + (isFav(t.id) ? ' is-fav' : '') + '" data-teacher="' + t.id + '">' +
+        '<button class="t-open" type="button" data-teacher-open="' + t.id + '" tabindex="-1" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기"></button>' +
         '<div class="t-top">' +
           '<div class="t-avatar" style="' + avaStyle(t.id) + '" aria-hidden="true">' + avaSvg(t.id) + '</div>' +
           '<div style="min-width:0">' +
@@ -12441,6 +12509,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           '<span class="t-more">프로필 · 후기 보기 ' + icon('chev-r') + '</span>' +
           '<span class="t-avail">1회 60분 · 이동비 없음</span>' +
         '</div>' +
+        heartHtml(t.id) +
       '</article>';
   }
 
@@ -12922,8 +12991,10 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
   }
   function focusTeacherCard(card) {
     if (!card) return false;
-    try { card.focus(); } catch (e) {}
-    try { card.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+    /* v49 · 초점은 카드가 아니라 카드 안의 열기 버튼으로 */
+    var target = card.querySelector ? (card.querySelector('.t-open') || card) : card;
+    try { target.focus(); } catch (e) {}
+    try { target.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
     return true;
   }
   function teacherNavKeys(e) {
@@ -12942,6 +13013,8 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     }
     var list = $('#teacherList');
     if (!list || !e.target || !e.target.closest) return;
+    /* v49 · 하트(찜)의 Space·Enter는 하트 몫 — 프로필을 열지 않는다. 방향키는 그대로 카드 이동. */
+    if (e.target.closest('[data-fav]') && (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar')) return;
     var card = e.target.closest('.teacher');
     if (!card || !list.contains(card) || card.classList.contains('is-skel')) return;
     var cards = teacherCards();
@@ -12955,6 +13028,14 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     else if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
       e.preventDefault();
       var id = card.getAttribute('data-teacher');
+      /* v49 · 키보드로 연 시트도 '지금 초점이 있는 버튼'으로 돌아오게 트리거를 남긴다 */
+      try {
+        if (document.activeElement && document.activeElement !== document.body) {
+          a11yLastTrigger = { el: document.activeElement, sel: '' };
+          a11yTriggerHistory.push(a11yLastTrigger);
+          if (a11yTriggerHistory.length > 6) a11yTriggerHistory.shift();
+        }
+      } catch (err) {}
       openTeacherSheet(id);
       if (deskWide() && pane && !pane.hidden) {
         var inside = pane.querySelector('[data-pane-open]') || pane.querySelector('.pane-cta .btn');
@@ -16710,12 +16791,12 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
 
   /* 인쇄·미리보기 시트 본문 */
   function statementPrintHtml(s) {
-    var head = '<div class="admin-card" style="padding:15px">' +
+    var head = '<div class="admin-card" data-print-keep style="padding:15px">' +
       '<p class="fs-meta fw-800 c-teal" style="letter-spacing:.02em">똑똑쌤 정산 명세서</p>' +
       '<p class="fs-lead fw-800" style="letter-spacing:-.03em;margin:3px 0 0">' + esc(s.monthLabel) + ' · ' + esc(s.teacherName || '선생님') + ' 선생님</p>' +
       '<p class="fine" style="margin:5px 0 0">발급 ' + esc(String(s.todayIso || '').replace(/-/g, '.')) + ' · 수수료 22.2% · ' + esc(s.rule.label) + '</p>' +
     '</div>';
-    var summary = '<div class="admin-card mt-8" style="padding:8px 15px">' +
+    var summary = '<div class="admin-card mt-8" data-print-keep style="padding:8px 15px">' +
       '<div class="sum-row"><span>완료 회차</span><b>' + s.counts.completed + '회</b></div>' +
       '<div class="sum-row"><span>지급완료 (' + s.byStatus.paid.count + '건)</span><b>' + settleWon(s.byStatus.paid.amount) + '</b></div>' +
       '<div class="sum-row"><span>지급예정 (' + s.byStatus.scheduled.count + '건)</span><b>' + settleWon(s.byStatus.scheduled.amount) + '</b></div>' +
@@ -16725,7 +16806,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       '<div class="sum-row"><span>실수령 예상</span><b class="c-teal">' + settleWon(s.totals.netExpected) + '</b></div>' +
     '</div>';
     var body = s.rows.map(function (r) {
-      return '<div style="border-top:1px solid var(--line-tint-slate);padding:7px 0">' +
+      return '<div class="stl-row" data-print-row style="border-top:1px solid var(--line-tint-slate);padding:7px 0">' +
         '<div style="display:flex;justify-content:space-between;gap:8px">' +
           '<b class="fs-meta">' + esc(r.visitDateLabel) + (r.visitTime ? ' ' + esc(r.visitTime) : '') + '</b>' +
           '<b style="font-size:11px;color:' + (r.excluded ? 'var(--text-muted)' : 'var(--ink-teal)') + '">' + settleWon(r.netExpected) + '</b>' +
@@ -18874,6 +18955,11 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
   var a11yLastTrigger = null;
   function a11yUsableTrigger(el) {
     if (!el || !el.focus || !document.contains(el)) return null;
+    /* v49 · 카드(article)를 눌러 연 시트는 카드의 열기 버튼으로 초점을 돌린다 */
+    if (el.classList && el.classList.contains('teacher')) {
+      var inner = el.querySelector('.t-open');
+      if (inner) el = inner;
+    }
     var box = el.closest('.sheet-backdrop, .backdrop, .gate');
     if (box && !box.classList.contains('is-open')) return null;
     return el;
@@ -18902,10 +18988,10 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
   }, true);
   function a11yRestoreFocus(rec) {
     var pick = a11yResolveTrigger(rec);
-    if (!a11yUsableTrigger(pick)) pick = null;
+    pick = a11yUsableTrigger(pick);
     for (var i = a11yTriggerHistory.length - 1; i >= 0 && !pick; i--) {
       var cand = a11yResolveTrigger(a11yTriggerHistory[i]);
-      if (a11yUsableTrigger(cand)) pick = cand;
+      pick = a11yUsableTrigger(cand);
     }
     try { if (pick) pick.focus({ preventScroll: true }); } catch (e) {}
   }
@@ -23966,12 +24052,14 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
 (function () {
   var D = document, W = window;
   var list = D.getElementById('teacherList');
-  var rove = { version: 'v48', active: '' };
+  var rove = { version: 'v49', active: '' };
 
   function cards() {
     if (!list) return [];
     return Array.prototype.slice.call(list.querySelectorAll('.teacher[data-teacher]:not(.is-skel)'));
   }
+  /* v49 · 정지점은 카드가 아니라 '카드 전체를 덮는 열기 버튼'에 둔다(중첩 인터랙티브 제거). */
+  function opener(c) { return c ? c.querySelector('.t-open') : null; }
   function applyRoving() {
     if (!list) return;
     var cs = cards();
@@ -23979,7 +24067,12 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var ids = cs.map(function (c) { return c.getAttribute('data-teacher'); });
     if (ids.indexOf(rove.active) < 0) rove.active = ids[0];
     cs.forEach(function (c) {
-      c.setAttribute('tabindex', c.getAttribute('data-teacher') === rove.active ? '0' : '-1');
+      var on = c.getAttribute('data-teacher') === rove.active;
+      var b = opener(c);
+      if (b) b.setAttribute('tabindex', on ? '0' : '-1');
+      /* v49 · 하트도 고른 카드 것만 Tab 정지점 — 카드 8장의 하트가 모두 정지점이면 목록을 나가기 어렵다. */
+      var f = c.querySelector('.t-fav');
+      if (f) f.setAttribute('tabindex', on ? '0' : '-1');
     });
   }
   function announce(msg) {
@@ -24007,12 +24100,40 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
   }
 
   /* ── 인쇄 대상: 열린 시트 중 z-index가 가장 높은 하나 ───────────── */
+  /* v49 · 종이 머리글 — 어느 쪽을 뽑아도 무슨 문서인지 알 수 있게, 쪽마다 같은 줄을 찍는다. */
+  function runnerText() {
+    var sheet = D.querySelector('.sheet-backdrop.is-open');
+    var screen = D.querySelector('.screen.is-active');
+    var title = '';
+    if (sheet && sheet.id === 'settlementPrintSheet') title = '정산 명세서';
+    else if (sheet) { var st = sheet.querySelector('.sheet-title'); title = st ? String(st.textContent || '').trim() : ''; }
+    if (!title && screen) { var h = screen.querySelector('h1'); title = h ? String(h.textContent || '').trim() : ''; }
+    var sub = '';
+    var lead = sheet ? sheet.querySelector('#settlementPrintBody .fs-lead') : null;
+    if (lead) sub = String(lead.textContent || '').trim();
+    else {
+      var top = D.querySelector('#tpsSummary .settle-top span');
+      if (top) sub = String(top.textContent || '').replace('세전 지급 합계', '').trim();
+    }
+    if (sheet && sheet.id === 'settlementPrintSheet' || (screen && screen.id === 'screen-tp-settle')) title = '정산 명세서';
+    var d = new Date();
+    var day = d.getFullYear() + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + ('0' + d.getDate()).slice(-2);
+    return { title: (title || '똑똑쌤') + (sub ? ' · ' + sub : ''), note: day + ' 발급 · 시연용' };
+  }
+  function paintRunner() {
+    var t = D.getElementById('printRunnerTitle'), n = D.getElementById('printRunnerNote');
+    var v = runnerText();
+    if (t) t.textContent = v.title;
+    if (n) n.textContent = v.note;
+    try { W.__ttokttokPrintRunner = { title: v.title, note: v.note, at: Date.now() }; } catch (e) {}
+    return v;
+  }
   function markPrintTarget() {
     var opened = Array.prototype.slice.call(D.querySelectorAll('.sheet-backdrop.is-open'));
     Array.prototype.forEach.call(D.querySelectorAll('.sheet-backdrop.is-print'), function (el) {
       el.classList.remove('is-print');
     });
-    if (!opened.length) return '';
+    if (!opened.length) { paintRunner(); return ''; }
     var top = opened[0], topZ = -1;
     opened.forEach(function (b) {
       var z = parseInt(W.getComputedStyle(b).zIndex, 10);
@@ -24020,6 +24141,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       if (z >= topZ) { topZ = z; top = b; }
     });
     top.classList.add('is-print');
+    paintRunner();
     return top.id || '';
   }
   W.addEventListener('beforeprint', markPrintTarget);
@@ -24030,13 +24152,29 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
   });
 
   W.__ttokttokRoving = {
-    version: 'v48',
+    version: 'v49',
     activeId: function () { return rove.active; },
     count: function () { return cards().length; },
-    tabStops: function () { return cards().filter(function (c) { return c.getAttribute('tabindex') === '0'; }).length; },
+    tabStops: function () {
+      return list ? Array.prototype.slice.call(list.querySelectorAll('.teacher .t-open')).filter(function (b) { return b.getAttribute('tabindex') === '0'; }).length : 0;
+    },
+    nestedButtons: function () {
+      /* 목록 안에서 다른 조작 요소(button·role=button·링크)의 '자식'으로 들어간 조작 요소 수 */
+      var sel = 'button,[role="button"],a[href]';
+      var n = 0;
+      if (!list) return 0;
+      Array.prototype.slice.call(list.querySelectorAll(sel)).forEach(function (el) {
+        var p = el.parentElement;
+        while (p && p !== list) {
+          if (p.matches && p.matches(sel)) { n++; break; }
+          p = p.parentElement;
+        }
+      });
+      return n;
+    },
     apply: applyRoving
   };
-  W.__ttokttokPrint = { version: 'v48', mark: markPrintTarget, target: function () { var e = D.querySelector('.sheet-backdrop.is-print'); return e ? e.id : ''; } };
+  W.__ttokttokPrint = { version: 'v49', mark: markPrintTarget, runner: paintRunner, target: function () { var e = D.querySelector('.sheet-backdrop.is-print'); return e ? e.id : ''; } };
 })();
 </script>
 </body>

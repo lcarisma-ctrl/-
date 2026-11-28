@@ -65,7 +65,7 @@ async function run() {
   const eClick = (el) => el.dispatchEvent(new we.MouseEvent('click', { bubbles: true, cancelable: true }));
   ok('AD0 v32 JS 오류 없음(빈 계정 부팅)', ADE.errors.length === 0 && de.documentElement.getAttribute('data-js-error') === null,
     ADE.errors.slice(0, 3).join(' | '));
-  ok('AD1 v32 메타·공통 UI 훅 노출', de.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
+  ok('AD1 v32 메타·공통 UI 훅 노출', de.querySelector('meta[name="app-version"]').getAttribute('content') === 'v49' &&
     !!we.__ttokttokV32 && we.__ttokttokV32.version === 'v32' && we.__ttokttokModel.qaVersion === 'v34',
     we.__ttokttokV32 && we.__ttokttokV32.version);
   ok('AD2 빈 계정 — 이용권·예약·결제 내역·타임라인 4곳 모두 통일 빈 상태', (function () {

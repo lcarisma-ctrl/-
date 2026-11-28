@@ -85,7 +85,7 @@ async function run() {
   const M = A.window.__ttokttokModel;
   const doc = A.doc;
 
-  ok('A2 meta v40 · perf 훅 v39(기능 세대 표기 유지)', doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
+  ok('A2 meta v40 · perf 훅 v39(기능 세대 표기 유지)', doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v49' &&
     P && P.version === 'v39');
   ok('A3 stats 필드(dcl·fcp·marks·deferred)', (function () {
     const s = P.stats();
