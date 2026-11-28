@@ -1,0 +1,9 @@
+# 검증 도구가 만드는 것들
+tests/node_modules/
+tests/_logs/
+tests/contrast-v*.json
+tests/perf-*.json
+preview/
+*.pyc
+__pycache__/
+.DS_Store

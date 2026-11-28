@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v46">
+<meta name="app-version" content="v47">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -3181,9 +3181,90 @@ h1,h2,.hh-title,.wstep-title,.sec-title,.mp-title,.sheet-title{text-wrap:balance
   #teacherList{flex-direction:column}
   #teacherList > *{flex:1 1 auto;width:100%;max-width:none}
   #teacherList .teacher.is-selected{border-color:var(--line-blue);box-shadow:0 0 0 2px var(--tint-blue),var(--shadow-card)}
+  /* v47 · 고른 카드와 오른쪽 열을 왼쪽 띠으로 잇는다 */
+  #teacherList .teacher.is-selected::before{content:"";position:absolute;left:0;top:20px;bottom:20px;width:3px;
+    border-radius:0 3px 3px 0;background:var(--blue)}
 }
+/* 빈 자리 안내는 1280px 3칸에서만 — 기본은 숨김 */
+.teacher-pane-empty{display:none}
+
+/* ─────────────────────────────────────────────────────────────────────
+   13. v47 · 데스크톱 키보드 이동 · 스켈레톤 로딩 · 미세 마감
+      · 1280px 3칸에서 목록을 ↑/↓로 옮겨 다니고 오른쪽 프로필 열이 따라온다
+      · 서버 단계 대비: 실제 카드와 같은 높이를 예약하는 스켈레톤(흔들림 0)
+      · 좁은 화면·터치에서는 지금까지와 똑같이 동작한다(안내·링은 1280부터)
+   ───────────────────────────────────────────────────────────────────── */
+/* 13-1. 읽기 도구에만 보이는 안내(화면 낭독기 전용) */
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;border:0;overflow:hidden;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+/* 13-1. 키보드 안내 — 1280px 3칸에서만 보인다(좁은 화면은 손가락이 기본) */
+.kbd-hint{display:none}
+@media(min-width:1280px){
+  .kbd-hint{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0 2px 10px;
+    font-size:var(--fs-12);color:var(--text-caption);line-height:1.7}
+  .kbd-hint kbd{font-family:inherit;font-size:var(--fs-12);font-weight:700;color:var(--ink-3);
+    background:var(--surface);border:1px solid var(--line-strong);border-bottom-width:2px;
+    border-radius:6px;padding:0 5px;min-width:19px;text-align:center;line-height:1.6}
+  .kbd-hint .kbd-dot{color:var(--text-caption)}
+  /* 안내 한 줄은 두 칸 위를 다 쓴다 — 아래 목록이 1칸, 상세가 2칸에 나란히 서게 */
+  #teacherMainCol > #teacherKbdHint{grid-column:1/-1}
+  /* v47 · 아직 고르지 않았을 때의 빈 자리 안내 — 상세 열과 같은 자리를 쓴다 */
+  #teacherMainCol .teacher-pane-empty{display:flex;grid-column:2;flex-direction:column;align-items:center;justify-content:center;
+    gap:8px;text-align:center;padding:30px 22px;background:var(--surface-2);border:1px dashed var(--line-strong);
+    border-radius:22px;position:sticky;top:78px;min-height:280px}
+  #teacherMainCol.has-pane .teacher-pane-empty{display:none}
+  .teacher-pane-empty .tpe-ic{width:46px;height:46px;border-radius:15px;background:var(--surface);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--ink-blue-2)}
+  .teacher-pane-empty .tpe-ic .ic{width:22px;height:22px}
+  .teacher-pane-empty .tpe-title{font-size:var(--fs-14);font-weight:700;color:var(--ink-3);margin:0;line-height:1.4}
+  .teacher-pane-empty .tpe-sub{font-size:var(--fs-12);color:var(--text-caption);margin:0;line-height:1.5;max-width:240px}
+  /* 키보드로 옮겨 다니는 카드: 선택(파란 테두리)과 별개로 초점 링을 또렷하게 */
+  body.is-kb #teacherList .teacher:focus-visible{outline:2px solid var(--blue);outline-offset:2px;
+    box-shadow:0 0 0 5px rgba(37,99,235,.14),var(--shadow-card)}
+}
+/* 13-2. 스켈레톤 — 카드 높이를 먼저 예약해 아래 내용이 흔들리지 않는다 */
+.teacher.is-skel{--tt-skel-h:246px;height:var(--tt-skel-h);display:flex;flex-direction:column;justify-content:center;
+  gap:12px;cursor:default;pointer-events:none}
+.teacher.is-skel:hover{border-color:var(--line)}
+/* 기본 높이는 실제 카드 높이를 폭별로 잰 값(320 296 · 375/390 246 · 768 251 · 1024 253 · 1280 197).
+   한 번이라도 그려 본 뒤에는 그 화면의 실제 평균 높이를 기억해 쓴다 */
+@media(max-width:340px){.teacher.is-skel{--tt-skel-h:296px}}
+@media(min-width:768px){.teacher.is-skel{--tt-skel-h:251px}}
+@media(min-width:1024px) and (max-width:1279px){.teacher.is-skel{--tt-skel-h:253px}}
+@media(min-width:1280px){.teacher.is-skel{--tt-skel-h:197px}}
+.sk-stack{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:7px}
+.sk-bar{display:block;height:11px;border-radius:6px}
+.sk-av{display:block;width:54px;height:54px;flex:0 0 54px;border-radius:50%}
+.sk-tags{display:flex;gap:6px;margin:0;min-height:21px}
+.sk-chip{display:block;height:21px;border-radius:7px}
+.sk-chip:nth-child(1){width:58px}
+.sk-chip:nth-child(2){width:50px}
+.sk-chip:nth-child(3){width:64px}
+/* 프로필 열 스켈레톤 — 열 폭은 그대로라 목록은 움직이지 않는다 */
+.pane-skel{display:flex;flex-direction:column;gap:12px;padding:2px 0 12px}
+.pane-skel .sk-row{display:flex;align-items:center;gap:12px}
+.pane-skel .sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+/* 스켈레톤에서 실제 내용으로 넘어갈 때 한 번만 부드럽게 */
+#teacherList.is-skel-loaded > .teacher{animation:tt41Fade var(--dur-item) var(--ease-out) both}
+#teacherPane.is-skel-loaded > *{animation:tt41Fade var(--dur-item) var(--ease-out) both}
+@media(prefers-reduced-motion:reduce){
+  .tt-skel::after{animation:none!important}
+  #teacherList.is-skel-loaded > .teacher,#teacherPane.is-skel-loaded > *{animation:none!important}
+}
+/* 13-3. 1024~1279 — 레일 옆 남은 폭이 620px뿐이다. 카드 두 열은 그대로 쓰되
+   안쪽 여백·아바타를 한 단 줄여 이름 칸을 넓힌다(지역이 한 줄에 들어오게) */
+@media(min-width:1024px) and (max-width:1279px){
+  #teacherList .teacher{padding:14px}
+  #teacherList .teacher .t-top{gap:10px}
+  #teacherList .teacher .t-avatar{width:48px;height:48px;flex:0 0 48px;border-radius:16px}
+  #teacherList .teacher .t-name{font-size:var(--fs-16)}
+  #teacherList .teacher .t-foot{gap:6px;margin-top:12px;padding-top:12px}
+}
+/* 13-4. 지역 줄: 아이콘만 홀로 줄바꿈되지 않게 한 줄에 붙이고 글자만 접는다 */
+.t-region{flex-wrap:nowrap;align-items:flex-start}
+.t-region > span{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
+.t-region .ic{flex:0 0 auto;margin-top:3px}
 </style>
-</head>
 <body>
 <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.6 12 4l8 6.6V20a1 1 0 0 1-1 1h-4.6v-6.2H9.6V21H5a1 1 0 0 1-1-1z"/></symbol>
@@ -3539,7 +3620,20 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       </div><!-- /tt46-col (레일) -->
       <div class="tt46-col" id="teacherMainCol">
       <div class="query-bar" id="teacherQueryBar"></div>
-      <div id="teacherList"></div>
+      <!-- v47 · 1280px 3칸에서만 보이는 키보드 안내(좁은 화면은 손가락이 기본이라 CSS로 숨긴다) -->
+      <p class="kbd-hint" id="teacherKbdHint">
+        <kbd>↑</kbd><kbd>↓</kbd> 카드 이동
+        <span class="kbd-dot">·</span> <kbd>Enter</kbd> 프로필 열기
+        <span class="kbd-dot">·</span> <kbd>Esc</kbd> 닫기
+      </p>
+      <p class="sr-only" id="teacherNavLive" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div id="teacherList" aria-busy="false" aria-keyshortcuts="ArrowUp ArrowDown Home End Enter"></div>
+      <!-- v47 · 1280px에서 프로필을 아직 고르지 않았을 때 — 빈 허공 대신 무엇을 하는 자리인지 알린다 -->
+      <aside class="teacher-pane-empty" id="teacherPaneEmpty" aria-hidden="true">
+        <span class="tpe-ic"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></span>
+        <p class="tpe-title">선생님을 고르면 프로필이 여기에 열려요</p>
+        <p class="tpe-sub">카드를 누르거나 ↑↓로 옮기고 Enter를 누르면 바로 볼 수 있어요.</p>
+      </aside>
       <!-- v46 · 1280px 이상: 카드를 누르면 프로필이 이 열에 열린다(모바일·태블릿은 시트 그대로) -->
       <aside class="teacher-pane" id="teacherPane" aria-label="선생님 프로필" hidden></aside>
       <!-- v22 · 내 주변(동 단위): 시·도 → 시·군·구 → 동네 클러스터 요약 카드 -->
@@ -4682,6 +4776,29 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
           <p class="fine" id="adminBackupResult" role="status" aria-live="polite" style="margin:10px 0 0"></p>
           <div class="mt-10" id="adminBackupBusy" hidden></div>
           <div class="mt-10" id="adminBackupError"></div>
+        </div>
+      </section>
+
+      <!-- v47 · 로딩 표시(스켈레톤) 시연 — 서버 연결 전에 '불러오는 중' 화면을 눈으로 확인한다.
+           기본은 꺼짐: 꺼 두면 지금까지처럼 데이터가 바로 뜨고, 켜면 목록·프로필이 같은 자리에 채워진다. -->
+      <section class="sec mt-20" id="adminSkelSec" aria-label="로딩 표시 시연">
+        <div class="sec-head mb-10">
+          <div>
+            <h2 class="sec-title">로딩 표시 시연</h2>
+            <p class="sec-sub" id="adminSkelSub">서버에서 목록을 받아오는 단계를 대비한 화면이에요. 켜 두면 선생님 목록·프로필을 열 때 잠깐 스켈레톤이 보이고, 실제 내용이 같은 자리에 채워져요. 설정은 이 기기에만 저장돼요.</p>
+          </div>
+          <span class="tag-example">시연용</span>
+        </div>
+        <div class="admin-card" id="adminSkelCard">
+          <div class="segmented" id="adminSkelToggle" role="radiogroup" aria-label="로딩 표시 시연">
+            <button type="button" role="radio" data-skel-opt="off" aria-checked="true">끄기</button>
+            <button type="button" role="radio" data-skel-opt="on" aria-checked="false">켜기</button>
+          </div>
+          <p class="fine" id="adminSkelState" role="status" aria-live="polite" style="margin:10px 0 0">지금은 로딩 표시를 쓰지 않아요. 데이터가 준비되면 바로 보여요.</p>
+          <p class="fine" id="adminSkelHeight" style="margin:6px 0 0">-</p>
+          <div class="mt-12" style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="btn btn-outline btn-sm" type="button" id="adminSkelPeek">선생님 목록에서 보기</button>
+          </div>
         </div>
       </section>
 
@@ -11970,40 +12087,255 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     bar.innerHTML = chips;
   }
 
+  /* ===================================================================
+     v47 · 스켈레톤 로딩(서버 단계 대비)
+     ─ 지금은 데이터가 이 기기에 있어 화면이 즉시 뜬다. 서버(L1)에서 목록·프로필을
+       받아오는 단계가 되면 '불러오는 중' 화면이 필요하다. 그때 그대로 쓰도록
+       실제 카드와 **같은 높이를 먼저 예약하는** 스켈레톤을 만들어 둔다(흔들림 0).
+     ─ 켜는 법: 관리자 > 로딩 표시 시연(이 기기에 저장) 또는 주소에 ?skel=1
+       꺼져 있으면(기본) 지금까지와 똑같이 즉시 뜬다.
+     =================================================================== */
+  var TtSkeleton = (function () {
+    var KEY = 'ttokttok_skel_v1';
+    /* 시연 지연 — 서버 응답 왕복을 흉내낸다. 검증에서는 ?skelms=4000 처럼 길게 잡는다 */
+    var delayMs = (function () {
+      var m = null;
+      try { m = /[?&]skelms=(\d+)/.exec(window.location.search || ''); } catch (e) { m = null; }
+      var v = m ? parseInt(m[1], 10) : 460;
+      if (!isFinite(v) || v <= 0) v = 460;
+      return Math.max(80, Math.min(8000, v));
+    })();
+    var heights = {};             /* kind → 실제 카드 높이(px) */
+    var counts = {};              /* kind → 마지막 결과 개수 */
+    var enabled = (function () {
+      var q = null;
+      try { q = /[?&]skel=([01])/.exec(window.location.search || ''); } catch (e) { q = null; }
+      if (q) return q[1] === '1';
+      try { return SafeStorage.getItem(KEY) === '1'; } catch (e) { return false; }
+    })();
+
+    function bar(w, h, extra) {
+      return '<span class="tt-skel sk-bar" style="width:' + w + ';height:' + h + 'px' +
+        (extra ? ';' + extra : '') + '"></span>';
+    }
+
+    /* 카드 한 장 — 실제 .teacher와 같은 그릇·같은 여백을 쓴다(높이는 --tt-skel-h로 예약) */
+    function cardHtml() {
+      return '<article class="teacher is-skel" aria-hidden="true">' +
+        '<div class="t-top">' +
+          '<span class="tt-skel sk-av"></span>' +
+          '<div class="sk-stack">' + bar('42%', 15) + bar('64%', 11) + bar('48%', 11) + '</div>' +
+          bar('44px', 13, 'flex:0 0 auto') +
+        '</div>' +
+        '<div class="sk-tags"><span class="tt-skel sk-chip"></span><span class="tt-skel sk-chip"></span><span class="tt-skel sk-chip"></span></div>' +
+        '<div class="t-foot">' + bar('92px', 12) + bar('104px', 11, 'margin-left:auto') + '</div>' +
+      '</article>';
+    }
+
+    function paneHtml(name) {
+      return '<div class="pane-skel" aria-hidden="true">' +
+        '<div class="sk-row"><span class="tt-skel sk-av"></span>' +
+          '<div class="sk-stack">' + bar('56%', 17) + bar('74%', 11) + '</div></div>' +
+        '<div class="sk-grid">' + bar('100%', 34, 'grid-column:1/-1') + '</div>' +
+        bar('100%', 12) + bar('92%', 12) + bar('86%', 12) +
+        '<div class="sk-grid">' + bar('100%', 56) + bar('100%', 56) + '</div>' +
+        bar('94%', 12) + bar('78%', 12) +
+      '</div>';
+    }
+
+    function announce(msg) {
+      var el = $('#teacherNavLive');
+      if (!el) return;
+      el.textContent = '';
+      setTimeout(function () { el.textContent = msg; }, 30);
+    }
+
+    /* 목록을 스켈레톤으로 — aria-busy를 켜고, 기억한 카드 높이를 예약한다 */
+    function paintList(list, count) {
+      if (!list) return;
+      var n = count > 0 ? count : (counts.teachers || 4);
+      if (heights.teachers) list.style.setProperty('--tt-skel-h', heights.teachers + 'px');
+      list.innerHTML = new Array(n + 1).join(cardHtml());
+      list.setAttribute('aria-busy', 'true');
+      announce('선생님 목록을 불러오는 중' + (n > 1 ? ' · ' + n + '명' : '') + '이에요.');
+    }
+
+    function paintPane(pane, name) {
+      if (!pane) return;
+      pane.innerHTML = paneHtml(name);
+      pane.hidden = false;
+      pane.setAttribute('aria-busy', 'true');
+      pane.setAttribute('aria-label', name + ' 선생님 프로필 불러오는 중');
+      var col = $('#teacherMainCol');
+      if (col) col.classList.add('has-pane');
+    }
+
+    function remember(kind, count, height) {
+      if (count > 0) counts[kind] = count;
+      if (height > 0) heights[kind] = Math.round(height);
+      renderToggle();
+    }
+
+    function markLoaded(el) {
+      if (!el) return;
+      el.setAttribute('aria-busy', 'false');
+      el.classList.add('is-skel-loaded');
+      setTimeout(function () { try { el.classList.remove('is-skel-loaded'); } catch (e) {} }, 320);
+    }
+
+    function renderToggle() {
+      var box = $('#adminSkelToggle');
+      if (box) {
+        Array.prototype.forEach.call(box.querySelectorAll('[data-skel-opt]'), function (b) {
+          var on = (b.getAttribute('data-skel-opt') === 'on') === enabled;
+          b.classList.toggle('is-on', on);
+          b.setAttribute('aria-checked', on ? 'true' : 'false');
+        });
+      }
+      var state = $('#adminSkelState');
+      if (state) {
+        state.textContent = enabled
+          ? '지금은 켜져 있어요. 선생님 목록·프로필을 열 때 ' + delayMs + 'ms 동안 스켈레톤이 보이고, 같은 자리에 내용이 채워져요.'
+          : '지금은 로딩 표시를 쓰지 않아요. 데이터가 준비되면 바로 보여요.';
+      }
+      var h = $('#adminSkelHeight');
+      if (h) {
+        h.textContent = heights.teachers
+          ? '카드 높이 ' + heights.teachers + 'px · 마지막 결과 ' + (counts.teachers || 0) + '명을 기준으로 자리를 잡아요.'
+          : '아직 잰 카드 높이가 없어 기본 높이(휴대폰 190 · 넓은 화면 197px)로 그려요.';
+      }
+      try {
+        window.__ttokttokSkeleton = {
+          version: 'v47', on: enabled, delay: delayMs, key: KEY,
+          cardHeight: heights.teachers || null, count: counts.teachers || 0
+        };
+      } catch (e) {}
+      /* 검증·시연용 조작 훅(화면 동작은 위 상태만 본다) */
+      try {
+        window.__ttSkeleton = {
+          set: set,
+          on: function () { return enabled; },
+          delay: function (ms) {
+            if (typeof ms === 'number' && ms > 0) delayMs = Math.max(80, Math.min(8000, ms));
+            return delayMs;
+          },
+          render: function () { renderTeachers(); },
+          /* jsdom은 레이아웃이 없어 높이가 0이다 — 검증에서 높이를 직접 알려 준다 */
+          measure: function (h) { remember('teachers', counts.teachers || 0, h); return heights.teachers || null; },
+          state: function () { return { on: enabled, delay: delayMs, height: heights.teachers || null, count: counts.teachers || 0 }; }
+        };
+      } catch (e) {}
+    }
+
+    function set(flag, opts) {
+      enabled = !!flag;
+      try { SafeStorage.setItem(KEY, enabled ? '1' : '0'); } catch (e) {}
+      renderToggle();
+      if (!(opts && opts.silent)) {
+        toast(enabled
+          ? '로딩 표시 시연을 켰어요. 선생님 목록·프로필을 열 때 스켈레톤이 보여요.'
+          : '로딩 표시 시연을 껐어요. 데이터가 준비되면 바로 보여요.');
+      }
+      return enabled;
+    }
+
+    return {
+      on: function () { return enabled; },
+      set: set,
+      paintList: paintList,
+      paintPane: paintPane,
+      remember: remember,
+      markLoaded: markLoaded,
+      delay: function (ms) {
+        if (typeof ms === 'number' && ms > 0) delayMs = Math.max(80, Math.min(8000, ms));
+        return delayMs;
+      },      renderToggle: renderToggle,
+      counts: function () { return counts; }
+    };
+  })();
+
+  /* v47 · 로딩 표시 시연 스위치(관리자) — 끄면 지금까지와 똑같이 즉시 뜬다 */
+  (function initSkeletonSwitch() {
+    var box = $('#adminSkelToggle');
+    if (box) {
+      box.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-skel-opt]');
+        if (!b) return;
+        TtSkeleton.set(b.getAttribute('data-skel-opt') === 'on');
+      });
+    }
+    var peek = $('#adminSkelPeek');
+    if (peek) {
+      peek.addEventListener('click', function () {
+        showTab('teachers');
+        if (!TtSkeleton.on()) toast('먼저 로딩 표시 시연을 켜면 스켈레톤이 보여요.');
+      });
+    }
+    TtSkeleton.renderToggle();
+  })();
+
+  /* v47 · 가운뎃점(·)이 줄 끝에 홀로 남지 않게 — 점 뒤를 붙여 다음 어절과 함께 내려간다 */
+  function dotText(v) {
+    return esc(String(v == null ? '' : v)).replace(/ \u00B7 /g, ' \u00B7\u00A0');
+  }
+
+  function teacherCardHtml(t) {
+    var trust = teacherTrustOf(t.id);
+    var tagList = trust.topTags.map(function (x) { return x.label; });
+    t.tags.forEach(function (x) { if (tagList.indexOf(x) === -1) tagList.push(x); });
+    return '' +
+      '<article class="teacher' + (isFav(t.id) ? ' is-fav' : '') + '" data-teacher="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
+        heartHtml(t.id) +
+        '<div class="t-top">' +
+          '<div class="t-avatar" style="' + avaStyle(t.id) + '" aria-hidden="true">' + avaSvg(t.id) + '</div>' +
+          '<div style="min-width:0">' +
+            '<p class="t-name">' + esc(t.name) + teacherBadgeHtml(t) + '</p>' +
+            '<p class="t-meta">' + dotText(t.meta) + '</p>' +
+            '<p class="t-region">' + icon('map-pin') + '<span>' + dotText(t.regions) + ' 방문</span></p>' +
+          '</div>' +
+          '<div class="rating"><b>' + icon('star', 'ic-fill') + t.rating.toFixed(1) + '</b><span>후기 ' + t.reviews + '</span></div>' +
+        '</div>' +
+        '<div class="t-tags">' + tagList.slice(0, 3).map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>' +
+        '<div class="t-foot">' +
+          '<span class="t-more">프로필 · 후기 보기 ' + icon('chev-r') + '</span>' +
+          '<span class="t-avail">1회 60분 · 이동비 없음</span>' +
+        '</div>' +
+      '</article>';
+  }
+
+  function teacherRowsHtml(rows) {
+    var html = rows.map(teacherCardHtml).join('');
+    if (!html) html = favOnly ? emptyFavHtml() : TtUI.emptyHtml('teachers-filter');
+    return html;
+  }
+
+  function paintTeacherRows(list, rows, fromSkeleton) {
+    list.innerHTML = teacherRowsHtml(rows);
+    renderTeacherQueryBar();
+    syncFavUi();
+    /* v47 · 다음 스켈레톤이 같은 높이를 예약할 수 있게 실제 카드 높이를 잊지 않는다.
+       카드마다 몇 px씩 다르므로 '한 장의 높이'가 아니라 '평균 높이'를 기억한다. */
+    var cards = list.querySelectorAll('.teacher');
+    var sum = 0;
+    for (var ci = 0; ci < cards.length; ci++) sum += cards[ci].getBoundingClientRect().height;
+    TtSkeleton.remember('teachers', rows.length, cards.length ? sum / cards.length : 0);
+    if (fromSkeleton) TtSkeleton.markLoaded(list);
+    else list.setAttribute('aria-busy', 'false');
+  }
+
+  var teacherSkelTimer = null;
   function renderTeachers() {
     var list = $('#teacherList');
     if (!list) return;
     var rows = filteredTeachers();
-    var html = rows.map(function (t) {
-      var d = teacherDetails[t.id] || {};
-      var trust = teacherTrustOf(t.id);
-      var tagList = trust.topTags.map(function (x) { return x.label; });
-      t.tags.forEach(function (x) { if (tagList.indexOf(x) === -1) tagList.push(x); });
-      return '' +
-        '<article class="teacher' + (isFav(t.id) ? ' is-fav' : '') + '" data-teacher="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
-          heartHtml(t.id) +
-          '<div class="t-top">' +
-            '<div class="t-avatar" style="' + avaStyle(t.id) + '" aria-hidden="true">' + avaSvg(t.id) + '</div>' +
-            '<div style="min-width:0">' +
-              '<p class="t-name">' + esc(t.name) + teacherBadgeHtml(t) + '</p>' +
-              '<p class="t-meta">' + esc(t.meta) + '</p>' +
-              '<p class="t-region">' + icon('map-pin') + esc(t.regions) + ' 방문</p>' +
-            '</div>' +
-            '<div class="rating"><b>' + icon('star', 'ic-fill') + t.rating.toFixed(1) + '</b><span>후기 ' + t.reviews + '</span></div>' +
-          '</div>' +
-          '<div class="t-tags">' + tagList.slice(0, 3).map(function (x) { return '<span class="tag">' + esc(x) + '</span>'; }).join('') + '</div>' +
-          '<div class="t-foot">' +
-            '<span class="t-more">프로필 · 후기 보기 ' + icon('chev-r') + '</span>' +
-            '<span class="t-avail">1회 60분 · 이동비 없음</span>' +
-          '</div>' +
-        '</article>';
-    }).join('');
-    if (!html) {
-      html = favOnly ? emptyFavHtml() : TtUI.emptyHtml('teachers-filter');
-    }
-    list.innerHTML = html;
-    renderTeacherQueryBar();
-    syncFavUi();
+    if (teacherSkelTimer) { clearTimeout(teacherSkelTimer); teacherSkelTimer = null; }
+    if (!TtSkeleton.on() || !rows.length) { paintTeacherRows(list, rows, false); return; }
+    /* 시연 모드: 같은 자리·같은 높이로 스켈레톤을 그리고, 응답이 온 것처럼 채운다 */
+    TtSkeleton.paintList(list, rows.length);
+    teacherSkelTimer = setTimeout(function () {
+      teacherSkelTimer = null;
+      paintTeacherRows(list, rows, true);
+    }, TtSkeleton.delay());
   }
 
   function renderHomeTeachers() {
@@ -12018,7 +12350,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         '<div class="h-body">' +
           '<p class="h-name">' + esc(t.name) + teacherBadgeHtml(t) + '</p>' +
           '<p class="h-meta">' + esc(t.license) + ' · 경력 ' + t.years + '년</p>' +
-          '<p class="t-region">' + icon('map-pin') + esc(t.regions) + ' 방문</p>' +
+          '<p class="t-region">' + icon('map-pin') + '<span>' + dotText(t.regions) + ' 방문</span></p>' +
           '<div class="h-tags">' + (hTrust.topTags.length ? hTrust.topTags : t.tags).slice(0, 2).map(function (x) { return '<span class="tag">' + esc(x.label || x) + '</span>'; }).join('') + '</div>' +
         '</div>' +
         '<div class="h-rate"><b>' + icon('star', 'ic-fill') + t.rating.toFixed(1) + '</b><span>후기 ' + t.reviews + '</span></div>' +
@@ -12363,22 +12695,47 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
       '</div>';
 
     lastTeacherHtml = sheetHtml;
-    /* v46 · 1280px 이상은 오른쪽 상세 열에 열린다(시트 대신) — 모달을 겹쳐 띄우지 않는다. */
+    /* v46 · 1280px 이상은 오른쪽 상세 열에 열린다(시트 대신) — 모달을 겹쳐 띄우지 않는다.
+       v47 · 시연 모드에서는 열 높이 모양의 스켈레톤을 먼저 보여주고 같은 자리에 채운다. */
     if (deskWide() && $('#teacherPane')) {
       var pane = $('#teacherPane');
-      pane.innerHTML = sheetHtml +
-        '<div class="pane-cta">' +
-          '<button class="btn btn-outline btn-sm" type="button" data-pane-close>닫기</button>' +
-          '<button class="btn btn-navy btn-sm" type="button" data-pane-open>전체 프로필 보기</button>' +
-        '</div>';
-      pane.hidden = false;
-      pane.setAttribute('aria-label', t.name + ' 선생님 프로필');
       selectTeacherCard(id);
+      if (teacherPaneSkelTimer) { clearTimeout(teacherPaneSkelTimer); teacherPaneSkelTimer = null; }
+      if (TtSkeleton.on()) {
+        TtSkeleton.paintPane(pane, t.name);
+        teacherPaneSkelTimer = setTimeout(function () {
+          teacherPaneSkelTimer = null;
+          fillTeacherPane(pane, sheetHtml, t.name);
+        }, TtSkeleton.delay());
+        return;
+      }
+      fillTeacherPane(pane, sheetHtml, t.name);
       return;
     }
     $('#teacherSheetBody').innerHTML = sheetHtml;
     $('#teacherSheet').classList.add('is-open');
     syncBodyState();
+  }
+
+  /* 상세 열 본문 — 열 스크롤은 항상 위에서 시작하고, 위/아래 버튼은 기존 시트로 잇는다 */
+  var teacherPaneSkelTimer = null;
+  function setTeacherPaneOn(on) {
+    var col = $('#teacherMainCol');
+    if (col) col.classList.toggle('has-pane', !!on);
+  }
+  function fillTeacherPane(pane, sheetHtml, name) {
+    if (!pane) return;
+    pane.innerHTML = sheetHtml +
+      '<div class="pane-cta">' +
+        '<button class="btn btn-outline btn-sm" type="button" data-pane-close>닫기</button>' +
+        '<button class="btn btn-navy btn-sm" type="button" data-pane-open>전체 프로필 보기</button>' +
+      '</div>';
+    pane.hidden = false;
+    pane.setAttribute('aria-busy', 'false');
+    pane.setAttribute('aria-label', name + ' 선생님 프로필');
+    setTeacherPaneOn(true);
+    try { pane.scrollTop = 0; } catch (e) {}
+    TtSkeleton.markLoaded(pane);
   }
 
   /* 넓은 화면인가(선생님 상세 열을 쓸지) */
@@ -12397,10 +12754,82 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
   function closeTeacherPane() {
     var pane = $('#teacherPane');
     if (!pane) return;
+    if (teacherPaneSkelTimer) { clearTimeout(teacherPaneSkelTimer); teacherPaneSkelTimer = null; }
     pane.hidden = true;
     pane.innerHTML = '';
+    pane.removeAttribute('aria-busy');
+    setTeacherPaneOn(false);
     selectTeacherCard('');
   }
+
+  /* ===================================================================
+     v47 · 목록 키보드 이동(1280px 3칸)
+     ─ ↑/↓(←/→)·Home/End로 카드 사이를 옮기고, 오른쪽 프로필 열이 따라 바뀐다.
+     ─ Enter/Space는 프로필 열을 열고 초점을 그 안으로 옮긴다. Esc는 열을 닫고
+       고른 카드로 돌아온다. 좁은 화면에서는 열이 없으니 시트가 열린다.
+     ─ 이동 결과는 화면 안 낭독 영역(#teacherNavLive)으로 '3/8'까지 알린다.
+     =================================================================== */
+  function teacherCards() {
+    var list = $('#teacherList');
+    return list ? Array.prototype.slice.call(list.querySelectorAll('.teacher:not(.is-skel)')) : [];
+  }
+  function teacherNavAnnounce(msg) {
+    var el = $('#teacherNavLive');
+    if (!el) return;
+    el.textContent = '';
+    setTimeout(function () { el.textContent = msg; }, 30);
+  }
+  function focusTeacherCard(card) {
+    if (!card) return false;
+    try { card.focus(); } catch (e) {}
+    try { card.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+    return true;
+  }
+  function teacherNavKeys(e) {
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    var pane = $('#teacherPane');
+    /* 프로필 열 안에서 Esc → 열을 닫고 고른 카드로 초점을 되돌린다.
+       다른 시트·모달이 열려 있으면 그쪽이 먼저 닫히도록 여기서는 손을 뗐다. */
+    if (e.key === 'Escape' && pane && !pane.hidden) {
+      if (typeof topOpenDialog === 'function' && topOpenDialog()) return;
+      var back = $('#teacherList .teacher.is-selected') || $('#teacherList .teacher');
+      closeTeacherPane();
+      focusTeacherCard(back);
+      teacherNavAnnounce('프로필을 닫았어요.');
+      e.preventDefault();
+      return;
+    }
+    var list = $('#teacherList');
+    if (!list || !e.target || !e.target.closest) return;
+    var card = e.target.closest('.teacher');
+    if (!card || !list.contains(card) || card.classList.contains('is-skel')) return;
+    var cards = teacherCards();
+    var i = cards.indexOf(card);
+    if (i < 0) return;
+    var next = null;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = cards[Math.min(cards.length - 1, i + 1)];
+    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next = cards[Math.max(0, i - 1)];
+    else if (e.key === 'Home') next = cards[0];
+    else if (e.key === 'End') next = cards[cards.length - 1];
+    else if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault();
+      var id = card.getAttribute('data-teacher');
+      openTeacherSheet(id);
+      if (deskWide() && pane && !pane.hidden) {
+        var inside = pane.querySelector('[data-pane-open]') || pane.querySelector('.pane-cta .btn');
+        if (inside) { try { inside.focus(); } catch (err) {} }
+        teacherNavAnnounce(teacherName(id).replace(/\s*선생님$/, '') + ' 선생님 프로필을 열었어요. Esc를 누르면 목록으로 돌아와요.');
+      }
+      return;
+    } else return;
+    e.preventDefault();
+    if (!next || next === card) return;
+    focusTeacherCard(next);
+    var nextId = next.getAttribute('data-teacher');
+    if (deskWide()) openTeacherSheet(nextId);
+    teacherNavAnnounce(teacherName(nextId).replace(/\s*선생님$/, '') + ' 선생님, ' + (cards.indexOf(next) + 1) + '/' + cards.length);
+  }
+  document.addEventListener('keydown', teacherNavKeys);
 
   function closeTeacherSheet() {
     var sheet = $('#teacherSheet');

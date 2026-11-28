@@ -1,0 +1,40 @@
+import os
+os.environ["LD_LIBRARY_PATH"] = "/workspace/.aptwork/rootfs/usr/lib/x86_64-linux-gnu:/workspace/.aptwork/rootfs/lib/x86_64-linux-gnu"
+from playwright.sync_api import sync_playwright
+
+URL = "https://lcarisma-ctrl.github.io/-/?v=5"
+with sync_playwright() as p:
+    b = p.chromium.launch(args=["--no-sandbox"])
+    ctx = b.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True, has_touch=True, locale="ko-KR")
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)))
+    page.goto(URL, wait_until="load")
+    page.wait_for_function("window.__ttokttokBooted === true")
+    page.tap("#gateCta")
+    page.wait_for_timeout(500)
+    page.tap('[data-login="customer"]')
+    page.wait_for_timeout(1200)
+    home = page.inner_text("#screen-home")
+    print("home price?", any(x in home for x in ["76,000", "85,000", "7만원", "10%"]))
+    print("home teachers:", page.eval_on_selector_all("#homeTeacherList .h-teacher", "e => e.length"))
+    page.tap('.tabbar[data-mode="customer"] .tabbtn[data-tab="teachers"]')
+    page.wait_for_timeout(400)
+    tl = page.inner_text("#teacherList")
+    print("teacher card price?", any(x in tl for x in ["76,000원", "/회", "회당"]))
+    page.tap("#teacherList .teacher")
+    page.wait_for_timeout(500)
+    print("sheet price?", "/회" in page.inner_text("#teacherSheetBody"))
+    page.tap("[data-sheet-close]")
+    page.tap('.tabbar[data-mode="customer"] .tabbtn[data-tab="booking"]')
+    page.wait_for_timeout(300)
+    page.tap('[data-next="1"]')
+    page.select_option("#bookProvince", "서울"); page.select_option("#bookDistrict", "강남구")
+    page.fill("#bookAddress", "대치동 123-4"); page.tap('#bookSyms [data-val="뇌졸중·편마비"]')
+    page.tap('[data-next="1"]'); page.wait_for_timeout(250)
+    page.tap("#bookDates .date-chip"); page.tap("#bookSlots .slot:not([disabled])")
+    page.tap('[data-next="2"]'); page.wait_for_timeout(300)
+    page.tap('#passList [data-pass="p8"]'); page.wait_for_timeout(400)
+    print("pay total:", page.inner_text("#bookTotalAmount"), "|", page.inner_text("#bookTotalMeta"))
+    print("js errors:", errs)
+    b.close()

@@ -1,0 +1,15 @@
+{
+  "name": "ttokttok-app-tests",
+  "version": "1.0.0",
+  "description": "똑똑쌤 앱 jsdom 자동 검증",
+  "main": "app.test.js",
+  "scripts": {
+    "test": "node app.test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "jsdom": "^25.0.1"
+  }
+}
