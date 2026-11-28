@@ -4,7 +4,7 @@
   "description": "똑똑쌤 앱 jsdom 자동 검증",
   "main": "app.test.js",
   "scripts": {
-    "test": "node app.test.js"
+    "test": "node run_all.js"
   },
   "keywords": [],
   "author": "",
