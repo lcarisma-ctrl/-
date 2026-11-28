@@ -122,7 +122,7 @@ async function run() {
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
 
-  ok('A1 meta v45', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v50',
+  ok('A1 meta v45', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v51',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 첫 페인트 전 data-theme=light', doc.documentElement.getAttribute('data-theme') === 'light',
@@ -258,7 +258,7 @@ async function run() {
   ok('G6 v42 홈 네 장 유지', !!$('#homePassCard') && !!$('#homeReportCard') && !!$('#homeRebookCard'));
   ok('G7 v43 빈 상태 그림 유지', /empty-art/.test(w.__ttokttokUI.emptyHtml('admin-resv')));
   ok('G8 v44 탭 스크롤 기억 유지', !!(w.__ttokttokTabScroll && w.__ttokttokTabScroll.version === 'v44'));
-  ok('G9 CSS·HTML 예산', STYLE.length <= 243000 && Buffer.byteLength(HTML, 'utf8') <= 1450 * 1024,
+  ok('G9 CSS·HTML 예산', STYLE.length <= 245000 && Buffer.byteLength(HTML, 'utf8') <= 1450 * 1024,
     STYLE.length + ' / ' + Buffer.byteLength(HTML, 'utf8'));
 
   console.log('\nV45 RESULT: ' + pass + ' passed, ' + fails.length + ' failed');

@@ -11,7 +11,7 @@ v47에서 이 파일을 `.github/workflows/qa.yml`로 **저장소에 등록했�
 | 경로 | `.github/workflows/qa.yml` (이 폴더의 `qa.yml`과 **같은 내용**, sha `202bdac8`) |
 | 상태 | `active` · 워크플로 id `433349940` |
 | 도는 때 | `main` 푸시 · PR · 수동 실행(`workflow_dispatch`) |
-| 최근 실행 | [#46126826906](https://github.com/lcarisma-ctrl/-/actions/runs/46126826906) — v50 `4e71a92`(2026-11-28 17:39 KST) · success 10분 58초 |
+| 최근 실행 | v51 실행 예정 — v50은 [#46126826906](https://github.com/lcarisma-ctrl/-/actions/runs/46126826906) `4e71a92`(2026-11-28 17:39 KST) · success 10분 58초 |
 | 단계 | 체크아웃 → Node 20 → Python 3.12 → jsdom 의존성 → Chromium → **빌드** → **jsdom** → **대비** → 결과 요약 |
 | 실패할 때 | 빨간 X로 멈춥니다. 대비가 0건이 아니면 다음 빌드에서 바로 드러납니다 |
 
@@ -21,12 +21,19 @@ v47에서 이 파일을 `.github/workflows/qa.yml`로 **저장소에 등록했�
 
 ```bash
 python3 tests/qa_gate.py --only build      # 템플릿 → index.html + app-version 일치
-python3 tests/qa_gate.py --only jsdom      # app.test.js(part 1·2) + v32~v49
+python3 tests/qa_gate.py --only jsdom      # app.test.js(part 1·2) + v32~v51
 python3 tests/qa_gate.py --only contrast   # 라이트·다크 × 375·768·1024·1280
 ```
 
-- `e2e_chromium.py`(2,299검증)·`qa_v24.py`(777검증)는 Actions 시간이 커서 **로컬 전용**입니다.
-- 로컬에서 전부 돌리려면 `python3 tests/qa_gate.py`(e2e·qa 포함, 10분 이상).
+- `e2e_chromium.py`(2,499검증)·`qa_v24.py`(793검증)는 Actions 시간이 커서 **로컬 전용**입니다.
+- 로컬에서 전부 돌리려면 `python3 tests/qa_gate.py`(e2e·qa·print·format 포함, 20분 안팎).
+- v51에서 **`print`**(인쇄 줄 맞춤 + 실제 PDF 백지 감사)와 **`format`**(날짜·시간·금액·전화 표기 전수 스캔) 단계가 늘었습니다.
+  CI는 시간 때문에 build·jsdom·contrast만 돕니다(워크플로 파일은 수정하지 않음). 배포 전에는 이것도 한 번 돌립니다.
+
+```bash
+python3 tests/qa_gate.py --only print      # print_align_v50 + print_pdf_v51
+python3 tests/qa_gate.py --only format     # format_scan_v51 --gate
+```
 
 ## 이 파일을 고칠 때
 

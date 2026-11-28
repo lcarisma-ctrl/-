@@ -90,7 +90,7 @@ async function run() {
   const w = A.window, doc = A.doc;
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
-  ok('A1 meta v49', ($('meta[name="app-version"]') || {}).content === 'v50', ($('meta[name="app-version"]') || {}).content);
+  ok('A1 meta v49', ($('meta[name="app-version"]') || {}).content === 'v51', ($('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 v48 로빙·인쇄 훅 유지(v50)', !!w.__ttokttokRoving && w.__ttokttokRoving.version === 'v49' &&
     !!w.__ttokttokPrint && w.__ttokttokPrint.version === 'v50' && typeof w.__ttokttokPrint.runner === 'function');

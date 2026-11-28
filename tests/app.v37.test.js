@@ -102,7 +102,7 @@ async function run() {
   const A = makeDom();
   await sleep(520);
   const dA = A.doc, WA = A.window, M = WA.__ttokttokModel, I = WA.__ttokttokInput;
-  ok('CA16 부트·훅 노출(meta v37, qaVersion v34 유지)', dA.querySelector('meta[name=app-version]').content === 'v50' &&
+  ok('CA16 부트·훅 노출(meta v37, qaVersion v34 유지)', dA.querySelector('meta[name=app-version]').content === 'v51' &&
     !!I && I.version === 'v37' && M.qaVersion === 'v34' && M.a11y.version === 'v34' && M.inputVersion === 'v37');
   ok('CA17 부트 JS 오류 0', A.errors.length === 0, A.errors.slice(0, 3).join(' | '));
   ok('CA18 규칙 입력란 11개가 바인딩됨', M.inputState().bound === 11 && M.inputState().fields === 11, JSON.stringify(M.inputState()));

@@ -1013,7 +1013,7 @@ def run_v18_flow(p, storage_blocked=False):
     tag = "storage-blocked: " if storage_blocked else ""
 
     # ── 모델·지역 마스터
-    ok(tag + "현재 앱 버전 메타(v19 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "현재 앱 버전 메타(v19 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v18", "v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v18 매칭 엔진 노출", page.evaluate("() => window.__ttokttokModel.scalingVersion") == "v18")
     counts = page.evaluate("() => window.__ttokttokModel.regionMasterCounts()")
     ok(tag + "v18 지역 마스터 3단계(17/53/42)",
@@ -1145,7 +1145,7 @@ def run_v19_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v19 앱 버전 메타(v19 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v19 앱 버전 메타(v19 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v19", "v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v19 운영 도구 노출(opsVersion)", page.evaluate("() => window.__ttokttokModel.opsVersion") == "v19")
 
     # ── 관리자: 오늘 처리할 일 보드
@@ -1314,7 +1314,7 @@ def run_v20_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v20 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v20 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v20", "v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v20 모델 노출(visitLogVersion)", page.evaluate("() => window.__ttokttokModel.visitLogVersion") == 20)
 
     # ── 보호자: 주간 리포트 + 4주 재평가
@@ -1450,7 +1450,7 @@ def run_v21_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v21 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v21 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v21", "v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v21 정산 규칙 노출(D+3·15일·말일)",
        all(x in page.evaluate("() => window.__ttokttokModel.settlementRuleText") for x in ["D+3", "15일", "말일"]),
        page.evaluate("() => window.__ttokttokModel.settlementRuleText"))
@@ -1523,7 +1523,7 @@ def run_v22_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v22 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v22 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v22", "v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v22 모델 노출(내 주변·사진)",
        page.evaluate("() => window.__ttokttokModel.nearVersion") == "v22" and
        page.evaluate("() => window.__ttokttokModel.photoVersion") == "v22")
@@ -1662,7 +1662,7 @@ def run_v23_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v23 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v23 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v23", "v24", "v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v23 모델 노출(백업 스키마·어댑터)",
        page.evaluate("() => window.__ttokttokModel.backupVersion") == "v23" and
        page.evaluate("() => window.__ttokttokModel.snapshotSchema") == "ttokttok.v23" and
@@ -1798,9 +1798,9 @@ def run_v24_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v25 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v25 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v25 QA 훅 노출", page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50") and
-       page.evaluate("() => window.__ttokttokModel.a11y.version") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+       page.evaluate("() => window.__ttokttokModel.a11y.version") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v24 뷰포트 320px", page.evaluate("() => document.documentElement.clientWidth") == 320)
 
     def overflow(state):
@@ -2011,7 +2011,7 @@ def run_v25_flow(p, storage_blocked=False):
     page.wait_for_function("window.__ttokttokBooted === true", timeout=8000)
     tag = "storage-blocked: " if storage_blocked else ""
 
-    ok(tag + "v25 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v25 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v25", "v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v25 요약 모델 노출(guardianVersion·기간 28일)",
        page.evaluate("() => window.__ttokttokModel.guardianVersion") == "v25" and
        page.evaluate("() => window.__ttokttokModel.guardianReportDays") == 28)
@@ -2172,7 +2172,7 @@ def run_v26_flow(p, storage_blocked=False):
         m = page.evaluate("""() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth})""")
         return m["sw"] <= m["cw"] + 1, "%s: %d/%d" % (state, m["sw"], m["cw"])
 
-    ok(tag + "v26 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v26 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v26", "v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v26 명세서 모델 노출(statementVersion·3.3%)",
        page.evaluate("() => window.__ttokttokModel.statementVersion") == "v26" and
        abs(page.evaluate("() => window.__ttokttokModel.withholdingRate") - 0.033) < 1e-9)
@@ -2367,7 +2367,7 @@ def run_v27_flow(p, storage_blocked=False):
         m = page.evaluate("""() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth})""")
         return m["sw"] <= m["cw"] + 1, "%s: %d/%d" % (state, m["sw"], m["cw"])
 
-    ok(tag + "v27 앱 버전 메타(v28 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v27 앱 버전 메타(v28 이상)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v27", "v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v27 리마인드 큐 모델 노출(카테고리 4·kind 7)",
        page.evaluate("() => window.__ttokttokModel.reminderQueueVersion") == "v27" and
        page.evaluate("() => window.__ttokttokModel.reminderCategories.length") == 4 and
@@ -2573,11 +2573,11 @@ def run_v28_flow(p, storage_blocked=False):
         m = page.evaluate("""() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth})""")
         return m["sw"] <= m["cw"] + 1, "%s: %d/%d" % (state, m["sw"], m["cw"])
 
-    ok(tag + "v28 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v28 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v28 지표 모델 노출(기간 3·버전)",
        page.evaluate("() => window.__ttokttokModel.adminMetricsVersion") == "v28" and
        page.evaluate("() => window.__ttokttokModel.metricsPeriods().length") == 3 and
-       page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+       page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v28", "v29", "v30", "v31", "v32", "v33", "v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
 
     # ── 계산 계층: 퍼널·매출·지역 갭·SLA를 실브라우저 엔진으로
     calc = page.evaluate("""() => {
@@ -2749,11 +2749,11 @@ def run_v29_flow(p, storage_blocked=False):
         m = page.evaluate("""() => ({sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth})""")
         return m["sw"] <= m["cw"] + 1, "%s: %d/%d" % (state, m["sw"], m["cw"])
 
-    ok(tag + "v29 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v29 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v29 신뢰 모델 노출(태그 5·버전)",
        page.evaluate("() => window.__ttokttokModel.trustVersion") == "v29" and
        page.evaluate("() => window.__ttokttokModel.reviewTagMaster.length") == 5 and
-       page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+       page.evaluate("() => window.__ttokttokModel.qaVersion") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
 
     page.eval_on_selector('[data-login="customer"]', "el => el.click()")
     page.wait_for_timeout(400)
@@ -2936,7 +2936,7 @@ def run_v31_flow(p, storage_blocked=False):
 
     # ── 320px 고객 흐름
     ctx, page, errors = make(320, 568)
-    ok(tag + "v31 320 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+    ok(tag + "v31 320 앱 버전 메타", page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
     ok(tag + "v31 터치 훅 노출(최소 44·간격 8)", page.evaluate("() => !!window.__ttokttokTouch") and
        page.evaluate("() => window.__ttokttokTouch.min") == 44 and
        page.evaluate("() => window.__ttokttokTouch.gapMin") == 8)
@@ -3156,7 +3156,7 @@ def run_v32_flow(p, storage_blocked=False):
         ctx, page, errors = make(w, h, mob)
         vp = str(w)
         ok(tag + "v32 %s 앱 버전 메타" % vp,
-           page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+           page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
         ok(tag + "v32 %s 공통 UI 훅" % vp,
            page.evaluate("() => !!window.__ttokttokV32 && window.__ttokttokV32.version") == "v32")
         ok(tag + "v32 %s 부팅 뒤 빈 상태 감사 위반 0" % vp, audit32(page) == [], audit32(page))
@@ -3365,7 +3365,7 @@ def run_v33_flow(p, storage_blocked=False):
             boot(page)
             vp = str(w)
             ok(tag + "v33 %s 앱 버전 메타" % vp,
-               page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+               page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
             ok(tag + "v33 %s 홈 분기 모델 노출" % vp,
                page.evaluate("() => window.__ttokttokModel.guardianHomeVersion") == "v33" and
                page.evaluate("() => window.__ttokttokModel.guardianHome().stage") == "pre_first")
@@ -3556,7 +3556,7 @@ def run_v34_flow(p, storage_blocked=False):
         boot(page)
         vp = str(w)
         ok(tag + "v34 %s meta v34" % vp,
-           page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50"))
+           page.evaluate("() => document.querySelector('meta[name=app-version]').content") in ("v34", "v36", "v37", "v38", "v39", "v40", "v42", "v43", "v44", "v45", "v46", "v47", "v48", "v49", "v50", "v51"))
         ok(tag + "v34 %s 시작 화면이 최상위 대화상자" % vp, A(page, "topDialog()") == "#entryGate", A(page, "topDialog()"))
         ok(tag + "v34 %s 게이트 열림 → 배경 inert·aria-hidden" % vp,
            page.evaluate("() => { const a = document.getElementById('appRoot'); return a.hasAttribute('inert') && a.getAttribute('aria-hidden') === 'true'; }") and
@@ -3769,7 +3769,7 @@ def run_v35_flow(p, storage_blocked=False):
     page.goto(URL)
     page.wait_for_function("window.__ttokttokBooted === true", timeout=15000)
     page.wait_for_timeout(360)
-    ok(tag + "v35 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v50", "v46")
+    ok(tag + "v35 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v51", "v46")
     ok(tag + "v35 :root 한 곳에 모임", page.evaluate("() => { const m = document.documentElement.innerHTML.match(/<style>([\\s\\S]*?)<\\/style>/); return m ? (m[1].match(/:root\\{/g) || []).length : -1; }") == 1)
     for name, want in [("--text-muted", "#58617A"), ("--text-caption", "#626B7A"), ("--sp-4", "16px"), ("--sp-2h", "10px"),
                        ("--fs-11h", "11.5px"), ("--fs-page", "23px"), ("--r-pill", "999px"), ("--z-sheet", "130"),
@@ -3939,7 +3939,7 @@ def run_v36_flow(p, storage_blocked=False):
     ctx, page, errors = new_page(375, 812, True)
     boot(page)
     hook = page.evaluate("() => window.__ttokttokMotion ? window.__ttokttokMotion.version : ''")
-    ok(tag + "v36 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v50", "v46")
+    ok(tag + "v36 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v51", "v46")
     ok(tag + "v36 마이크로 인터랙션 훅 노출", hook == "v36", hook)
     tok = lambda name: page.evaluate("() => getComputedStyle(document.documentElement).getPropertyValue('%s').trim()" % name)
     ok(tag + "v36 동작 토큰(시트 180ms·누름 110ms·UI 160ms)", (tok("--dur-sheet"), tok("--dur-tap"), tok("--dur-ui")) == ("180ms", "110ms", "160ms"),
@@ -4155,7 +4155,7 @@ def run_v37_flow(p, storage_blocked=False):
     # ── 1) 정적 계약: 입력란 속성·훅 ─────────────────────────────
     ctx, page, errors = new_page(375, 812, True)
     boot(page)
-    ok(tag + "v37 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v50", "v46")
+    ok(tag + "v37 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v51", "v46")
     st = page.evaluate("() => window.__ttokttokModel.inputState()")
     ok(tag + "v37 입력 배선 훅(v37)·규칙 입력란 11개", st and st["version"] == "v37" and st["fields"] == 11 and st["bound"] == 11,
        _json.dumps(st, ensure_ascii=False))
@@ -4385,7 +4385,7 @@ def run_v38_flow(p, storage_blocked=False):
 
     # ── 1) 표준이 브라우저에서 살아 있다
     ok(tag + "v38 부트 JS 오류 0", not errors, errors[:3])
-    ok(tag + "v38 meta v41·copy 훅 v38", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v50" and
+    ok(tag + "v38 meta v41·copy 훅 v38", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v51" and
        page.evaluate("() => (window.__ttokttokCopy || {}).version") == "v38")
     ok(tag + "v38 역할 표시 '보호자 모드'", page.inner_text("#rolePill").strip() == "보호자 모드", page.inner_text("#rolePill"))
     ok(tag + "v38 홈 보이는 문구 금지어 0", visible_audit(page) == [], str(visible_audit(page))[:160])
@@ -4544,7 +4544,7 @@ def run_v39_flow(p, storage_blocked=False):
     s1 = stat(page)
     page.wait_for_timeout(260)
 
-    ok(tag + "v39 meta v41 · perf 훅 v39(기능 세대 표기 유지)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v50" and
+    ok(tag + "v39 meta v41 · perf 훅 v39(기능 세대 표기 유지)", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v51" and
        page.evaluate("() => (window.__ttokttokPerf || {}).version") == "v39")
     ok(tag + "v39 브라우저는 유휴 청크 모드", s1["mode"] == "idle-chunked", s1["mode"])
     ok(tag + "v39 DCL 600ms 이내(첫 로드 · 공용 CPU 편차 허용)", s1["dcl"] is not None and s1["dcl"] <= 600, str(s1["dcl"]))
@@ -4708,7 +4708,7 @@ def run_v40_flow(p, storage_blocked=False):
     page.wait_for_timeout(400)
 
     ok(tag + "v40 부팅 JS 오류 0", not errors, errors[:3])
-    ok(tag + "v40 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v50", "v46")
+    ok(tag + "v40 meta v41", page.evaluate("() => document.querySelector('meta[name=app-version]').content") == "v51", "v46")
 
     # ── 1) 다음 방문 = 오늘+2일, 라벨·요일·D-day 일치
     nxt = (today + datetime.timedelta(days=2))
@@ -4722,7 +4722,7 @@ def run_v40_flow(p, storage_blocked=False):
     page.tap('.tabbar[data-mode="customer"] [data-tab="journal"]')
     page.wait_for_timeout(400)
     chip = page.inner_text("#todayChip")
-    ok(tag + "v40 방문 카드 날짜·요일", ("%d월 %d일 (%s)" % (nxt.month, nxt.day, WD[nxt.weekday()])) in chip, chip)
+    ok(tag + "v40 방문 카드 날짜·요일", ("%d.%02d (%s)" % (nxt.month, nxt.day, WD[nxt.weekday()])) in chip, chip)
     ok(tag + "v40 방문 카드 다음 방문 표기", "다음 방문" in chip, chip)
     ok(tag + "v40 방문 카드 시간 범위", "10:30" in page.inner_text("#todayTime") and "11:30" in page.inner_text("#todayTime"),
        page.inner_text("#todayTime"))
@@ -4741,8 +4741,8 @@ def run_v40_flow(p, storage_blocked=False):
     ok(tag + "v40 선생님 일정 오늘 요일", ("오늘 (%s)" % WD[today.weekday()]) in sched, sched.replace("\n", " ")[:160])
     d5 = today + datetime.timedelta(days=5)
     d6 = today + datetime.timedelta(days=6)
-    ok(tag + "v40 요청 날짜 요일(5일 후)", ("%02d/%02d (%s)" % (d5.month, d5.day, WD[d5.weekday()])) in sched, sched.replace("\n", " ")[:200])
-    ok(tag + "v40 요청 날짜 요일(6일 후)", ("%02d/%02d (%s)" % (d6.month, d6.day, WD[d6.weekday()])) in sched, sched.replace("\n", " ")[:200])
+    ok(tag + "v40 요청 날짜 요일(5일 후)", ("%02d.%02d (%s)" % (d5.month, d5.day, WD[d5.weekday()])) in sched, sched.replace("\n", " ")[:200])
+    ok(tag + "v40 요청 날짜 요일(6일 후)", ("%02d.%02d (%s)" % (d6.month, d6.day, WD[d6.weekday()])) in sched, sched.replace("\n", " ")[:200])
     ok(tag + "v40 선생님 화면 날짜-요일 불일치 0", page.evaluate(AUDIT) == [], page.evaluate(AUDIT)[:4])
     page.tap('.tabbar[data-mode="therapist"] [data-tab="tp-home"]')
     page.wait_for_timeout(350)
@@ -6355,6 +6355,237 @@ def run_v50_flow(p, storage_blocked=False):
     browser.close()
 
 
+
+def run_v51_flow(p, storage_blocked=False):
+    """v51 · 표기 통일 · 시트 바깥 탭·뒤로가기·스크롤 잠금 · 인쇄 백지 위험 0."""
+    browser = p.chromium.launch(args=["--no-sandbox", "--allow-file-access-from-files", "--font-render-hinting=none"])
+    tag = "[v51 blocked] " if storage_blocked else "[v51] "
+
+    SCAN = r"""
+    () => {
+      const out = [];
+      const skip = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT']);
+      const vis = (el) => {
+        const s = getComputedStyle(el);
+        if (s.display === 'none' || s.visibility === 'hidden' || Number(s.opacity) === 0) return false;
+        const r = el.getBoundingClientRect();
+        return r.width >= 1 && r.height >= 1;
+      };
+      const walk = (el) => {
+        if (skip.has(el.tagName)) return;
+        if (el.closest && el.closest('.sprite, svg, .bar-lab, .settle-chart, .dday-badge, .date-chip, .week-chip')) return;
+        if (!vis(el)) return;
+        const own = Array.from(el.childNodes).filter((n) => n.nodeType === 3).map((n) => n.textContent).join(' ').replace(/\s+/g, ' ').trim();
+        if (own) {
+          if (/(?<![\d-])\d{4}-\d{1,2}-\d{1,2}(?![\d-])/.test(own)) out.push('hyphen ' + own.slice(0, 34));
+          if (/\d{1,2}\s*월\s*\d{1,2}\s*일/.test(own)) out.push('korean ' + own.slice(0, 34));
+          if (/\d{1,2}\.\d{1,2}\(/.test(own)) out.push('tight ' + own.slice(0, 34));
+          const slash = own.match(/(?<![\d/])\d{1,2}\/\d{1,2}(?![\d/])/g) || [];
+          slash.forEach((x) => {
+            if (/통증 \d+\/\d+/.test(own) || /\d+\/\d+ 완료/.test(own) || /^[\d/]+$/.test(own)) return;
+            if (/제출 서류 \d+\/\d+/.test(own) || /유효기간 \d{2}\/\d{2}/.test(own)) return;
+            out.push('slash ' + x + ' :: ' + own.slice(0, 34));
+          });
+          const md = own.match(/(?<![\d.])(\d{1,2})\.(\d{2})(?![\d.])(?!\s*\()/g) || [];
+          md.forEach((x) => {
+            const p2 = x.split('.').map(Number);
+            if (p2[0] < 1 || p2[0] > 12 || p2[1] < 1 || p2[1] > 31) return;
+            const i = own.indexOf(x);
+            const before = own.slice(0, i);
+            if (before.split('(').length > before.split(')').length) return;
+            if (/\d{1,2}\.\d{1,2}\s*~/.test(own) || /~\s*\d{1,2}\.\d{1,2}/.test(own)) return;
+            out.push('noday ' + x + ' :: ' + own.slice(0, 34));
+          });
+        }
+        Array.from(el.children).forEach(walk);
+      };
+      walk(document.body);
+      return out;
+    }
+    """
+
+    RISK = r"""
+    () => {
+      const bad = [];
+      document.querySelectorAll('body *').forEach((el) => {
+        const own = Array.from(el.childNodes).some((n) => n.nodeType === 3 && n.textContent.trim());
+        if (!own) return;
+        const s = getComputedStyle(el);
+        if (s.display === 'none' || s.visibility === 'hidden') return;
+        const r = el.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1) return;
+        const tag = el.id ? '#' + el.id : el.tagName.toLowerCase();
+        if (s.animationName && s.animationName !== 'none') bad.push('anim ' + tag + ' ' + s.animationName);
+        if (parseFloat(s.opacity) < 1) bad.push('opacity ' + tag + ' ' + s.opacity);
+        if (s.boxShadow && s.boxShadow !== 'none') bad.push('shadow ' + tag);
+        if ((s.backdropFilter && s.backdropFilter !== 'none') || (s.webkitBackdropFilter && s.webkitBackdropFilter !== 'none')) bad.push('blur ' + tag);
+      });
+      return bad.slice(0, 6);
+    }
+    """
+
+    ctx = browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1,
+                              is_mobile=True, has_touch=True, locale="ko-KR")
+    if storage_blocked:
+        ctx.add_init_script("""
+          Object.defineProperty(window, 'localStorage', {
+            configurable: true,
+            get() { throw new DOMException('SecurityError', 'SecurityError'); }
+          });
+        """)
+    page = ctx.new_page()
+    errs = []
+    page.on("pageerror", lambda e: errs.append(str(e)))
+    page.on("console", lambda m: errs.append("console:" + m.text) if m.type == "error" else None)
+    page.goto(URL + "?intro=0")
+    page.wait_for_function("window.__ttokttokBooted === true", timeout=15000)
+    page.wait_for_timeout(300)
+    page.eval_on_selector('[data-login="customer"]', "el => el.click()")
+    page.wait_for_timeout(500)
+
+    # ── 1) 표기: 보호자 5개 화면 ────────────────────────────────
+    bad = []
+    for tab in ["home", "teachers", "booking", "journal", "mypage"]:
+        page.eval_on_selector('.tabbar[data-mode="customer"] .tabbtn[data-tab="%s"]' % tab, "el => el.click()")
+        page.wait_for_timeout(320)
+        bad += ["%s :: %s" % (tab, x) for x in page.evaluate(SCAN)]
+    ok(tag + "보호자 5화면 날짜 표기 어긋남 0", not bad, bad[:4])
+
+    # 시트 몇 곳(내역·알림·주간 리포트)
+    page.eval_on_selector("#mpBookLink", "el => el.click()")
+    page.wait_for_timeout(380)
+    bad_sheet = ["accountSheet :: " + x for x in page.evaluate(SCAN)]
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(260)
+    page.eval_on_selector("#mpNotifRow", "el => el.click()")
+    page.wait_for_timeout(380)
+    bad_sheet += ["notifSheet :: " + x for x in page.evaluate(SCAN)]
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(260)
+    ok(tag + "보호자 시트 날짜 표기 어긋남 0", not bad_sheet, bad_sheet[:4])
+
+    # ── 2) 스크롤 잠금 + 바깥 탭 ────────────────────────────────
+    page.evaluate("() => window.scrollTo(0, 520)")
+    page.wait_for_timeout(260)
+    y0 = page.evaluate("() => Math.round(window.scrollY)")
+    page.eval_on_selector("#mpBookLink", "el => el.click()")
+    page.wait_for_timeout(420)
+    st = page.evaluate("() => ({open: document.getElementById('accountSheet').classList.contains('is-open'), overflow: document.body.style.overflow, y: Math.round(window.scrollY)})")
+    ok(tag + "시트를 열면 배경 스크롤 잠금", st["open"] and st["overflow"] == "hidden", st)
+    ok(tag + "열어도 스크롤 자리가 튀지 않는다", abs(st["y"] - y0) <= 2, [y0, st["y"]])
+    page.mouse.click(195, 24)
+    page.wait_for_timeout(500)
+    st2 = page.evaluate("() => ({open: document.getElementById('accountSheet').classList.contains('is-open'), overflow: document.body.style.overflow, y: Math.round(window.scrollY)})")
+    ok(tag + "바깥 탭으로 시트가 닫힌다", not st2["open"], st2)
+    ok(tag + "닫으면 스크롤 잠금 해제", st2["overflow"] == "", st2["overflow"])
+    ok(tag + "닫으면 보던 자리로 돌아온다", abs(st2["y"] - y0) <= 2, [y0, st2["y"]])
+
+    # 시트 안을 눌러도 닫히지 않는다
+    page.eval_on_selector("#mpBookLink", "el => el.click()")
+    page.wait_for_timeout(380)
+    box = page.evaluate("() => { const r = document.querySelector('#accountSheet .sheet').getBoundingClientRect(); return {x: Math.round(r.left + r.width / 2), y: Math.round(r.top + 40)}; }")
+    page.mouse.click(box["x"], box["y"])
+    page.wait_for_timeout(360)
+    ok(tag + "시트 안 탭으로는 닫히지 않는다", page.eval_on_selector("#accountSheet", "el => el.classList.contains('is-open')"))
+
+    # ── 3) 뒤로가기: 시트만 닫고 페이지 유지 ─────────────────────
+    url_before = page.url
+    page.go_back()
+    page.wait_for_timeout(600)
+    after = page.evaluate("() => ({open: document.getElementById('accountSheet').classList.contains('is-open'), alive: !!document.getElementById('appRoot') || !!document.getElementById('screen-home'), url: location.href})")
+    ok(tag + "뒤로가기 한 번 = 시트 하나", not after["open"], after)
+    ok(tag + "페이지는 그대로(이탈 없음)", after["alive"] and after["url"] == url_before, [url_before, after["url"]])
+    ok(tag + "기록 훅 0으로 복귀", page.evaluate("() => window.__ttokttokSheets51.history().pushed") == 0)
+
+    # 겹친 시트: 알림 → 알림 문구 미리보기
+    page.eval_on_selector("#mpNotifRow", "el => el.click()")
+    page.wait_for_timeout(360)
+    page.evaluate("() => window.__ttokttokModel.openNotifPreview({id:'e2e51', kind:'visit', title:'QA', body:'QA 본문', audience:'customer'})")
+    page.wait_for_timeout(400)
+    page.go_back()
+    page.wait_for_timeout(600)
+    nested = page.evaluate("() => [document.getElementById('notifPreviewSheet').classList.contains('is-open'), document.getElementById('notifSheet').classList.contains('is-open')]")
+    ok(tag + "겹친 시트는 맨 위만 닫힌다", (not nested[0]) and nested[1], nested)
+    page.go_back()
+    page.wait_for_timeout(600)
+    ok(tag + "한 번 더 → 남은 시트도 닫힌다", not page.eval_on_selector("#notifSheet", "el => el.classList.contains('is-open')"))
+
+    # ── 4) 선생님·관리자 화면 표기 ──────────────────────────────
+    page.evaluate("() => document.getElementById('entryGate').classList.add('is-open')")
+    page.wait_for_timeout(160)
+    page.eval_on_selector('[data-login="therapist"]', "el => el.click()")
+    page.wait_for_timeout(520)
+    bad_t = []
+    for tab in ["tp-home", "tp-schedule", "tp-journal", "tp-settle", "tp-mypage"]:
+        page.eval_on_selector('.tabbar[data-mode="therapist"] .tabbtn[data-tab="%s"]' % tab, "el => el.click()")
+        page.wait_for_timeout(320)
+        bad_t += ["%s :: %s" % (tab, x) for x in page.evaluate(SCAN)]
+    ok(tag + "선생님 5화면 날짜 표기 어긋남 0", not bad_t, bad_t[:4])
+    page.eval_on_selector("#tpsScreen [data-stl-preview]", "el => el.click()")
+    page.wait_for_timeout(460)
+    bad_t = ["settlementPrintSheet :: " + x for x in page.evaluate(SCAN)]
+    ok(tag + "정산서 미리보기 날짜 표기 어긋남 0", not bad_t, bad_t[:4])
+    page.keyboard.press("Escape")
+    page.wait_for_timeout(300)
+
+    page.evaluate("() => document.getElementById('entryGate').classList.add('is-open')")
+    page.wait_for_timeout(160)
+    page.eval_on_selector('[data-login="admin"]', "el => el.click()")
+    page.wait_for_timeout(620)
+    bad_a = page.evaluate(SCAN)
+    ok(tag + "관리자 화면 날짜 표기 어긋남 0", not bad_a, bad_a[:4])
+
+    # ── 5) 인쇄: 모션·그림자 남은 글자 0 ─────────────────────────
+    for nm, prep in (("settle", "() => { const b = document.querySelector('[data-stl-preview]'); if (b) b.click(); }"),):
+        pass
+    page.evaluate("() => document.getElementById('entryGate').classList.add('is-open')")
+    page.wait_for_timeout(160)
+    page.eval_on_selector('[data-login="therapist"]', "el => el.click()")
+    page.wait_for_timeout(500)
+    page.eval_on_selector('.tabbar[data-mode="therapist"] .tabbtn[data-tab="tp-settle"]', "el => el.click()")
+    page.wait_for_timeout(420)
+    page.evaluate("() => { const b = document.querySelector('[data-stl-preview]'); if (b) b.click(); }")
+    page.wait_for_timeout(520)
+    page.emulate_media(media="print")
+    page.evaluate("() => window.dispatchEvent(new Event('beforeprint'))")
+    page.wait_for_timeout(420)
+    risk = page.evaluate(RISK)
+    ok(tag + "정산서 인쇄 상태: 모션·그림자·블러 남은 글자 0", not risk, risk[:4])
+    sh = page.evaluate("() => { const a = document.querySelector('.sheet-backdrop.is-print'); return a ? a.id : ''; }")
+    ok(tag + "인쇄 대상은 열린 정산서 시트", sh == "settlementPrintSheet", sh)
+    page.screenshot(path=os.path.join(SHOT, "e2e_v51_settle_print.png"), full_page=True)
+    page.emulate_media(media="screen")
+    page.wait_for_timeout(200)
+
+    # ── 6) 모든 시트: 바깥 탭이면 닫힌다 ─────────────────────────
+    # 인쇄 상태에서 연 시트가 남아 있으면 먼저 닫는다(인쇄 중에는 바깥 탭을 일부러 막는다)
+    for _ in range(4):
+        if not page.evaluate("() => document.querySelectorAll('.sheet-backdrop.is-open, .backdrop.is-open').length"):
+            break
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(240)
+    page.evaluate("() => document.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}))")
+    page.wait_for_timeout(240)
+    ids = ["notifPreviewSheet", "tpNotiSheet", "receiptModal", "chatSheet", "rejectSheet", "appSheet", "reviewSheet",
+           "manageSheet", "settlementPrintSheet", "weeklySheet", "reportSheet", "safetySheet", "faqSheet", "paySheet",
+           "notifSheet", "couponSheet", "accountSheet", "roleSheet", "guideSheet", "teacherSheet", "gateSheet", "regionSheet"]
+    left = []
+    for sid in ids:
+        page.evaluate("(id) => { const el = document.getElementById(id); if (el) el.classList.add('is-open'); }", sid)
+        page.wait_for_timeout(160)
+        page.mouse.click(195, 16)
+        page.wait_for_timeout(200)
+        if page.evaluate("(id) => { const el = document.getElementById(id); return !!el && el.classList.contains('is-open'); }", sid):
+            left.append(sid)
+    ok(tag + "22종 시트 모두 바깥 탭으로 닫힌다", not left, left)
+    ok(tag + "닫은 뒤 배경 스크롤 풀림", page.evaluate("() => document.body.style.overflow") == "",
+       page.evaluate("() => document.body.style.overflow"))
+
+    ok(tag + "오류 0", not errs, errs[:3])
+    ctx.close()
+    browser.close()
+
+
 def main():
     """E2E 전 흐름. E2E_ONLY=v29,v31 처럼 쉼표로 골라 실행할 수 있다(개발·부분 재실행용)."""
     only = [x.strip() for x in os.environ.get("E2E_ONLY", "").split(",") if x.strip()]
@@ -6369,7 +6600,7 @@ def main():
         ("v36", run_v36_flow), ("v37", run_v37_flow), ("v38", run_v38_flow), ("v39", run_v39_flow),
         ("v40", run_v40_flow), ("v42", run_v42_flow), ("v43", run_v43_flow), ("v45", run_v45_flow),
         ("v46", run_v46_flow), ("v47", run_v47_flow), ("v48", run_v48_flow), ("v49", run_v49_flow),
-        ("v50", run_v50_flow),
+        ("v50", run_v50_flow), ("v51", run_v51_flow),
     ]
     with sync_playwright() as p:
         for name, fn in flows:

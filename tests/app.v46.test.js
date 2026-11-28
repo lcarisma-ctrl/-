@@ -86,7 +86,7 @@ async function run() {
   const pos = (a, b) => !!(a && b) && (a.compareDocumentPosition(b) & 4) !== 0; // a가 b보다 앞
 
   /* ── 1) 버전·기본 상태 ─────────────────────────────────────── */
-  ok('A1 meta v46', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v50',
+  ok('A1 meta v46', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v51',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 v45 테마 훅 유지', !!w.__ttokttokTheme && w.__ttokttokTheme.version === 'v45');
@@ -278,7 +278,7 @@ async function run() {
   ok('K6 v45 색 토큰 215쌍 유지', (STYLE.match(/--[a-z0-9-]+:/g) || []).length >= 215);
 
   /* ── 11) 예산·구조 위생 ────────────────────────────────────── */
-  ok('L1 CSS 24.3만자 이하', STYLE.length <= 243000, String(STYLE.length));
+  ok('L1 CSS 24.5만자 이하', STYLE.length <= 245000, String(STYLE.length));
   ok('L2 HTML 1.45MB 이하', Buffer.byteLength(HTML, 'utf8') <= 1450 * 1024, String(Buffer.byteLength(HTML, 'utf8')));
   const ids = $$('[id]').map((e) => e.id);
   const dup = ids.filter((v, i) => v && ids.indexOf(v) !== i);

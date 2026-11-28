@@ -65,7 +65,7 @@ async function run() {
 
   ok('AF0 JS 오류 없음(빈 계정 부팅)', A.errors.length === 0 && d.documentElement.getAttribute('data-js-error') === null,
     A.errors.slice(0, 3).join(' | '));
-  ok('AF1 v33 메타·홈 분기 모델 노출', d.querySelector('meta[name="app-version"]').content === 'v50' &&
+  ok('AF1 v33 메타·홈 분기 모델 노출', d.querySelector('meta[name="app-version"]').content === 'v51' &&
     M.qaVersion === 'v34' && M.guardianHomeVersion === 'v33' &&
     typeof M.buildGuardianHomePlan === 'function' && typeof M.guardianStageCounts === 'function' &&
     M.firstVisitPoints.length === 3, M.guardianHomeVersion);

@@ -96,12 +96,13 @@ async function run() {
   const w = A.window, doc = A.doc;
   const M = w.__ttokttokModel;
 
-  ok('A1 meta v40', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v50',
+  ok('A1 meta v40', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v51',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
 
   /* ── 1) 날짜 계산 도구 ── */
-  ok('A3 mdSlashOf/dateLabelOf 형식', M.mdSlashOf('2026-12-01') === '12/01' && M.dateLabelOf('2026-12-01') === '12.01',
+  /* v51 · 슬래시 표기를 없애고 점 표기로 통일했다(mdSlashOf도 '12.01'). */
+  ok('A3 mdSlashOf/dateLabelOf 형식', M.mdSlashOf('2026-12-01') === '12.01' && M.dateLabelOf('2026-12-01') === '12.01',
     M.mdSlashOf('2026-12-01') + '/' + M.dateLabelOf('2026-12-01'));
   ok('A4 weekdayOf 2026-11-28=토', M.weekdayOf('2026-11-28') === '토', M.weekdayOf('2026-11-28'));
 
@@ -120,7 +121,7 @@ async function run() {
   click(doc.querySelector('.tabbtn[data-tab="journal"]'));
   await sleep(120);
   const chip = textOf(doc, '#todayChip');
-  ok('A10 방문 카드 날짜·요일(11월 28일 (토))', /11월 28일 \(토\)/.test(chip), chip);
+  ok('A10 방문 카드 날짜·요일(11.28 (토))', /11\.28 \(토\)/.test(chip), chip);
   ok('A11 방문 카드에 다음 방문 표기', /다음 방문/.test(chip), chip);
   ok('A12 방문 카드 시간 10:30~11:30', /10:30\s*~\s*11:30/.test(textOf(doc, '#todayTime')), textOf(doc, '#todayTime'));
   const tmeta = textOf(doc, '#todayMeta');
@@ -140,8 +141,8 @@ async function run() {
   const sched = textOf(doc, '#screen-tp-schedule');
   ok('A17 선생님 일정 오늘 요일(목)', /오늘 \(목\)/.test(sched), sched.slice(0, 160));
   ok('A18 선생님 일정 요일 불일치 0', weekdayMismatches(sched).length === 0, weekdayMismatches(sched).slice(0, 4));
-  ok('A19 요청 날짜 12/01 (화)', /12\/01 \(화\)/.test(sched), sched.slice(0, 200));
-  ok('A20 요청 날짜 12/02 (수)', /12\/02 \(수\)/.test(sched), sched.slice(0, 200));
+  ok('A19 요청 날짜 12.01 (화)', /12\.01 \(화\)/.test(sched), sched.slice(0, 200));
+  ok('A20 요청 날짜 12.02 (수)', /12\.02 \(수\)/.test(sched), sched.slice(0, 200));
 
   /* ── 7) 정산 차트 금액 표기 ── */
   click(doc.querySelector('.tabbtn[data-tab="tp-home"]'));
