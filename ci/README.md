@@ -11,7 +11,7 @@ v47에서 이 파일을 `.github/workflows/qa.yml`로 **저장소에 등록했�
 | 경로 | `.github/workflows/qa.yml` (이 폴더의 `qa.yml`과 **같은 내용**, sha `202bdac8`) |
 | 상태 | `active` · 워크플로 id `433349940` |
 | 도는 때 | `main` 푸시 · PR · 수동 실행(`workflow_dispatch`) |
-| 최근 실행 | [#46099756234](https://github.com/lcarisma-ctrl/-/actions/runs/46099756234) — **success**(2026-11-28 11:47 KST, 15분 8초) |
+| 최근 실행 | [#46110103344](https://github.com/lcarisma-ctrl/-/actions/runs/46110103344) — **success**(2026-11-28 14:09 KST, 9분 24초, v48 `80492bc`) |
 | 단계 | 체크아웃 → Node 20 → Python 3.12 → jsdom 의존성 → Chromium → **빌드** → **jsdom** → **대비** → 결과 요약 |
 | 실패할 때 | 빨간 X로 멈춥니다. 대비가 0건이 아니면 다음 빌드에서 바로 드러납니다 |
 
