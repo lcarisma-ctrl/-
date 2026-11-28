@@ -79,7 +79,7 @@ async function run() {
   const w = A.window, doc = A.doc;
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
-  ok('A1 meta v50', ($('meta[name="app-version"]') || {}).content === 'v50', ($('meta[name="app-version"]') || {}).content);
+  ok('A1 meta v50', ($('meta[name="app-version"]') || {}).content === 'v51', ($('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 인쇄 훅 v50 · frame()', !!w.__ttokttokPrint && w.__ttokttokPrint.version === 'v50' && typeof w.__ttokttokPrint.frame === 'function',
     w.__ttokttokPrint && w.__ttokttokPrint.version);
