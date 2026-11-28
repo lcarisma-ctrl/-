@@ -163,8 +163,10 @@ async function run() {
   /* ── 3) 가로모드(짧은 화면) ─────────────────────────────────── */
   ok('C1 가로모드 절이 있다', V48_LAND.length > 200, V48_LAND.length);
   ok('C2 가로모드는 430px 우편함을 없앤다', /\.app\{max-width:none!important;width:100%!important/.test(V48_LAND));
-  ok('C3 헤더를 44px로 줄인다', /\.app-header\{min-height:44px;padding:4px 14px!important/.test(V48_LAND));
-  ok('C4 탭바를 46px대로 줄인다', /\.tab-btn|\.tabbar\{position:fixed!important/.test(V48_LAND) && /\.tabbtn\{min-height:40px!important/.test(V48_LAND));
+  ok('C3 헤더를 44px로 줄인다', /\.app-header\{min-height:44px;padding:[^;]*!important/.test(V48_LAND) &&
+    /\.brand-sub\{display:none!important\}/.test(V48_LAND));
+  ok('C4 탭바를 줄이되 터치 44px은 지킨다', /\.tabbar\{position:fixed!important/.test(V48_LAND) &&
+    /\.tabbtn\{min-height:44px!important/.test(V48_LAND) && /\.tabbtn\{[^}]*font-size:var\(--fs-10h\)/.test(V48_LAND));
   ok('C5 선생님 찾기는 두 칸(레일|목록)', /#screen-teachers \.tt46-cols\{display:grid!important;grid-template-columns:minmax\(0,\.66fr\)/.test(V48_LAND));
   ok('C6 시작 화면은 그림을 접고 CTA를 올린다', /\.gate-scene\{display:none!important\}/.test(V48_LAND) &&
     /\.gate-points\{display:grid!important;grid-template-columns:1fr 1fr!important/.test(V48_LAND));
