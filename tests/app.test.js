@@ -1059,7 +1059,7 @@ function helpers(win, doc) {
   const hK = helpers(K2.window, K2.doc);
   await sleep(30);
   ok('K0 JS 오류 없음', K2.errors.length === 0, K2.errors.slice(0, 3).join(' | '));
-  ok('K1 앱 버전 v39', K2.doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47');
+  ok('K1 앱 버전 v39', K2.doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48');
   const M = K2.window.__ttokttokModel;
   ok('K2 모델 노출(modelVersion 13)', !!M && M.modelVersion === 13, M && String(M.modelVersion));
   ok('K3 상태 enum 11종 정의', !!M && ['region', 'user', 'teacher', 'teacherRegion', 'timeSlot', 'reservation', 'review', 'coupon', 'userCoupon', 'notification', 'settlement'].every((k) => Array.isArray(M.statuses[k])));
@@ -2175,7 +2175,7 @@ function helpers(win, doc) {
   const QVM = D18.window.__ttokttokModel;
   ok('Q0 JS 오류 없음', D18.errors.length === 0, D18.errors.slice(0, 3).join(' | '));
   ok('Q1 v18 모델 노출(scalingVersion)', !!QVM && QVM.scalingVersion === 'v18', QVM && QVM.scalingVersion);
-  ok('Q2 v39 meta 표기', /<meta name="app-version" content="v47">/.test(HTML));
+  ok('Q2 v39 meta 표기', /<meta name="app-version" content="v48">/.test(HTML));
 
   /* ----- 지역 마스터 3단계 ----- */
   const counts18 = QVM.regionMasterCounts();
@@ -2304,8 +2304,8 @@ function helpers(win, doc) {
   await sleep(30);
   const RVM = D19.window.__ttokttokModel;
   ok('R0 v19 JS 오류 없음', D19.errors.length === 0, D19.errors.slice(0, 3).join(' | '));
-  ok('R1 앱 버전 v19 이상(meta)', /<meta name="app-version" content="v(19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47)">/.test(HTML) &&
-    ['v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34', 'v35', 'v36', 'v37', 'v38', 'v39', 'v40', 'v41', 'v42', 'v43', 'v44', 'v45', 'v46', 'v47'].indexOf(D19.doc.querySelector('meta[name="app-version"]').getAttribute('content')) !== -1);
+  ok('R1 앱 버전 v19 이상(meta)', /<meta name="app-version" content="v(19|20|21|22|23|24|25|26|27|28|29|30|31|32|33|34|35|36|37|38|39|40|41|42|43|44|45|46|47|48)">/.test(HTML) &&
+    ['v19', 'v20', 'v21', 'v22', 'v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34', 'v35', 'v36', 'v37', 'v38', 'v39', 'v40', 'v41', 'v42', 'v43', 'v44', 'v45', 'v46', 'v48'].indexOf(D19.doc.querySelector('meta[name="app-version"]').getAttribute('content')) !== -1);
   ok('R2 v19 운영 도구 노출(opsVersion·취소 사유·알림함·가용시간)', !!RVM && RVM.opsVersion === 'v19' &&
     typeof RVM.opsBoard === 'function' && typeof RVM.savePartnerAvailability === 'function' && typeof RVM.teacherNotifs === 'function', RVM && RVM.opsVersion);
 
@@ -2623,8 +2623,8 @@ function helpers(win, doc) {
   await sleep(40);
   const SVM = D20.window.__ttokttokModel;
   ok('S0 v20 JS 오류 없음', D20.errors.length === 0, D20.errors.slice(0, 3).join(' | '));
-  ok('S1 v31 메타·모델 노출(visitLogVersion 20)', /<meta name="app-version" content="v47">/.test(HTML) &&
-    D20.doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' && !!SVM && SVM.visitLogVersion === 20, SVM && SVM.visitLogVersion);
+  ok('S1 v31 메타·모델 노출(visitLogVersion 20)', /<meta name="app-version" content="v48">/.test(HTML) &&
+    D20.doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' && !!SVM && SVM.visitLogVersion === 20, SVM && SVM.visitLogVersion);
   ok('S2 2분 일지 어휘(척도 5 · 동작 8 · 포커스 6)', SVM.quickScale.length === 5 && SVM.quickActivities.length === 8 && SVM.quickFocus.length === 6 &&
     SVM.quickScale[0].score === 1 && SVM.quickScale[4].score === 5);
 
@@ -2913,7 +2913,7 @@ function helpers(win, doc) {
   const M21 = D21.window.__ttokttokModel;
 
   ok('T1 v31 meta·정산 규칙 노출',
-    D21.doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+    D21.doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     M21.settlementRule.confirmDays === 3 && JSON.stringify(M21.settlementRule.payDays) === '[15,"end"]',
     JSON.stringify(M21.settlementRule));
   ok('T2 정산 규칙 문구가 D+3·15일·말일로 통일',
@@ -2993,7 +2993,7 @@ function helpers(win, doc) {
 
   ok('U0 v22 JS 오류 없음', D22.errors.length === 0, D22.errors.slice(0, 3).join(' | '));
   ok('U1 v31 메타·모델 노출',
-    D22.doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+    D22.doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     !!M22 && M22.nearVersion === 'v22' && M22.photoVersion === 'v22' && M22.dongImmediateDays === 3,
     M22 && M22.nearVersion + '/' + M22.photoVersion);
 
@@ -3169,7 +3169,7 @@ function helpers(win, doc) {
 
   ok('V0 v23 JS 오류 없음', D23.errors.length === 0, D23.errors.slice(0, 3).join(' | '));
   ok('V1 v23 메타·모델 노출',
-    ['v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34', 'v35', 'v36', 'v37', 'v38', 'v39', 'v40', 'v41', 'v42', 'v43', 'v44', 'v45', 'v46', 'v47'].indexOf(D23.doc.querySelector('meta[name="app-version"]').getAttribute('content')) !== -1 &&
+    ['v23', 'v24', 'v25', 'v26', 'v27', 'v28', 'v29', 'v30', 'v31', 'v32', 'v33', 'v34', 'v35', 'v36', 'v37', 'v38', 'v39', 'v40', 'v41', 'v42', 'v43', 'v44', 'v45', 'v46', 'v48'].indexOf(D23.doc.querySelector('meta[name="app-version"]').getAttribute('content')) !== -1 &&
     !!M23 && M23.backupVersion === 'v23' && M23.snapshotSchema === 'ttokttok.v23' && M23.snapshotMaxChars === 8000000,
     M23 && M23.backupVersion + '/' + M23.snapshotSchema);
 
@@ -3412,7 +3412,7 @@ function helpers(win, doc) {
   const openOf = (id) => doc24.getElementById(id).classList.contains('is-open');
 
   ok('W0 v24 JS 오류 없음', D24.errors.length === 0, D24.errors.slice(0, 3).join(' | '));
-  ok('W1 v31 메타·QA 훅 노출', doc24.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+  ok('W1 v31 메타·QA 훅 노출', doc24.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     !!M24 && M24.qaVersion === 'v34' && M24.a11y.version === 'v34' && M24.a11y.dialogOrder.length >= 15,
     M24 && [M24.qaVersion, M24.a11y && M24.a11y.version, M24.a11y && M24.a11y.dialogOrder.length].join('/'));
 
@@ -3573,7 +3573,7 @@ function helpers(win, doc) {
   const doc25 = D25.doc;
 
   ok('X0 v25 JS 오류 없음', D25.errors.length === 0, D25.errors.slice(0, 3).join(' | '));
-  ok('X1 v31 메타·요약 모델 노출', doc25.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+  ok('X1 v31 메타·요약 모델 노출', doc25.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     !!M25 && M25.guardianVersion === 'v25' && M25.qaVersion === 'v34' && M25.guardianReportDays === 28 &&
     typeof M25.buildGuardianSummary === 'function' && Array.isArray(M25.faqCategories), M25 && M25.guardianVersion);
   ok('X2 홈 요약 카드가 홈 본문 첫 요소', (function () {
@@ -3763,7 +3763,7 @@ function helpers(win, doc) {
   const doc26 = D26.doc;
 
   ok('Y0 v26 JS 오류 없음', D26.errors.length === 0, D26.errors.slice(0, 3).join(' | '));
-  ok('Y1 v31 메타·명세서 모델 노출', doc26.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+  ok('Y1 v31 메타·명세서 모델 노출', doc26.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     !!M26 && M26.statementVersion === 'v26' && M26.qaVersion === 'v34' &&
     typeof M26.buildTeacherSettlementStatement === 'function' && M26.withholdingRate === 0.033, M26 && M26.statementVersion);
 
@@ -3963,7 +3963,7 @@ function helpers(win, doc) {
   const doc27 = D27.doc;
 
   ok('Z0 v27 JS 오류 없음', D27.errors.length === 0, D27.errors.slice(0, 3).join(' | '));
-  ok('Z1 v31 메타·리마인드 모델 노출', doc27.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+  ok('Z1 v31 메타·리마인드 모델 노출', doc27.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     !!M27 && M27.qaVersion === 'v34' && M27.reminderQueueVersion === 'v27' &&
     Array.isArray(M27.reminderCategories) && M27.reminderCategories.length === 4 &&
     Array.isArray(M27.reminderKinds) && M27.reminderKinds.length === 7 &&
@@ -4214,7 +4214,7 @@ function helpers(win, doc) {
   const doc28 = D28.doc;
 
   ok('AA0 v28 JS 오류 없음', D28.errors.length === 0, D28.errors.slice(0, 3).join(' | '));
-  ok('AA1 v31 메타·지표 모델 노출', doc28.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+  ok('AA1 v31 메타·지표 모델 노출', doc28.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     !!M28 && M28.qaVersion === 'v34' && M28.adminMetricsVersion === 'v28' &&
     typeof M28.buildAdminMetrics === 'function' && typeof M28.adminMetricsText === 'function' &&
     typeof M28.adminMetricsCsv === 'function', M28 && [M28.qaVersion, M28.adminMetricsVersion].join('/'));
@@ -4488,7 +4488,7 @@ function helpers(win, doc) {
   const doc29 = D29.doc;
 
   ok('AB0 v29 JS 오류 없음', D29.errors.length === 0, D29.errors.slice(0, 3).join(' | '));
-  ok('AB1 v31 메타·신뢰 모델 노출', doc29.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+  ok('AB1 v31 메타·신뢰 모델 노출', doc29.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     !!M29 && M29.qaVersion === 'v34' && M29.trustVersion === 'v29' &&
     typeof M29.canReviewReservation === 'function' && typeof M29.buildTeacherTrustSummary === 'function' &&
     typeof M29.buildRebookDraft === 'function', M29 && [M29.trustVersion, M29.qaVersion].join('/'));
@@ -4718,7 +4718,7 @@ function helpers(win, doc) {
   const T31 = w31.__ttokttokTouch;
   ok('AC0 v31 JS 오류 없음', V31.errors.length === 0 && d31.documentElement.getAttribute('data-js-error') === null,
     V31.errors.slice(0, 3).join(' | '));
-  ok('AC1 v31 메타·터치 훅 노출(최소 44px·간격 8px)', d31.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+  ok('AC1 v31 메타·터치 훅 노출(최소 44px·간격 8px)', d31.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     !!M31 && M31.qaVersion === 'v34' && !!T31 && T31.version === 'v31' && T31.min === 44 && T31.gapMin === 8,
     M31 && [M31.qaVersion, T31 && T31.version, T31 && T31.min].join('/'));
   /* jsdom은 렌더 타이머가 느려 부트 스캔이 끝나기 전에 검사될 수 있다.

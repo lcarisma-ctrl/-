@@ -164,7 +164,7 @@ async function run() {
   const d = A.doc;
   const W = A.window;
   const M = W.__ttokttokModel;
-  ok('AH25 meta v35', (d.querySelector('meta[name=app-version]') || {}).content === 'v47');
+  ok('AH25 meta v35', (d.querySelector('meta[name=app-version]') || {}).content === 'v48');
   ok('AH26 v33 빈 상태 클래스 유지(empty-v7)', !!d.querySelector('.empty-v7') || /empty-v7/.test(HTML));
   ok('AH27 word-break:keep-all 규칙 유지(단어 중간 줄바꿈 없음)', /word-break:keep-all/.test(STYLE) && (STYLE.match(/word-break:keep-all/g) || []).length >= 5,
     String((STYLE.match(/word-break:keep-all/g) || []).length));

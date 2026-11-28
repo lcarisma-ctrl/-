@@ -96,7 +96,7 @@ async function run() {
   const w = A.window, doc = A.doc;
   const M = w.__ttokttokModel;
 
-  ok('A1 meta v40', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v47',
+  ok('A1 meta v40', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v48',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
 

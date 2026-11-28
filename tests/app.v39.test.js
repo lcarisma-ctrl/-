@@ -85,7 +85,7 @@ async function run() {
   const M = A.window.__ttokttokModel;
   const doc = A.doc;
 
-  ok('A2 meta v40 · perf 훅 v39(기능 세대 표기 유지)', doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v47' &&
+  ok('A2 meta v40 · perf 훅 v39(기능 세대 표기 유지)', doc.querySelector('meta[name="app-version"]').getAttribute('content') === 'v48' &&
     P && P.version === 'v39');
   ok('A3 stats 필드(dcl·fcp·marks·deferred)', (function () {
     const s = P.stats();
@@ -174,7 +174,7 @@ async function run() {
   ok('E4 홈 화면 아이콘 180px로 축소(45KB 이하)', !!icons && icons[1].length <= 45000, icons ? icons[1].length : 'none');
   ok('E5 본문 로고 data URI 45KB 이하', !!brand && brand[1].length <= 45000, brand ? brand[1].length : 'none');
   ok('E6 index.html 1.4MB 이하(v41 디자인 레이어 포함 1.36MB · v35 상한 1.45MB 이내)', Buffer.byteLength(HTML, 'utf8') <= 1450 * 1024, String(Buffer.byteLength(HTML, 'utf8')));
-  ok('E7 CSS 길이 상한(v41 디자인 레이어 추가, 23.2만자 이하)', STYLE.length >= 159697 && STYLE.length <= 232000, String(STYLE.length));
+  ok('E7 CSS 길이 상한(v48 경계·가로모드·인쇄 절 추가, 24.2만자 이하)', STYLE.length >= 159697 && STYLE.length <= 242000, String(STYLE.length));
 
   /* 5) 지연 렌더 뒤에도 v24·v31·v34·v38 계약 유지 */
   ok('F1 dialog 전부 접근성 이름 보유(22개 이상)', M.a11y.dialogCount() === M.a11y.labelledDialogs() &&

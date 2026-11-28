@@ -69,7 +69,7 @@ async function run() {
   const open = (id) => d.getElementById(id).classList.contains('is-open');
 
   /* ── 1) 버전·훅 ───────────────────────────────────────────── */
-  ok('AG1 meta v34', d.querySelector('meta[name="app-version"]').content === 'v47', d.querySelector('meta[name="app-version"]').content);
+  ok('AG1 meta v34', d.querySelector('meta[name="app-version"]').content === 'v48', d.querySelector('meta[name="app-version"]').content);
   ok('AG2 qaVersion·a11y.version v34', M.qaVersion === 'v34' && a11y.version === 'v34', [M.qaVersion, a11y.version].join('/'));
   ok('AG3 감사·트랩 훅 노출', ['background', 'backgroundLocked', 'topDialog', 'focusables', 'auditAll', 'iconButtons', 'liveRegions', 'announce', 'liveText']
     .every((k) => typeof a11y[k] === 'function'), Object.keys(a11y).join(','));

@@ -707,7 +707,7 @@ def run_v32_states(p):
         page.wait_for_timeout(320)
 
         buckets = {k: [] for k in ('overflow', 'unnamed', 'unlabeled', 'noalt', 'dialog', 'refs', 'target',
-                                   'headings', 'blocked', 'touch', 'gap', 'wrap')}
+                                   'headings', 'blocked', 'touch', 'gap', 'wrap', 'clip', 'ell')}
         audit(page, "empty/account", tag, buckets)
 
         empty = page.evaluate("""() => {
@@ -779,7 +779,7 @@ def run_v33_states(p):
         page.wait_for_timeout(360)
 
         buckets = {k: [] for k in ('overflow', 'unnamed', 'unlabeled', 'noalt', 'dialog', 'refs', 'target',
-                                   'headings', 'blocked', 'touch', 'gap', 'wrap')}
+                                   'headings', 'blocked', 'touch', 'gap', 'wrap', 'clip', 'ell')}
         audit(page, "v33/first-visit", tag, buckets)
         st = page.evaluate("() => window.__ttokttokModel.homeStageState()")
         ok(tag + "첫 방문 전 홈 — 첫 카드가 첫 방문 안내",
@@ -832,7 +832,7 @@ def run_v34_states(p):
         page.wait_for_timeout(320)
         # 게이트가 열린 상태(배경 inert)에서도 넘침·이름 감사
         buckets = {k: [] for k in ('overflow', 'unnamed', 'unlabeled', 'noalt', 'dialog', 'refs', 'target',
-                                   'headings', 'blocked', 'touch', 'gap', 'wrap')}
+                                   'headings', 'blocked', 'touch', 'gap', 'wrap', 'clip', 'ell')}
         audit(page, "v34/gate", tag, buckets)
         ok(tag + "게이트 열림 — 배경 inert·이름 감사 0",
            page.evaluate("() => window.__ttokttokModel.a11y.backgroundLocked()") is True and
@@ -1018,6 +1018,11 @@ def main():
             # v47 · 작은 데스크톱 1024(레일 + 카드 두 열)와 다크 1280(3칸·스켈레톤)도 같은 점검을 통과해야 한다.
             perf["1024"] = run_viewport(p, "1024", 1024, 900, mobile=False)
             perf["1280-dark"] = run_viewport(p, "1280-dark", 1280, 900, mobile=False, theme="dark")
+        if part in ("all", "8"):
+            # v48 · 휴대폰 가로모드(짧은 화면) — 430px 우편함을 없애고 헤더·탭바를 줄인 뒤에도
+            #        전 화면이 가로로 넘치지 않고, 시트·버튼이 화면 안에서 눌리는지 본다.
+            perf["844x390"] = run_viewport(p, "844x390", 844, 390, mobile=True)
+            perf["667x375"] = run_viewport(p, "667x375", 667, 375, mobile=True)
         if part in ("all", "2"):
             run_viewport(p, "375-blocked", 375, 812, mobile=True, storage_blocked=True)
             run_v32_states(p)

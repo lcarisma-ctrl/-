@@ -92,7 +92,7 @@ async function run() {
   const w = A.window, doc = A.doc;
   const $ = (s, r) => (r || doc).querySelector(s);
   const $$ = (s, r) => Array.from((r || doc).querySelectorAll(s));
-  ok('A1 meta v47', ($('meta[name="app-version"]') || {}).content === 'v47', ($('meta[name="app-version"]') || {}).content);
+  ok('A1 meta v47', ($('meta[name="app-version"]') || {}).content === 'v48', ($('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 v45 테마 훅 유지', !!w.__ttokttokTheme && w.__ttokttokTheme.version === 'v45');
   ok('A4 v44 탭 스크롤 훅 유지', !!w.__ttokttokTabScroll && w.__ttokttokTabScroll.version === 'v44');

@@ -65,7 +65,7 @@ async function run() {
   const M = w.__ttokttokModel;
 
   /* ── 0) 버전·부팅 ───────────────────────────────────────────── */
-  ok('A1 meta v43', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v47',
+  ok('A1 meta v43', (doc.querySelector('meta[name="app-version"]') || {}).content === 'v48',
     (doc.querySelector('meta[name="app-version"]') || {}).content);
   ok('A2 부팅 오류 0', !A.errors.length, A.errors.slice(0, 2));
   ok('A3 이전 세대 훅 유지(손짓 v42·글자 크기 v42)', w.__ttokttokGesture.version === 'v42' &&
@@ -184,7 +184,7 @@ async function run() {
     String(M.settlementRule.payDays) === '15,end' &&
     (M.reservations() || []).some((r) => r.no === 'TT-261021-7302' && r.dateIso === '2026-11-28'));
   ok('I2 시연용 배지 유지', /시연용/.test(doc.body.textContent || ''));
-  ok('I3 CSS 23.2만자·HTML 1.45MB 이하', STYLE.length <= 232000 && Buffer.byteLength(HTML, 'utf8') <= 1450 * 1024,
+  ok('I3 CSS 24.2만자·HTML 1.45MB 이하', STYLE.length <= 242000 && Buffer.byteLength(HTML, 'utf8') <= 1450 * 1024,
     STYLE.length + ' / ' + Buffer.byteLength(HTML, 'utf8'));
 
   console.log('\nV43 RESULT: ' + pass + ' passed, ' + fails.length + ' failed');

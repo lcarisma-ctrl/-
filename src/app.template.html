@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#F7F8FA">
 <meta name="description" content="똑똑쌤 — 면허·자격 검증을 통과한 전국 재활 선생님과 낮은 수수료로 직결되는 방문재활 플랫폼. 서울·경기부터 부산·대구·대전·광주까지 전국 매칭, 첫 방문 평가 무료.">
 <title>똑똑쌤 · 전국 검증 재활 쌤이 집으로</title>
-<meta name="app-version" content="v47">
+<meta name="app-version" content="v48">
 <!-- iOS 홈 화면 앱(PWA) -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -92,6 +92,9 @@
   --on-dark-5:#AEB8C8; --on-dark-6:#E8EFFA; --on-dark-7:rgba(255,255,255,.75); --on-dark-mint:#7FE3D6;
   --on-dark-blue:#9EC5FF; --on-dark-blue-2:#7FB2FF;
   /* ── 선 ── */
+  /* v48 · 경계(비텍스트 3:1)와 종이 */
+  --edge-ctl:#7E8592;--edge-ctl-on:#5D6472;
+  --paper:#FFFFFF;--paper-ink:#0F172A;--paper-muted:#475569;
   --line:rgba(15,23,42,.06); --line-2:rgba(15,23,42,.05); --line-3:rgba(15,23,42,.03); --line-strong:rgba(15,23,42,.10);
   --line-strong-2:rgba(15,23,42,.14); --line-tint:#F1F4F9; --line-tint-blue:#DCE9FB; --line-tint-blue-2:#E3EDF9;
   --line-tint-blue-3:#C7D9EE; --line-tint-teal:#D9F2EE; --line-tint-amber:#F3D5A7; --line-tint-rose:#F3C9C9;
@@ -265,6 +268,8 @@
   --on-dark-5:#AEB8C8; --on-dark-6:#E8EFFA; --on-dark-7:rgba(255,255,255,.75); --on-dark-mint:#7FE3D6;
   --on-dark-blue:#9EC5FF; --on-dark-blue-2:#7FB2FF;
   /* ── 선 ── */
+  --edge-ctl:#6A7280;--edge-ctl-on:#98A2B3;
+  --paper:#FFFFFF;--paper-ink:#0F172A;--paper-muted:#475569;
   --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.09); --line-3:rgba(255,255,255,.07); --line-strong:rgba(255,255,255,.16);
   --line-strong-2:rgba(255,255,255,.22); --line-tint:#212B3A; --line-tint-blue:#22334A; --line-tint-blue-2:#22334A;
   --line-tint-blue-3:#2A3C55; --line-tint-teal:#1B3A36; --line-tint-amber:#3A2E1C; --line-tint-rose:#3C2228;
@@ -3264,6 +3269,139 @@ h1,h2,.hh-title,.wstep-title,.sec-title,.mp-title,.sheet-title{text-wrap:balance
 .t-region{flex-wrap:nowrap;align-items:flex-start}
 .t-region > span{flex:1 1 auto;min-width:0;overflow-wrap:anywhere}
 .t-region .ic{flex:0 0 auto;margin-top:3px}
+/* ============================================================
+   14. v48 · 경계를 두 층으로 — ① 조작 요소의 테두리는 3:1, ② 표면의 선은 그림자로
+   ─ WCAG 1.4.11(비텍스트 대비): 버튼·칩·입력처럼 '테두리가 그 요소를 알아보는 단서'인
+     경계는 배경 대비 3:1 이상이어야 한다. 반면 카드·배지의 테두리는 장식이라
+     1.1:1 회색 선을 그리는 대신 선을 없애고 그림자·여백·글자로 나눈다.
+   ─ v47까지 contrast_v45.py 로그에 'UI 경계 대비 < 3:1' 40건이 정보성으로 남아 있었다.
+   ============================================================ */
+/* 14-0. 토큰(값은 위 :root 두 곳에 있다)
+   --edge-ctl    조작 요소의 경계 — 라이트 3.3:1 이상(페이지·카드 모두), 다크 3.4:1 이상
+   --edge-ctl-on 눌림·선택 상태의 경계
+   --paper·--paper-ink·--paper-muted  인쇄(종이) 글자·바탕 */
+/* 14-1. 조작 요소 — 테두리가 곧 단서다 (버전이 쌓인 규칙을 이기도록 !important) */
+body .btn-outline,body .chip,body .segmented button,body .slot,body .date-chip,body .pay,body .pass,
+body select,body .input,body textarea,
+body input[type=text],body input[type=tel],body input[type=number],body input[type=email],body input[type=search]{border-color:var(--edge-ctl)!important}
+/* 채워진 상태(선택)는 '면' 자체가 경계라 테두리를 비운다 */
+body .chip.is-on,body .segmented button.is-on,body .slot.is-on,body .date-chip.is-on,body .pay.is-on{border-color:transparent!important}
+/* 호버·눌림은 한 단 진하게 */
+body .btn-outline:hover,body .chip:hover,body .segmented button:hover,body .slot:hover,body .date-chip:hover,body .pay:hover,body .pass:hover{border-color:var(--edge-ctl-on)!important}
+/* 끈긴(disabled) 요소는 대비 요구에서 제외된다 — 원래 흐린 색으로 되돌린다 */
+body .slot:disabled,body .date-chip:disabled,body .chip:disabled,body .segmented button:disabled{border-color:var(--line-tint)!important}
+/* 14-2. 표면·배지 — 선 대신 그림자·여백 (테두리 폭은 남겨 레이아웃을 흔들지 않는다)
+   ─ 이 앱은 버전이 쌓이며 같은 클래스에 테두리 규칙이 여러 겹이라, 표면 규칙은
+     마지막 한 곳에서만 !important로 못 박고 '상태' 테두리는 아래에서 되살린다. */
+body .card,body .teacher,body .card-form,body .pass,body .booking-row,body .wallet-card,
+body .dday-card,body .notif,body .coupon-card,body .faq-item,body .settle-cell,
+body .quick-tile,body .mp-row,body .list-item,body .status,body .status-badge,
+body .home-program-card,body .h-mini-card,body .report-cta{border-color:transparent!important}
+/* 상태(선택·호버·찜)의 테두리는 그대로 — 지금 무엇을 골랐는지가 정보이기 때문 */
+body .pass.is-on{border-color:var(--ink-title)!important}
+body .teacher.is-selected{border-color:var(--line-blue)!important}
+body .teacher.is-fav{border-color:var(--line-rose)!important}
+body .teacher:hover{border-color:var(--line-blue)!important}
+body .teacher.is-skel,body .teacher.is-skel:hover{border-color:transparent!important}
+/* 다크에서는 그림자가 약하니 표면 자체를 한 단 올려 카드를 알아보게 한다 */
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .teacher,
+:root[data-theme="dark"] .card-form,
+:root[data-theme="dark"] .pass,
+:root[data-theme="dark"] .booking-row,
+:root[data-theme="dark"] .settle-cell,
+:root[data-theme="dark"] .quick-tile,
+:root[data-theme="dark"] .mp-row{box-shadow:0 1px 0 var(--shade-white-1) inset,0 10px 24px -22px #000}
+
+/* ============================================================
+   15. v48 · 가로모드(짧은 화면) — 헤더·탭바가 화면을 덜 가리게
+   ─ 667×375·844×390 같은 휴대폰 가로에서 세로 18%를 차지하던 헤더(65~72)+탭바(69)를
+     각각 44·48px로 줄이고, 430px 우편함(max-width)을 없애 가로 폭을 다 쓴다.
+   ============================================================ */
+@media (orientation: landscape) and (max-height: 500px){
+  body{padding:0!important;margin:0!important;display:block!important;gap:0!important;background:var(--bg)}
+  .app{max-width:none!important;width:100%!important;min-height:100vh!important;height:auto!important;max-height:none!important;
+       border-radius:0!important;box-shadow:none!important;padding-bottom:66px!important}
+  .desk-brand,.desk-side{display:none!important}
+  .app-header{min-height:44px;padding:2px 14px!important;width:100%!important;border-radius:0!important}
+  .brand-mark{width:28px!important;height:28px!important;border-radius:9px!important}
+  .brand-name{font-size:var(--fs-16)!important}
+  .brand-sub{display:none!important}
+  .header-pill{min-height:44px!important;padding:3px 10px!important;font-size:var(--fs-12)!important}
+  .ah-region{font-size:var(--fs-17)!important}
+  .ah-ic-btn{width:44px!important;height:44px!important}
+  .tabbar{position:fixed!important;left:0!important;right:0!important;bottom:0!important;transform:none!important;
+          max-width:none!important;width:100%!important;padding:2px 6px 3px!important;border-radius:0!important}
+  .tabbtn{min-height:44px!important;padding:0!important;gap:0!important;font-size:var(--fs-10h)!important}
+  .tab-ico{width:26px!important;height:21px!important}
+  .screen{padding:10px 16px 10px!important}
+  .screen.home-v6{padding:0 0 10px!important}
+  .home-body{padding:10px 16px 0!important}
+  .page-head{padding-top:4px!important}
+  .page-head h1{font-size:var(--fs-21)!important;line-height:1.2!important}
+  .page-head p{font-size:var(--fs-13)!important}
+  .home-notice{padding:8px 14px!important}
+  .teacher{padding:14px 16px!important;margin-top:8px!important}
+  .sheet{max-height:100vh!important;max-width:100%!important;border-radius:16px 16px 0 0!important}
+  .sheet-body,.sheet-scroll{max-height:calc(100vh - 54px)!important}
+  .toast{bottom:58px!important}
+  .book-total{bottom:54px!important}
+  /* 시작 화면: 세로가 짧으면 그림·안내 카드가 CTA를 밀어낸다 → 두 칸으로 접고 그림은 숨긴다 */
+  .gate{overflow-y:auto!important;align-items:flex-start!important}
+  .gate-inner{padding:16px 18px 14px!important;border-radius:0!important;margin:0 auto!important;max-width:620px!important}
+  .gate-logo{width:40px!important;height:40px!important}
+  .gate h1{font-size:var(--fs-26)!important}
+  .gate-scene{display:none!important}
+  .gate-points{display:grid!important;grid-template-columns:1fr 1fr!important;gap:6px!important;margin-top:10px!important}
+  .gate-point{padding:7px 10px!important}
+  .gate-bottom{padding-top:10px!important}
+  /* 선생님 찾기: 좁은 세로에서는 제목·검색·통계가 목록을 화면 밖으로 밀어낸다
+     → 가로 폭을 써서 왼쪽 레일(검색·필터)과 오른쪽 목록을 나란히 놓는다 */
+  #screen-teachers .tt46-cols{display:grid!important;grid-template-columns:minmax(0,.66fr) minmax(0,1fr)!important;
+     gap:16px!important;align-items:start!important}
+  #screen-teachers .tt46-col{display:flex!important;flex-direction:column;gap:8px;min-width:0}
+  #screen-teachers .tt46-col > *{margin-top:0!important}
+  #screen-teachers .page-head{padding-top:0!important}
+  #screen-teachers .page-head h1{font-size:var(--fs-19)!important}
+  #screen-teachers .page-head p{display:none!important}
+  #teacherList,#dongClusterList{display:block!important}
+  #teacherList > *,#dongClusterList > *{margin-top:8px!important;flex:none!important}
+  .teacher{padding:12px 14px!important;margin-top:8px!important}
+  .teacher .t-tags{display:none!important}
+  .teacher .t-avatar{width:42px!important;height:42px!important;flex:0 0 42px!important}
+}
+
+/* ============================================================
+   16. v48 · 인쇄/PDF — 정산서·방문일지가 종이에서 깔끔하게
+   ─ 화면용 껍데기(헤더·탭바·토스트·떠 있는 버튼·필터)를 숨기고,
+     열려 있는 시트가 있으면 그 시트만 인쇄한다(beforeprint에서 .is-print 표시).
+   ============================================================ */
+@media print{
+  @page{margin:12mm}
+  html,body{background:var(--paper)!important;color:var(--paper-ink)!important}
+  body{display:block!important;padding:0!important;margin:0!important;overflow:visible!important}
+  .app{max-width:none!important;width:auto!important;height:auto!important;max-height:none!important;min-height:0!important;
+       background:var(--paper)!important;box-shadow:none!important;border:0!important;border-radius:0!important;padding:0!important;overflow:visible!important}
+  .app-header,.tabbar,.toast,.book-total,#ttAlertHost,.home-notice,.kbd-hint,.teacher-pane-empty,
+  .desk-brand,.desk-side,.gate,.intro,#introScreen,.segmented,.chips,.query-bar,.scroll-top,
+  .sheet-handle,.sheet-close,.sheet-backdrop:not(.is-print),.btn,.chip,[data-print-hide],
+  .role-switch,.seg-tabs,.rc-actions,.view-tabs,.filter-bar{display:none!important}
+  .screen{display:none!important}
+  body:not(.sheet-open) .screen.is-active{display:block!important}
+  .sheet-backdrop{position:static!important;inset:auto!important;background:none!important;visibility:visible!important;
+                  display:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:none!important}
+  .sheet-backdrop.is-print{display:block!important}
+  .sheet-backdrop.is-print .sheet{position:static!important;transform:none!important;left:auto!important;bottom:auto!important;
+       max-width:none!important;width:auto!important;max-height:none!important;display:block!important;
+       box-shadow:none!important;border:0!important;border-radius:0!important;padding:0!important;overflow:visible!important}
+  .sheet,.sheet *{overflow:visible!important}
+  .sheet-body,.sheet-scroll,.sheet-content{max-height:none!important;overflow:visible!important}
+  .card,.teacher,.pass,.booking-row,.settle-cell,.table-wrap{box-shadow:none!important;break-inside:avoid}
+  h1,h2,h3,.card-head,.sheet-title{break-after:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  a{color:inherit!important;text-decoration:none!important}
+  .fine,.caption,.sheet-note{color:var(--paper-muted)!important}
+}
 </style>
 <body>
 <svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -3625,9 +3763,12 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
         <kbd>↑</kbd><kbd>↓</kbd> 카드 이동
         <span class="kbd-dot">·</span> <kbd>Enter</kbd> 프로필 열기
         <span class="kbd-dot">·</span> <kbd>Esc</kbd> 닫기
+        <span class="kbd-dot">·</span> <kbd>Tab</kbd> 다음 칸
       </p>
       <p class="sr-only" id="teacherNavLive" role="status" aria-live="polite" aria-atomic="true"></p>
-      <div id="teacherList" aria-busy="false" aria-keyshortcuts="ArrowUp ArrowDown Home End Enter"></div>
+      <!-- v48 · 로빙 탭인덱스: 목록 전체가 Tab 정지점 1개. 방향키로 카드 이동, Tab으로 다음 칸 -->
+      <p class="sr-only" id="teacherListHint">선생님 목록입니다. 위·아래 방향키로 카드를 옮기고, Enter 키로 프로필을 엽니다. Tab 키를 누르면 목록을 나가 다음 항목으로 이동합니다.</p>
+      <div id="teacherList" role="group" aria-label="선생님 목록" aria-busy="false" aria-describedby="teacherListHint" aria-keyshortcuts="ArrowUp ArrowDown Home End Enter"></div>
       <!-- v47 · 1280px에서 프로필을 아직 고르지 않았을 때 — 빈 허공 대신 무엇을 하는 자리인지 알린다 -->
       <aside class="teacher-pane-empty" id="teacherPaneEmpty" aria-hidden="true">
         <span class="tpe-ic"><svg class="ic" aria-hidden="true"><use href="#i-users"/></svg></span>
@@ -5188,15 +5329,15 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     <button class="sheet-close sheet-close-top" type="button" data-stl-close aria-label="닫기"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
     <div class="sheet-scroll">
       <h2 class="sheet-title" id="settlementPrintTitle">정산서 미리보기</h2>
-      <p class="sheet-desc">인쇄하거나 PDF로 저장하고, 텍스트·JSON으로 내보낼 수 있어요.</p>
+      <p class="sheet-desc" data-print-hide>인쇄하거나 PDF로 저장하고, 텍스트·JSON으로 내보낼 수 있어요.</p>
       <div id="settlementPrintBody"></div>
-      <div class="rc-actions">
+      <div class="rc-actions" data-print-hide>
         <button class="btn btn-navy" id="stlPrintBtn" type="button">인쇄 / PDF 저장</button>
         <button class="btn btn-outline btn-sm" id="stlCopyBtn" type="button">텍스트 복사</button>
         <button class="btn btn-outline btn-sm" id="stlJsonBtn" type="button">JSON 내보내기</button>
         <button class="btn btn-ghost" type="button" data-stl-close>닫기</button>
       </div>
-      <p class="sheet-note" id="stlPrintNote" role="status" aria-live="polite">인쇄 창이 열리지 않으면 브라우저 인쇄(⌘/Ctrl+P)를 이용해 주세요.</p>
+      <p class="sheet-note" id="stlPrintNote" role="status" aria-live="polite" data-print-hide>인쇄 창이 열리지 않으면 브라우저 인쇄(⌘/Ctrl+P)를 이용해 주세요.</p>
     </div>
   </div>
 </div>
@@ -12284,7 +12425,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     var tagList = trust.topTags.map(function (x) { return x.label; });
     t.tags.forEach(function (x) { if (tagList.indexOf(x) === -1) tagList.push(x); });
     return '' +
-      '<article class="teacher' + (isFav(t.id) ? ' is-fav' : '') + '" data-teacher="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
+      '<article class="teacher' + (isFav(t.id) ? ' is-fav' : '') + '" data-teacher="' + t.id + '" role="button" tabindex="-1" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
         heartHtml(t.id) +
         '<div class="t-top">' +
           '<div class="t-avatar" style="' + avaStyle(t.id) + '" aria-hidden="true">' + avaSvg(t.id) + '</div>' +
@@ -12345,7 +12486,7 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
     list.innerHTML = teachers.slice(0, 3).map(function (t) {
       var d = teacherDetails[t.id] || {};
       var hTrust = teacherTrustOf(t.id);
-      return '<article class="h-teacher" data-teacher="' + t.id + '" role="button" tabindex="0" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
+      return '<article class="h-teacher" data-teacher="' + t.id + '" role="button" tabindex="-1" aria-label="' + esc(t.name) + ' 선생님 상세 프로필 보기">' +
         '<span class="h-av" style="' + avaStyle(t.id) + '" aria-hidden="true">' + avaSvg(t.id) + '</span>' +
         '<div class="h-body">' +
           '<p class="h-name">' + esc(t.name) + teacherBadgeHtml(t) + '</p>' +
@@ -23811,5 +23952,92 @@ try{var _ts=localStorage.getItem('ttokttok_textsize_v1');if(_ts==='lg'||_ts==='x
 })();
 </script>
 
+
+<script>
+/* ============================================================
+   v48 · 목록 로빙 탭인덱스(roving tabindex) + 인쇄 대상 표시
+   ─ 카드 8장이 모두 Tab 정지점이면 목록에 들어가려고 Tab을 8번 눌러야 했다.
+     이제 목록 전체가 정지점 1개: Tab 한 번으로 목록에 들어오고(마지막에 보던 카드),
+     ↑↓·Home/End로 카드를 옮기고, Tab 한 번으로 다음 칸(넓은 화면은 우측 프로필 열,
+     좁은 화면은 아래 안내문)으로 넘어간다.
+   ─ 인쇄: beforeprint에서 '가장 위에 열린 시트' 하나만 .is-print로 표시한다.
+     CSS(@media print)는 그 시트만 종이에 올리고 헤더·탭바·버튼은 숨긴다.
+   ============================================================ */
+(function () {
+  var D = document, W = window;
+  var list = D.getElementById('teacherList');
+  var rove = { version: 'v48', active: '' };
+
+  function cards() {
+    if (!list) return [];
+    return Array.prototype.slice.call(list.querySelectorAll('.teacher[data-teacher]:not(.is-skel)'));
+  }
+  function applyRoving() {
+    if (!list) return;
+    var cs = cards();
+    if (!cs.length) { rove.active = ''; return; }
+    var ids = cs.map(function (c) { return c.getAttribute('data-teacher'); });
+    if (ids.indexOf(rove.active) < 0) rove.active = ids[0];
+    cs.forEach(function (c) {
+      c.setAttribute('tabindex', c.getAttribute('data-teacher') === rove.active ? '0' : '-1');
+    });
+  }
+  function announce(msg) {
+    var el = D.getElementById('teacherNavLive');
+    if (!el) return;
+    el.textContent = '';
+    W.setTimeout(function () { el.textContent = msg; }, 30);
+  }
+  if (list) {
+    applyRoving();
+    list.addEventListener('focusin', function (e) {
+      var c = e.target && e.target.closest ? e.target.closest('.teacher') : null;
+      if (!c || !list.contains(c)) return;
+      var fromOutside = !(e.relatedTarget && list.contains(e.relatedTarget));
+      var id = c.getAttribute('data-teacher');
+      if (id && id !== rove.active) { rove.active = id; applyRoving(); }
+      if (fromOutside) {
+        var cs = cards(), i = cs.indexOf(c);
+        announce('선생님 목록 ' + cs.length + '명. ' + (i + 1) + '번째 카드. 위·아래 방향키로 이동하고 Enter로 프로필을 열어요. Tab을 누르면 목록을 나갑니다.');
+      }
+    });
+    try {
+      new MutationObserver(function () { applyRoving(); }).observe(list, { childList: true });
+    } catch (e) {}
+  }
+
+  /* ── 인쇄 대상: 열린 시트 중 z-index가 가장 높은 하나 ───────────── */
+  function markPrintTarget() {
+    var opened = Array.prototype.slice.call(D.querySelectorAll('.sheet-backdrop.is-open'));
+    Array.prototype.forEach.call(D.querySelectorAll('.sheet-backdrop.is-print'), function (el) {
+      el.classList.remove('is-print');
+    });
+    if (!opened.length) return '';
+    var top = opened[0], topZ = -1;
+    opened.forEach(function (b) {
+      var z = parseInt(W.getComputedStyle(b).zIndex, 10);
+      if (isNaN(z)) z = 0;
+      if (z >= topZ) { topZ = z; top = b; }
+    });
+    top.classList.add('is-print');
+    return top.id || '';
+  }
+  W.addEventListener('beforeprint', markPrintTarget);
+  W.addEventListener('afterprint', function () {
+    Array.prototype.forEach.call(D.querySelectorAll('.sheet-backdrop.is-print'), function (el) {
+      el.classList.remove('is-print');
+    });
+  });
+
+  W.__ttokttokRoving = {
+    version: 'v48',
+    activeId: function () { return rove.active; },
+    count: function () { return cards().length; },
+    tabStops: function () { return cards().filter(function (c) { return c.getAttribute('tabindex') === '0'; }).length; },
+    apply: applyRoving
+  };
+  W.__ttokttokPrint = { version: 'v48', mark: markPrintTarget, target: function () { var e = D.querySelector('.sheet-backdrop.is-print'); return e ? e.id : ''; } };
+})();
+</script>
 </body>
 </html>

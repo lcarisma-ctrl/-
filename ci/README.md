@@ -1,25 +1,46 @@
-# CI 워크플로 등록 (한 단계 남음)
+# CI — 푸시마다 빌드 → jsdom → 대비를 자동으로 (등록 완료 · 2026-11-28 기준)
 
 `ci/qa.yml`은 푸시·PR마다 **빌드 → jsdom → 대비(WCAG AA)** 를 돌리는 GitHub Actions 워크플로입니다.
-지금은 저장소의 GitHub App 권한에 `workflows`가 없어 **`.github/workflows/qa.yml` 경로로 푸시할 수 없습니다**
-(`refusing to allow a GitHub App to create or update workflow ... without workflows permission`).
+v47에서 이 파일을 `.github/workflows/qa.yml`로 **저장소에 등록했고, 지금 정상 동작 중**입니다.
+(등록은 GitHub 웹에서 파일을 추가하는 방식으로 했습니다 — 아래 '등록 상태' 참조.)
 
-켜는 방법 두 가지 — 둘 중 하나만 하면 됩니다.
+## 지금 상태
 
-1. **GitHub 웹에서 파일 추가** (권한 필요 없음)
-   - https://github.com/lcarisma-ctrl/- → `Add file` → `Create new file`
-   - 파일 이름: `.github/workflows/qa.yml`
-   - 내용: 이 폴더의 `qa.yml` 전체를 붙여넣고 커밋
-   - 커밋하면 바로 첫 실행이 돌고, 이후 푸시·PR마다 자동으로 돕니다.
+| 항목 | 값 |
+|---|---|
+| 경로 | `.github/workflows/qa.yml` (이 폴더의 `qa.yml`과 **같은 내용**, sha `202bdac8`) |
+| 상태 | `active` · 워크플로 id `433349940` |
+| 도는 때 | `main` 푸시 · PR · 수동 실행(`workflow_dispatch`) |
+| 최근 실행 | [#46099756234](https://github.com/lcarisma-ctrl/-/actions/runs/46099756234) — **success**(2026-11-28 11:47 KST, 15분 8초) |
+| 단계 | 체크아웃 → Node 20 → Python 3.12 → jsdom 의존성 → Chromium → **빌드** → **jsdom** → **대비** → 결과 요약 |
+| 실패할 때 | 빨간 X로 멈춥니다. 대비가 0건이 아니면 다음 빌드에서 바로 드러납니다 |
 
-2. **Pickle GitHub 연결에 Workflows 권한 추가**
-   - GitHub → Settings → Applications → Pickle → Permissions 에서 `Workflows: Read and write`를 켜고,
-     그 뒤 `git push`로 `.github/workflows/qa.yml`을 올리면 됩니다.
+실행 기록: `gh run list -R lcarisma-ctrl/-` 또는 저장소 → Actions 탭.
 
-워크플로가 도는 세 단계는 로컬과 같은 명령입니다.
+## 워크플로가 도는 세 단계 (로컬과 같은 명령)
 
 ```bash
 python3 tests/qa_gate.py --only build      # 템플릿 → index.html + app-version 일치
-python3 tests/qa_gate.py --only jsdom      # app.test.js(part 1·2) + v32~v47
+python3 tests/qa_gate.py --only jsdom      # app.test.js(part 1·2) + v32~v48
 python3 tests/qa_gate.py --only contrast   # 라이트·다크 × 375·768·1024·1280
 ```
+
+- `e2e_chromium.py`(2,299검증)·`qa_v24.py`(777검증)는 Actions 시간이 커서 **로컬 전용**입니다.
+- 로컬에서 전부 돌리려면 `python3 tests/qa_gate.py`(e2e·qa 포함, 10분 이상).
+
+## 이 파일을 고칠 때
+
+워크플로는 **권한 때문에 `git push`로 올리지 못합니다** — 저장소의 GitHub App 권한에 `workflows`가 없습니다
+(`refusing to allow a GitHub App to create or update workflow ... without workflows permission`).
+그래서 고칠 때는:
+
+1. 이 폴더의 `qa.yml`을 고친다(내용은 그대로 GitHub에 올라갈 파일).
+2. GitHub 웹에서 `.github/workflows/qa.yml`을 열어 **같은 내용으로 커밋**한다
+   (`https://github.com/lcarisma-ctrl/-/edit/main/.github/workflows/qa.yml`).
+3. 또는 GitHub → Settings → Applications → Pickle → Permissions 에서 `Workflows: Read and write`를 켜면
+   다음부터는 `git push`로 함께 올릴 수 있다.
+
+## v48에서 달라진 것
+
+- jsdom 단계에 **`app.v48.test.js`(73검증)** 가 들어갔습니다 — 경계 토큰 3:1, 로빙 탭인덱스, 가로모드·인쇄 CSS.
+- 대비 단계는 그대로 라이트·다크 × 375·768·1024·1280이며, v48에서 **본문 0건 · UI 경계 0건**입니다.
